@@ -386,15 +386,26 @@ function cssMin(str) {
 }
 
 
-function jsMin(str, next) {
+function jsMin(str, next, afterInstall) {
 	try {
 		var res = require("uglify-js").minify(str, {fromString: true, output: {semicolons: false}})
+		next(null, res.code)
 	} catch(e) {
-		console.log(e.line)
-		console.log(str.split("\n")[e.line])
-		throw e
+		if (!afterInstall && e.message == "Cannot find module 'uglify-js'") {
+			console.error(e.message, "Trying to Install")
+			var child = spawn("npm", [ "install", "uglify-js" ])
+			child.on("close", function() {
+				jsMin(str, next, true)
+			})
+			child.stdout.pipe(process.stdout)
+			child.stderr.pipe(process.stderr)
+			child.stdin.end()
+		} else {
+			var line = e.line || e.lineNumber
+			console.error("Line: " + line, str.split("\n").slice(line - 3, line + 3))
+			throw e
+		}
 	}
-	next(null, res.code)
 }
 
 function jsMinClosure(str, next) {
