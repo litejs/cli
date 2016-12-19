@@ -106,7 +106,6 @@ File.prototype = {
 						fileName = arr[i] = require.resolve(fileName)
 					}
 					child = File(fileName, {
-						replace: opts.replace,
 						root: opts.root
 					})
 				}
@@ -117,12 +116,6 @@ File.prototype = {
 			file.write()
 		} else {
 			var source = readFile(file.name)
-
-			if (opts.replace) {
-				opts.replace.forEach(function(arr) {
-					source = source.replace(arr[0], arr[1])
-				})
-			}
 
 			file.content = adapter.split ? adapter.split(source, opts) : [ source ]
 			file.content.forEach(function(junk, i, arr) {
@@ -137,6 +130,13 @@ File.prototype = {
 
 		function min() {
 			file.src = file.content.filter(Boolean).join(adapter.sep || "")
+
+			if (opts.replace) {
+				opts.replace.forEach(function(arr) {
+					file.src = file.src.replace(arr[0], arr[1])
+				})
+			}
+
 			if (adapter.min && opts.min) {
 				adapter.min(file.src, function(err, res) {
 					file.min = res
@@ -227,7 +227,7 @@ function hold(ignore) {
 }
 
 function htmlSplit(str, opts) {
-	var pos, file, ext, file2, match, match2, match3, out, squash, tmp
+	var newOpts, pos, file, ext, file2, inline, match, match2, banner, out, squash, replace, tmp
 	, squashed = []
 	, lastIndex = 0
 	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
@@ -251,16 +251,23 @@ function htmlSplit(str, opts) {
 			str.slice(lastIndex = re.lastIndex)
 		)
 
-		match3 = bannerRe.exec(match[0])
 		if (match2 = buildRe.exec(match[0])) {
 			File(file, {
-				input: (match2[3] || match2[1]).split(","),
-				banner: match3 ? match3[3] || match[1] : ""
+				input: (match2[3] || match2[1]).split(",")
 			})
 		}
 
 		if (excludeRe.test(match[0])) {
 			continue
+		}
+
+		inline = inlineRe.test(match[0])
+		banner = bannerRe.exec(match[0])
+
+		newOpts = {
+			min: 1,
+			replace: inline && [ ["/*!{loadFiles}*/", load] ],
+			banner: banner ? banner[3] || match[1] : ""
 		}
 
 		if (match2 = squashRe.exec(match[0])) {
@@ -270,11 +277,8 @@ function htmlSplit(str, opts) {
 				opts.root + squashed.length.toString(32) + "." + ext
 			)
 			if (!squash || squash.name !== file2) {
-				squash = File(file2, {
-					input: [],
-					banner: match3 ? match3[3] || match[1] : "",
-					min: 1
-				})
+				newOpts.input = []
+				squash = File(file2, newOpts)
 				squashed.push(squash.wait())
 			}
 			squash.opts.input.push(file.replace(/\?.*/, ""))
@@ -284,21 +288,18 @@ function htmlSplit(str, opts) {
 			file = file2
 		}
 		var dataIf = /\sdata-if="([^"?]+)/.exec(match[0])
-		if (inlineRe.test(match[0])) {
+		if (inline) {
+			tmp = File(file, newOpts)
+			squashed.push(tmp.wait())
 			out.splice(-2, 1,
 				match[2] ? "<script>" : "<style>",
-				File(file, {
-					min: 1,
-					replace: [
-						["/*!{loadFiles}*/", load]
-					]
-				}),
+				tmp,
 				match[2] ? "</script>" : "</style>"
 			)
 		} else if (match[2] || dataIf) {
 			load.push(
 				(dataIf ? "(" + dataIf[1] + ")&&'" : "'") +
-				file.slice(opts.root.length) + "'"
+				normalizePath(file.slice(opts.root.length), opts.root) + "'"
 			)
 		} else {
 			tmp = match[0]
@@ -478,9 +479,8 @@ function execute() {
 		}
 		if (input && output) {
 			File(output, {
-				input: input.map(function(name) {
-					return File(name, {banner: banner})
-				}),
+				banner: banner,
+				input: input,
 				min: 1
 			})
 			banner = input = output = ""
