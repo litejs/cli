@@ -227,15 +227,15 @@ function hold(ignore) {
 }
 
 function htmlSplit(str, opts) {
-	var newOpts, pos, file, ext, file2, inline, match, match2, banner, out, squash, replace, tmp
-	, squashed = []
+	var newOpts, pos, file, ext, file2, inline, match, match2, banner, out, min, replace, tmp
+	, mined = []
 	, lastIndex = 0
 	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
 	, bannerRe   = /\sbanner=(("|')(.+?)\2|[^\s]+)/i
 	, buildRe   = /\sbuild=(("|')(.+?)\2|[^\s]+)/i
 	, inlineRe = /\sinline\b(?:=["']?([^"']+))?/i
 	, excludeRe = /\sexclude\b/i
-	, squashRe = /\s+squash\b(?:=["']?(.+?)["'])?/i
+	, minRe = /\s+min\b(?:=["']?(.+?)["'])?/i
 	, load = []
 
 	str = str
@@ -270,27 +270,27 @@ function htmlSplit(str, opts) {
 			banner: banner ? banner[3] || match[1] : ""
 		}
 
-		if (match2 = squashRe.exec(match[0])) {
+		if (match2 = minRe.exec(match[0])) {
 			file2 = (
 				match2[1] ? opts.root + match2[1] :
-				squash && squash.ext == ext ? squash.name :
-				opts.root + squashed.length.toString(32) + "." + ext
+				min && min.ext == ext ? min.name :
+				opts.root + mined.length.toString(32) + "." + ext
 			)
-			if (!squash || squash.name !== file2) {
+			if (!min || min.name !== file2) {
 				newOpts.input = []
-				squash = File(file2, newOpts)
-				squashed.push(squash.wait())
+				min = File(file2, newOpts)
+				mined.push(min.wait())
 			}
-			squash.opts.input.push(file.replace(/\?.*/, ""))
-			if (squash.opts.input.length > 1) {
+			min.opts.input.push(file.replace(/\?.*/, ""))
+			if (min.opts.input.length > 1) {
 				continue
 			}
 			file = file2
 		}
-		var dataIf = /\sdata-if="([^"?]+)/.exec(match[0])
+		var dataIf = /\sif="([^"?]+)/.exec(match[0])
 		if (inline) {
 			tmp = File(file, newOpts)
-			squashed.push(tmp.wait())
+			mined.push(tmp.wait())
 			out.splice(-2, 1,
 				match[2] ? "<script>" : "<style>",
 				tmp,
@@ -305,13 +305,13 @@ function htmlSplit(str, opts) {
 			tmp = match[0]
 			if (match2) {
 				tmp = tmp
-				.replace(squashRe, "")
+				.replace(minRe, "")
 				.replace(match[1] || match[3], file.slice(opts.root.length))
 			}
 			out[pos] = tmp
 		}
 	}
-	squashed.forEach(function(fn) { fn() })
+	mined.forEach(function(fn) { fn() })
 	return out.filter(Boolean).map(htmlMin, opts)
 }
 
