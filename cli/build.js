@@ -226,6 +226,14 @@ function hold(ignore) {
 	}
 }
 
+function defMap(str) {
+	var chr = str.charAt(0)
+	, slice = str.slice(1)
+	return chr == "+" ? lastStr + slice :
+	chr == "%" ? ((chr = lastStr.lastIndexOf(slice.charAt(0))), (chr > 0 ? lastStr.slice(0, chr) : lastStr)) + slice :
+	(lastStr = str)
+}
+
 function htmlSplit(str, opts) {
 	var newOpts, pos, file, ext, file2, inline, match, match2, banner, out, min, replace, tmp
 	, mined = []
@@ -253,7 +261,7 @@ function htmlSplit(str, opts) {
 
 		if (match2 = buildRe.exec(match[0])) {
 			File(file, {
-				input: (match2[3] || match2[1]).split(",")
+				input: (match2[3] || match2[1]).split(",").map(defMap)
 			})
 		}
 
