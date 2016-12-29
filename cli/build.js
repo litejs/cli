@@ -233,7 +233,7 @@ function htmlSplit(str, opts) {
 	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
 	, bannerRe   = /\sbanner=(("|')(.+?)\2|[^\s]+)/i
 	, buildRe   = /\sbuild=(("|')(.+?)\2|[^\s]+)/i
-	, inlineRe = /\sinline\b(?:=["']?([^"']+))?/i
+	, inlineRe = /\sinline\b/i
 	, excludeRe = /\sexclude\b/i
 	, minRe = /\s+min\b(?:=["']?(.+?)["'])?/i
 	, load = []
