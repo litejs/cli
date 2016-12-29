@@ -397,7 +397,16 @@ function cssMin(str) {
 
 function jsMin(str, next, afterInstall) {
 	try {
-		var res = require("uglify-js").minify(str, {fromString: true, output: {semicolons: false}})
+		var res = require("uglify-js").minify(str, {
+			fromString: true,
+			compress: {
+				properties: false
+			},
+			output: {
+				semicolons: false,
+				keep_quoted_props: true
+			}
+		})
 		next(null, res.code)
 	} catch(e) {
 		if (!afterInstall && e.message == "Cannot find module 'uglify-js'") {
