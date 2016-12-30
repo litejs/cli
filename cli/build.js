@@ -260,6 +260,7 @@ function htmlSplit(str, opts) {
 		)
 
 		if (match2 = buildRe.exec(match[0])) {
+			lastStr = file
 			File(file, {
 				input: (match2[3] || match2[1]).split(",").map(defMap)
 			})
@@ -279,8 +280,9 @@ function htmlSplit(str, opts) {
 		}
 
 		if (match2 = minRe.exec(match[0])) {
+			lastStr = file.slice(opts.root.length)
 			file2 = (
-				match2[1] ? opts.root + match2[1] :
+				match2[1] ? opts.root + defMap(match2[1]) :
 				min && min.ext == ext ? min.name :
 				opts.root + mined.length.toString(32) + "." + ext
 			)
