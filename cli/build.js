@@ -404,6 +404,8 @@ function cssMin(str) {
 	.replace(/([ :,])0\.([0-9]+)/g, "$1.$2")
 }
 
+var npmChild
+
 
 function jsMin(str, next, afterInstall) {
 	try {
@@ -420,14 +422,17 @@ function jsMin(str, next, afterInstall) {
 		next(null, res.code)
 	} catch(e) {
 		if (!afterInstall && e.message == "Cannot find module 'uglify-js'") {
-			console.error(e.message, "Trying to Install")
-			var child = spawn("npm", [ "install", "uglify-js" ])
-			child.on("close", function() {
+			if (!npmChild) {
+				console.error(e.message, "Trying to Install ..")
+				npmChild = spawn("npm", [ "install", "uglify-js" ])
+				npmChild.stdout.pipe(process.stdout)
+				npmChild.stderr.pipe(process.stderr)
+				npmChild.stdin.end()
+			}
+			npmChild.on("close", function() {
+				npmChild = null
 				jsMin(str, next, true)
 			})
-			child.stdout.pipe(process.stdout)
-			child.stderr.pipe(process.stderr)
-			child.stdin.end()
 		} else {
 			var line = e.line || e.lineNumber
 			console.error("Line: " + line, str.split("\n").slice(line - 3, line + 3))
