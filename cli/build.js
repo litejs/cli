@@ -1,5 +1,6 @@
 #! /usr/bin/env node
 
+
 var undef, fileHashes
 , spawn = require("child_process").spawn
 , path = require("path")
@@ -19,6 +20,13 @@ var undef, fileHashes
 	// http://nodejs.org/api/documentation.html
 	stability: "0 - Deprecated,1 - Experimental,2 - Unstable,3 - Stable,4 - API Frozen,5 - Locked".split(","),
 	date: new Date().toISOString().split("T")[0]
+}
+, linked = __dirname.indexOf(process.cwd()) !== 0
+
+if (linked) {
+	module.paths = require("module")._nodeModulePaths(process.cwd())
+	// module.paths.push(path.resolve(process.env.npm_config_prefix, "lib", "node_modules"))
+	// module.paths.push(path.resolve(process.cwd(), "node_modules"))
 }
 
 function File(_name, _opts) {
