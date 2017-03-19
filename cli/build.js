@@ -9,8 +9,8 @@ var undef, fileHashes
 , fs = require("fs")
 , CONF_FILE = path.resolve("package.json")
 , conf = require( CONF_FILE ) || {}
-, hasOwn = Object.prototype.hasOwnProperty
 , files = {}
+, hasOwn = files.hasOwnProperty
 , adapters = File.adapters = {
 	css: { split: cssSplit, sep: "\n", banner: "/*! {0} */\n" },
 	html: { split: htmlSplit, banner: "<!-- {0} -->\n" },
