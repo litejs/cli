@@ -243,7 +243,7 @@ function defMap(str) {
 }
 
 function htmlSplit(str, opts) {
-	var newOpts, pos, file, ext, file2, inline, match, match2, banner, out, min, replace, tmp
+	var newOpts, pos, file, ext, file2, inline, match, match2, match3, banner, out, min, replace, tmp
 	, mined = []
 	, lastIndex = 0
 	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
@@ -269,7 +269,7 @@ function htmlSplit(str, opts) {
 
 		if (match2 = buildRe.exec(match[0])) {
 			lastStr = file
-			File(file, {
+			match2 = File(file, {
 				input: (match2[3] || match2[1]).split(",").map(defMap)
 			})
 		}
@@ -287,19 +287,23 @@ function htmlSplit(str, opts) {
 			banner: banner ? banner[3] || match[1] : ""
 		}
 
-		if (match2 = minRe.exec(match[0])) {
+		if (match3 = minRe.exec(match[0])) {
 			lastStr = file.slice(opts.root.length)
 			file2 = (
-				match2[1] ? opts.root + defMap(match2[1]) :
+				match3[1] ? opts.root + defMap(match3[1]) :
 				min && min.ext == ext ? min.name :
 				opts.root + mined.length.toString(32) + "." + ext
 			)
 			if (!min || min.name !== file2) {
 				newOpts.input = []
 				min = File(file2, newOpts)
+				if (match2) {
+					min.opts.input.push(match2)
+					min = match2
+				}
 				mined.push(min.wait())
 			}
-			min.opts.input.push(file.replace(/\?.*/, ""))
+			if (!match2) min.opts.input.push(file.replace(/\?.*/, ""))
 			if (min.opts.input.length > 1) {
 				continue
 			}
@@ -321,7 +325,7 @@ function htmlSplit(str, opts) {
 			)
 		} else {
 			tmp = match[0]
-			if (match2) {
+			if (match3) {
 				tmp = tmp
 				.replace(minRe, "")
 				.replace(match[1] || match[3], file.slice(opts.root.length))
