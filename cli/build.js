@@ -488,26 +488,35 @@ function readFileHashes(opts, next) {
 	})
 }
 
-function execute() {
+function execute(args, i) {
 	var arg, banner, input, output
-	, args = process.argv
-	, i = 2
 
 	for (; arg = args[i++]; ) {
 		switch (arg) {
 		case "-b":
+		case "--banner":
 			banner = args[i++]
 			break;
 		case "-i":
+		case "--input":
 			if (!input) input = []
 			input.push(args[i++])
 			break;
 		case "-o":
+		case "--output":
 			output = args[i++]
 			break;
 		case "-r":
+		case "--readme":
 			updateReadme(args[i++])
 			break;
+		default:
+			if (arg.charAt(0) == "-") {
+				args.splice.apply(
+					args,
+					[i, 0].concat(arg.replace(/\w(?!$)/g,"$& " + args[i] + " -").split(" "))
+				)
+			}
 		}
 		if (input && output) {
 			File(output, {
@@ -526,9 +535,12 @@ if (module.parent) {
 	exports.updateReadme = updateReadme
 } else {
 	// executed as standalone
-	execute()
+	execute(process.argv, 2)
 	if (conf.readmeFilename) {
 		updateReadme(conf.readmeFilename)
+	}
+	if (conf.buildman) {
+		execute([], 0)
 	}
 }
 
