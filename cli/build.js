@@ -297,15 +297,16 @@ function htmlSplit(str, opts) {
 			if (!min || min.name !== file2) {
 				newOpts.input = []
 				min = File(file2, newOpts)
-				if (match2) {
-					min.opts.input.push(match2)
-					min = match2
-				}
 				mined.push(min.wait())
 			}
-			if (!match2) min.opts.input.push(file.replace(/\?.*/, ""))
-			if (min.opts.input.length > 1) {
-				continue
+			if (match2) {
+				min.opts.input.push(match2)
+				min = match2
+			} else {
+				min.opts.input.push(file.replace(/\?.*/, ""))
+				if (min.opts.input.length > 1) {
+					continue
+				}
 			}
 			file = file2
 		}
