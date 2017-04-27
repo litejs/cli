@@ -1,3 +1,4 @@
+require("./lib/json.js")
 require("./format-spec.js")
 require("./events-spec.js")
 require("./el-spec.js")
