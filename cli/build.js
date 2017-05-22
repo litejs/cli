@@ -171,10 +171,11 @@ File.prototype = {
 		var file = this
 		, opts = file.opts
 		, adapter = adapters[file.ext] || {}
-		, str = adapter.min && opts.min ? file.min : file.src
+		, banner = opts.banner && adapter.banner && adapter.banner.replace(/\{0\}/g, opts.banner)
+		, str = adapter.min && opts.min ? file.min : format(file.src)
 
 		return (
-			(opts.banner && adapter.banner ? adapter.banner.replace(/\{0\}/g, opts.banner) : "") +
+			(banner ? format(banner) : "") +
 			str.trim() +
 			(opts.sourceMap ? "\n//# sourceMappingURL=" + opts.sourceMap + "\n" : "")
 		)
@@ -564,12 +565,16 @@ function writeFile(fileName, content) {
 	fs.writeFileSync(path.resolve(fileName.split("?")[0]), content, "utf8")
 }
 
-function updateReadme(file) {
-	var data = readFile(file)
-	, out = data.replace(/(@(version|date|author|stability)\s+).*/g, function(all, match, tag) {
+function format(str) {
+	return str.replace(/([\s\*\/]*@(version|date|author|stability)\s+).*/g, function(all, match, tag) {
 		tag = translate[tag] ? translate[tag][conf[tag]] || translate[tag] : conf[tag]
 		return tag ? match + tag : all
 	})
+}
+
+function updateReadme(file) {
+	var data = readFile(file)
+	, out = format(data)
 
 	if (data != out) {
 		console.log("# Update readme: " + file)
