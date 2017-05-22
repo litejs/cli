@@ -247,8 +247,8 @@ function htmlSplit(str, opts) {
 	, mined = []
 	, lastIndex = 0
 	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
-	, bannerRe   = /\sbanner=(("|')(.+?)\2|[^\s]+)/i
-	, buildRe   = /\sbuild=(("|')(.+?)\2|[^\s]+)/i
+	, bannerRe   = /\sbanner=(("|')([^]+?)\2|[^\s]+)/i
+	, buildRe   = /\sbuild=(("|')([^]+?)\2|[^\s]+)/i
 	, inlineRe = /\sinline\b/i
 	, excludeRe = /\sexclude\b/i
 	, minRe = /\s+min\b(?:=["']?(.+?)["'])?/i
@@ -269,8 +269,9 @@ function htmlSplit(str, opts) {
 
 		if (match2 = buildRe.exec(match[0])) {
 			lastStr = file
+			tmp = (match2[3] || match2[1]).match(/[^,\s]+/g)
 			match2 = File(file, {
-				input: (match2[3] || match2[1]).split(",").map(defMap)
+				input: tmp ? tmp.map(defMap) : []
 			})
 		}
 
