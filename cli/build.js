@@ -146,7 +146,15 @@ File.prototype = {
 			}
 
 			if (adapter.min && opts.min) {
-				adapter.min(file.src, function(err, res) {
+				var map = file.content.reduce(function(map, file) {
+					var str = file instanceof File ? file.src : file
+					if (opts.replace) opts.replace.forEach(function(arr) {
+						str = str.replace(arr[0], arr[1])
+					})
+					map[file.name] = str
+					return map
+				}, {})
+				adapter.min(map, function(err, res) {
 					file.min = res
 					resume()
 				})
@@ -415,10 +423,17 @@ var npmChild
 
 
 function jsMin(str, next, afterInstall) {
+	var expectVersion = require("../package.json").devDependencies["uglify-js"]
 	try {
+		delete require.cache[require.resolve("uglify-js/package.json")]
+		if (require("uglify-js/package.json").version !== expectVersion) {
+			throw Error("Wrong uglify-js version")
+		}
 		var res = require("uglify-js").minify(str, {
-			fromString: true,
+			warnings: true,
 			compress: {
+				// evaluate will drop `ie678 = !+"\v1"` as side-effect-free code
+				evaluate: false,
 				properties: false
 			},
 			output: {
@@ -426,12 +441,17 @@ function jsMin(str, next, afterInstall) {
 				keep_quoted_props: true
 			}
 		})
+		if (res.warnings) console.log("WARNINGS:\n - " + res.warnings.join("\n - "))
+		if (res.error) throw res.error
 		next(null, res.code)
 	} catch(e) {
-		if (!afterInstall && e.message == "Cannot find module 'uglify-js'") {
+		if (!afterInstall && (
+			e.message == "Cannot find module 'uglify-js/package.json'" ||
+			e.message == "Wrong uglify-js version"
+			)) {
 			if (!npmChild) {
 				console.error(e.message, "Trying to Install ..")
-				npmChild = spawn("npm", [ "install", "uglify-js" ])
+				npmChild = spawn("npm", [ "install", "uglify-js@" + expectVersion ])
 				npmChild.stdout.pipe(process.stdout)
 				npmChild.stderr.pipe(process.stderr)
 				npmChild.stdin.end()
@@ -442,7 +462,7 @@ function jsMin(str, next, afterInstall) {
 			})
 		} else {
 			var line = e.line || e.lineNumber
-			console.error("Line: " + line, str.split("\n").slice(line - 3, line + 3))
+			if (line > -1) console.error("Line: " + line, str.split("\n").slice(line - 3, line + 3))
 			throw e
 		}
 	}
