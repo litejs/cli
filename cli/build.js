@@ -58,6 +58,7 @@ function File(_name, _opts) {
 	if (typeof opts.input == "string") {
 		opts.input = [ opts.input ]
 	}
+	if (!opts.warnings) opts.warnings = []
 
 	if (opts.sourceMap === true) {
 		opts.sourceMap = name.replace(/\?|$/, ".map$&").slice(opts.root.length)
@@ -115,7 +116,8 @@ File.prototype = {
 						fileName = arr[i] = require.resolve(fileName)
 					}
 					child = File(fileName, {
-						root: opts.root
+						root: opts.root,
+						warnings: opts.warnings
 					})
 				}
 				child.then(buildResume.wait())
@@ -155,7 +157,7 @@ File.prototype = {
 					map[file.name] = str
 					return map
 				}, {})
-				adapter.min(map, function(err, res) {
+				adapter.min(map, opts, function(err, res) {
 					file.min = res
 					resume()
 				})
@@ -168,6 +170,9 @@ File.prototype = {
 		var file = this
 		if (!file.opts.mem) {
 			writeFile(file.name, file.toString())
+		}
+		if (file.opts.warnings.length) {
+			console.log("WARNINGS:\n - " + file.opts.warnings.join("\n - "))
 		}
 	},
 	then: function(next, scope) {
@@ -211,12 +216,16 @@ function htmlSplit(str, opts) {
 	, buildRe   = /\sbuild=(("|')([^]+?)\2|[^\s]+)/i
 	, inlineRe = /\sinline\b/i
 	, excludeRe = /\sexclude\b/i
-	, minRe = /\s+min\b(?:=["']?(.+?)["'])?/i
-	, load = []
+	, minRe = /\smin\b(?:=["']?(.+?)["'])?/i
+	, loadFiles = []
+	, hashes = {}
 
 	str = str
 	.replace(/<!((?:--)+)[^]*?\1>/g, "")
-	.replace(/data-(?=manifest=)/, "")
+	.replace(/\sdata-manifest=(("|').+?\2)/, function(match, file) {
+		updateManifest(opts.root + file.slice(1, -1), opts, hashes)
+		return "data=" + file
+	})
 
 	for (out = [ str ]; match = re.exec(str); ) {
 		file = opts.root + (match[1] || match[3])
@@ -244,7 +253,10 @@ function htmlSplit(str, opts) {
 
 		newOpts = {
 			min: 1,
-			replace: inline && [ ["/*!{loadFiles}*/", load] ],
+			replace: inline && [
+				["/*!{loadFiles}*/", loadFiles],
+				["/*!{loadHashes}*/", JSON.stringify(hashes).slice(1, -1)]
+			],
 			banner: banner ? banner[3] || match[1] : ""
 		}
 
@@ -281,9 +293,9 @@ function htmlSplit(str, opts) {
 				match[2] ? "</script>" : "</style>"
 			)
 		} else if (match[2] || dataIf) {
-			load.push(
+			loadFiles.push(
 				(dataIf ? "(" + dataIf[1] + ")&&'" : "'") +
-				normalizePath(file.slice(opts.root.length), opts.root) + "'"
+				normalizePath(file.slice(opts.root.length), opts) + "'"
 			)
 		} else {
 			tmp = match[0]
@@ -307,7 +319,7 @@ function htmlMin(str) {
 	.replace(/\t/g, " ")
 	.replace(/\s+(?=<|\/?>|$)/g, "")
 	.replace(/\b(href|src)="(?!data:)(.+?)"/gi, function(_, tag, file) {
-		return tag + '="' + normalizePath(file, opts.root) + '"'
+		return tag + '="' + normalizePath(file, opts) + '"'
 	})
 }
 
@@ -373,7 +385,7 @@ function cssMin(str) {
 var npmChild
 
 
-function jsMin(str, next, afterInstall) {
+function jsMin(str, opts, next, afterInstall) {
 	var expectVersion = require("../package.json").devDependencies["uglify-js"]
 	try {
 		delete require.cache[require.resolve("uglify-js/package.json")]
@@ -392,7 +404,7 @@ function jsMin(str, next, afterInstall) {
 				keep_quoted_props: true
 			}
 		})
-		if (res.warnings) console.log("WARNINGS:\n - " + res.warnings.join("\n - "))
+		if (res.warnings) opts.warnings.push.apply(opts.warnings, res.warnings)
 		if (res.error) throw res.error
 		next(null, res.code)
 	} catch(e) {
@@ -409,7 +421,7 @@ function jsMin(str, next, afterInstall) {
 			}
 			npmChild.on("close", function() {
 				npmChild = null
-				jsMin(str, next, true)
+				jsMin(str, opts, next, true)
 			})
 		} else {
 			var line = e.line || e.lineNumber
@@ -503,9 +515,16 @@ if (module.parent) {
 	}
 }
 
-function normalizePath(p, root) {
+function normalizePath(p, opts) {
 	for (; p != (p = p.replace(/[^/]*[^.]\/\.\.\/|(^|[^.])\.\/|(.)\/(?=\/)/, "$1$2")); );
-	p = p.replace(/{hash}/g, fileHashes[root + p.split("?")[0]] || "")
+	if (p.indexOf("{hash}")) {
+		var full = path.resolve(opts.root, p.split("?")[0])
+		if (fileHashes[full]) {
+			p = p.replace(/{hash}/g, fileHashes[full] || "")
+		} else {
+			opts.warnings.push("'" + full + "' not commited?")
+		}
+	}
 	return p
 }
 
@@ -525,12 +544,35 @@ function format(str) {
 }
 
 function updateReadme(file) {
-	var data = readFile(file)
-	, out = format(data)
+	var current = readFile(file)
+	, updated = format(current)
 
-	if (data != out) {
+	if (current != updated) {
 		console.log("# Update readme: " + file)
-		writeFile(file, out)
+		writeFile(file, updated)
 	}
 }
+
+function updateManifest(file, opts, hashes) {
+	var root = file.replace(/[^\/]+$/, "")
+	, current = readFile(file)
+	, updated = current
+	.replace(/^(?![#*]|CACHE MANIFEST|\w+:)[^\n\r]+/gm, function(line) {
+		var name = line.replace(/\?.*/, "")
+		, full = path.resolve(root, name)
+		if (!fileHashes[full]) {
+			opts.warnings.push("'" + full + "' not commited?")
+		} else if (name !== line) {
+			hashes[name] = fileHashes[full]
+			return name + "?" + fileHashes[full]
+		}
+		return line
+	})
+
+	if (current != updated) {
+		console.log("# Update manifest: " + file)
+		writeFile(file, updated.replace(/#.+$/m, "# " + new Date().toISOString()))
+	}
+}
+
 
