@@ -7,6 +7,7 @@ var undef, fileHashes
 , util = require("util")
 , events = require("events")
 , fs = require("fs")
+, Fn = require("../fn.js").Fn
 , CONF_FILE = path.resolve("package.json")
 , conf = require( CONF_FILE ) || {}
 , files = {}
@@ -82,7 +83,7 @@ function File(_name, _opts) {
 }
 
 File.prototype = {
-	wait: hold,
+	wait: Fn.hold,
 	syncMethods: ["on", "toString"],
 	depends: function(child) {
 		var file = this
@@ -104,7 +105,7 @@ File.prototype = {
 		, opts = file.opts
 		, resume = file.wait()
 		, adapter = adapters[file.ext] || {}
-		, buildResume = wait(min)
+		, buildResume = Fn.wait(min)
 
 		if (opts.input) {
 			file.content = opts.input.map(function(fileName, i, arr) {
@@ -141,7 +142,7 @@ File.prototype = {
 
 			if (opts.replace) {
 				opts.replace.forEach(function(arr) {
-					file.src = file.src.replace(arr[0], arr[1])
+					file.src = file.src.replace(arr[0], arr[1] || "")
 				})
 			}
 
@@ -192,56 +193,6 @@ File.prototype = {
 
 util.inherits(File, events)
 
-
-function wait(fn) {
-	var pending = 1
-	function resume() {
-		if (!--pending && fn) fn.call(this)
-	}
-	resume.wait = function() {
-		pending++
-		return resume
-	}
-	return resume
-}
-
-function hold(ignore) {
-	var k
-	, obj = this
-	, hooks = []
-	, hooked = []
-	, _resume = wait(resume)
-	ignore = ignore || obj.syncMethods || []
-
-	for (k in obj) if (typeof obj[k] == "function" && ignore.indexOf(k) == -1) !function(k) {
-		hooked.push(k, hasOwn.call(obj, k) && obj[k])
-		obj[k] = function() {
-			hooks.push(k, arguments)
-			return obj
-		}
-	}(k)
-
-	/**
-	 * `wait` is already in hooked array,
-	 * so override hooked method
-	 * that will be cleared on resume.
-	 */
-	obj.wait = _resume.wait
-
-	return _resume
-
-	function resume() {
-		for (var v, scope = obj, i = hooked.length; i--; i--) {
-			if (hooked[i]) obj[hooked[i-1]] = hooked[i]
-			else delete obj[hooked[i-1]]
-		}
-		// i == -1 from previous loop
-		for (; v = hooks[++i]; ) {
-			scope = scope[v].apply(scope, hooks[++i]) || scope
-		}
-		hooks = hooked = null
-	}
-}
 
 function defMap(str) {
 	var chr = str.charAt(0)
@@ -466,25 +417,6 @@ function jsMin(str, next, afterInstall) {
 			throw e
 		}
 	}
-}
-
-function jsMinClosure(str, next) {
-	var res = ""
-	, closure = spawn("closure-compiler", ["--language_out", "ES5"])
-
-	closure.on("close", function() {
-		next(null, res)
-	})
-
-	closure.stdout.on("data", function(chunk) {
-		res += chunk
-	})
-	closure.stderr.pipe(process.stderr)
-	closure.stdin.end(str)
-}
-
-function programExists(name, next) {
-	exec("command -v " + name, next)
 }
 
 function readFileHashes(opts, next) {
