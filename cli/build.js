@@ -222,8 +222,8 @@ function htmlSplit(str, opts) {
 
 	str = str
 	.replace(/<!((?:--)+)[^]*?\1>/g, "")
-	.replace(/\sdata-manifest=(("|').+?\2)/, function(match, file) {
-		updateManifest(opts.root + file.slice(1, -1), opts, hashes)
+	.replace(/\sdata-manifest=("|')?(.+?)\1/, function(match, q, file) {
+		updateManifest(opts.root + file, opts, hashes)
 		return "data=" + file
 	})
 
@@ -331,8 +331,7 @@ function cssSplit(str, opts) {
 	if (opts.root !== opts.name.replace(/[^\/]*$/, "")) {
 		str = str.replace(/url\((['"]?)(?!data:)(.+?)\1\)/ig, function(_, q, name) {
 			name = path.resolve(opts.name.replace(/[^\/]*$/, name))
-			name = name.replace(/{hash}/g, fileHashes[name.split("?")[0]] || "")
-			return 'url("' + path.relative(opts.root, name) + '")'
+			return 'url("' + normalizePath(path.relative(opts.root, name), opts) + '")'
 		})
 	}
 
@@ -522,7 +521,7 @@ function normalizePath(p, opts) {
 		if (fileHashes[full]) {
 			p = p.replace(/{hash}/g, fileHashes[full] || "")
 		} else {
-			opts.warnings.push("'" + full + "' not commited?")
+			opts.warnings.pushUniq("'" + full + "' not commited?")
 		}
 	}
 	return p
@@ -561,7 +560,7 @@ function updateManifest(file, opts, hashes) {
 		var name = line.replace(/\?.*/, "")
 		, full = path.resolve(root, name)
 		if (!fileHashes[full]) {
-			opts.warnings.push("'" + full + "' not commited?")
+			opts.warnings.pushUniq("'" + full + "' not commited?")
 		} else if (name !== line) {
 			hashes[name] = fileHashes[full]
 			return name + "?" + fileHashes[full]
