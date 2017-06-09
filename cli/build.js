@@ -412,8 +412,8 @@ function jsMin(str, opts, next, afterInstall) {
 			e.message == "Wrong uglify-js version"
 			)) {
 			if (!npmChild) {
-				console.error(e.message, "Trying to Install ..")
-				npmChild = spawn("npm", [ "install", "uglify-js@" + expectVersion ])
+				console.error(e.message, "Trying to Install .. " + expectVersion)
+				npmChild = spawn("npm", [ "install", "--no-save", "uglify-js@" + expectVersion ])
 				npmChild.stdout.pipe(process.stdout)
 				npmChild.stderr.pipe(process.stderr)
 				npmChild.stdin.end()
