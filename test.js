@@ -5,4 +5,5 @@ require("./el-spec.js")
 require("./model-spec.js")
 require("./filter-spec.js")
 require("./getSchema-spec.js")
+require("./schema-apply.js")
 
