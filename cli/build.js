@@ -204,7 +204,7 @@ function defMap(str) {
 	, slice = str.slice(1)
 	return chr == "+" ? lastStr + slice :
 	chr == "%" ? ((chr = lastStr.lastIndexOf(slice.charAt(0))), (chr > 0 ? lastStr.slice(0, chr) : lastStr)) + slice :
-	(lastStr = str)
+	(chr == "." && this.root ? this.root : "") + (lastStr = str)
 }
 
 function htmlSplit(str, opts) {
@@ -213,7 +213,7 @@ function htmlSplit(str, opts) {
 	, lastIndex = 0
 	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
 	, bannerRe   = /\sbanner=(("|')([^]+?)\2|[^\s]+)/i
-	, buildRe   = /\sbuild=(("|')([^]+?)\2|[^\s]+)/i
+	, requireRe   = /\srequire=(("|')([^]+?)\2|[^\s]+)/i
 	, inlineRe = /\sinline\b/i
 	, excludeRe = /\sexclude\b/i
 	, minRe = /\smin\b(?:=["']?(.+?)["'])?/i
@@ -236,11 +236,11 @@ function htmlSplit(str, opts) {
 			str.slice(lastIndex = re.lastIndex)
 		)
 
-		if (match2 = buildRe.exec(match[0])) {
-			lastStr = file
+		if (match2 = requireRe.exec(match[0])) {
+			lastStr = opts.root
 			tmp = (match2[3] || match2[1]).match(/[^,\s]+/g)
 			match2 = File(file, {
-				input: tmp ? tmp.map(defMap) : []
+				input: tmp ? tmp.map(defMap, opts) : []
 			})
 		}
 
