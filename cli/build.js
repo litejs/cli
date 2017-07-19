@@ -510,7 +510,11 @@ if (module.parent) {
 		updateReadme(conf.readmeFilename)
 	}
 	if (conf.buildman) {
-		execute([], 0)
+		Object.keys(conf.buildman).forEach(function(key) {
+			var opts = conf.buildman[key]
+			opts.min = 1
+			File(key, opts)
+		})
 	}
 }
 
