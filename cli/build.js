@@ -1,15 +1,13 @@
 #! /usr/bin/env node
 
 
-var undef, fileHashes
+var undef, fileHashes, conf, CONF_FILE
 , spawn = require("child_process").spawn
 , path = require("path")
 , util = require("util")
 , events = require("events")
 , fs = require("fs")
 , Fn = require("../fn.js").Fn
-, CONF_FILE = path.resolve("package.json")
-, conf = require( CONF_FILE ) || {}
 , files = {}
 , hasOwn = files.hasOwnProperty
 , adapters = File.adapters = {
@@ -23,6 +21,13 @@ var undef, fileHashes
 	date: new Date().toISOString().split("T")[0]
 }
 , linked = __dirname.indexOf(process.cwd()) !== 0
+
+try {
+	CONF_FILE = path.resolve("package.json")
+	conf = require(CONF_FILE)
+} catch(e) {
+	conf = {}
+}
 
 if (linked) {
 	module.paths = require("module")._nodeModulePaths(process.cwd())
@@ -208,7 +213,7 @@ function defMap(str) {
 }
 
 function htmlSplit(str, opts) {
-	var newOpts, pos, file, ext, file2, inline, match, match2, match3, banner, out, min, replace, tmp
+	var newOpts, pos, file, ext, file2, inline, match, match2, match3, banner, out, min, replace, tmp, haveInlineJS
 	, mined = []
 	, lastIndex = 0
 	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
@@ -286,13 +291,14 @@ function htmlSplit(str, opts) {
 		var dataIf = /\sif="([^"?]+)/.exec(match[0])
 		if (inline) {
 			tmp = File(file, newOpts)
+			if (match[2]) haveInlineJS = true
 			mined.push(tmp.wait())
 			out.splice(-2, 1,
 				match[2] ? "<script>" : "<style>",
 				tmp,
 				match[2] ? "</script>" : "</style>"
 			)
-		} else if (match[2] || dataIf) {
+		} else if ((haveInlineJS && match[2]) || dataIf) {
 			loadFiles.push(
 				(dataIf ? "(" + dataIf[1] + ")&&'" : "'") +
 				normalizePath(file.slice(opts.root.length), opts) + "'"
