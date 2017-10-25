@@ -213,10 +213,10 @@ function htmlSplit(str, opts) {
 	, lastIndex = 0
 	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
 	, bannerRe   = /\sbanner=(("|')([^]+?)\2|[^\s]+)/i
+	, minRe = /\smin\b(?:=["']?(.+?)["'])?/i
 	, requireRe   = /\srequire=(("|')([^]*?)\2|[^\s]+)/i
 	, inlineRe = /\sinline\b/i
 	, excludeRe = /\sexclude\b/i
-	, minRe = /\smin\b(?:=["']?(.+?)["'])?/i
 	, loadFiles = []
 	, hashes = {}
 
@@ -302,6 +302,8 @@ function htmlSplit(str, opts) {
 			if (match3) {
 				tmp = tmp
 				.replace(minRe, "")
+				.replace(requireRe, "")
+				.replace(bannerRe, "")
 				.replace(match[1] || match[3], file.slice(opts.root.length))
 			}
 			out[pos] = tmp
