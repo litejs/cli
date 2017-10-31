@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var fs = require("fs")
-, process = require("process")
 , child = require("child_process")
 , opts = {}
 
@@ -27,29 +26,15 @@ function getopts(args, i, opts) {
 	}
 }
 
-getopts(process.argv, 2, opts)
 
-switch (opts.cmd) {
+switch (process.argv[2]) {
 case "init":
-	var existing, tmp
-	, path = process.cwd() + (opts.file ? "/" + opts.file : "")
-
-	try {
-		existing = require(path + "/package.json")
-	} catch(e){}
-
-	if (existing) {
-		throw (existing.name || "-unnamed-") + " exists"
-	}
-
-	try {
-		fs.statSync(path)
-	} catch (e) {
-		fs.mkdirSync(path)
-	}
-	process.chdir(path)
-	child.spawnSync("npm", ["init"], {stdio: "inherit"})
-	child.spawnSync("npm", ["install", "--save", "litejs"], {stdio: "inherit"})
+	getopts(process.argv.slice(0), 2, opts)
+	require("./init")(opts)
+	break;
+case "build":
+	require("./build").execute(process.argv, 3)
+	break;
 }
 
 

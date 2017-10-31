@@ -7,7 +7,7 @@ var undef, fileHashes, conf, CONF_FILE
 , util = require("util")
 , events = require("events")
 , fs = require("fs")
-, Fn = require("../fn.js").Fn
+, Fn = require("../../fn.js").Fn
 , files = {}
 , hasOwn = files.hasOwnProperty
 , adapters = File.adapters = {
@@ -229,7 +229,7 @@ function htmlSplit(str, opts) {
 	.replace(/<!((?:--)+)[^]*?\1>/g, "")
 	.replace(/\sdata-manifest=("|')?(.+?)\1/, function(match, q, file) {
 		updateManifest(opts.root + file, opts, hashes)
-		return "data=" + file
+		return " data=" + file
 	})
 
 	for (out = [ str ]; match = re.exec(str); ) {
@@ -282,10 +282,11 @@ function htmlSplit(str, opts) {
 				min = match2
 			} else {
 				min.opts.input.push(file.replace(/\?.*/, ""))
-				if (min.opts.input.length > 1) {
+				if (min.isLoaded) {
 					continue
 				}
 			}
+			min.isLoaded = 1
 			file = file2
 		}
 		var dataIf = /\sif="([^"?]+)/.exec(match[0])
@@ -393,7 +394,7 @@ var npmChild
 
 
 function jsMin(str, opts, next, afterInstall) {
-	var expectVersion = require("../package.json").devDependencies["uglify-js"]
+	var expectVersion = require("../../package.json").devDependencies["uglify-js"]
 	try {
 		delete require.cache[require.resolve("uglify-js/package.json")]
 		if (require("uglify-js/package.json").version !== expectVersion) {
@@ -511,6 +512,7 @@ if (module.parent) {
 	// Used as module
 	exports.File = File
 	exports.updateReadme = updateReadme
+	exports.execute = execute
 } else {
 	// executed as standalone
 	execute(process.argv, 2)
