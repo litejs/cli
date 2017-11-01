@@ -7,6 +7,7 @@ var undef, fileHashes, conf, CONF_FILE
 , util = require("util")
 , events = require("events")
 , fs = require("fs")
+, cli = require("./")
 , Fn = require("../../fn.js").Fn
 , files = {}
 , hasOwn = files.hasOwnProperty
@@ -131,7 +132,7 @@ File.prototype = {
 			})
 			file.write()
 		} else {
-			var source = readFile(file.name)
+			var source = cli.readFile(file.name)
 
 			file.content = adapter.split ? adapter.split(source, opts) : [ source ]
 			file.content.forEach(function(junk, i, arr) {
@@ -174,7 +175,7 @@ File.prototype = {
 	write: function(by) {
 		var file = this
 		if (!file.opts.mem) {
-			writeFile(file.name, file.toString())
+			cli.writeFile(file.name, file.toString())
 		}
 		if (file.opts.warnings.length) {
 			console.log("WARNINGS:\n - " + file.opts.warnings.join("\n - "))
@@ -338,9 +339,10 @@ function cssSplit(str, opts) {
 	, re = /@import\s+url\((['"]?)(?!data:)(.+?)\1\);*/ig
 
 	if (opts.root !== opts.name.replace(/[^\/]*$/, "")) {
-		str = str.replace(/url\((['"]?)(?!data:)(.+?)\1\)/ig, function(_, q, name) {
-			name = path.resolve(opts.name.replace(/[^\/]*$/, name))
-			return 'url("' + normalizePath(path.relative(opts.root, name), opts) + '")'
+		str = str.replace(/\/\*(?!!)[^]*?\*\/|url\((['"]?)(?!data:)(.+?)\1\)/ig, function(_, q, name) {
+			return name ?
+			'url("' + normalizePath(path.relative(opts.root, path.resolve(opts.name.replace(/[^\/]*$/, name))), opts) + '")' :
+			_
 		})
 	}
 
@@ -433,7 +435,10 @@ function jsMin(str, opts, next, afterInstall) {
 			})
 		} else {
 			var line = e.line || e.lineNumber
-			if (line > -1) console.error("Line: " + line, str.split("\n").slice(line - 3, line + 3))
+			, source = str[e.filename] || str
+			if (line > -1) {
+				console.error("Line: " + line + "\n---\n" + source.split("\n").slice(line - 2, line + 3).join("\n"))
+			}
 			throw e
 		}
 	}
@@ -541,14 +546,6 @@ function normalizePath(p, opts) {
 	return p
 }
 
-function readFile(fileName) {
-	return fs.readFileSync(path.resolve(fileName.split("?")[0]), "utf8")
-}
-
-function writeFile(fileName, content) {
-	fs.writeFileSync(path.resolve(fileName.split("?")[0]), content, "utf8")
-}
-
 function format(str) {
 	return str.replace(/([\s\*\/]*@(version|date|author|stability)\s+).*/g, function(all, match, tag) {
 		tag = translate[tag] ? translate[tag][conf[tag]] || translate[tag] : conf[tag]
@@ -557,18 +554,18 @@ function format(str) {
 }
 
 function updateReadme(file) {
-	var current = readFile(file)
+	var current = cli.readFile(file)
 	, updated = format(current)
 
 	if (current != updated) {
 		console.log("# Update readme: " + file)
-		writeFile(file, updated)
+		cli.writeFile(file, updated)
 	}
 }
 
 function updateManifest(file, opts, hashes) {
 	var root = file.replace(/[^\/]+$/, "")
-	, current = readFile(file)
+	, current = cli.readFile(file)
 	, updated = current
 	.replace(/^(?![#*]|CACHE MANIFEST|\w+:)[^\n\r]+/gm, function(line) {
 		var name = line.replace(/\?.*/, "")
@@ -584,7 +581,7 @@ function updateManifest(file, opts, hashes) {
 
 	if (current != updated) {
 		console.log("# Update manifest: " + file)
-		writeFile(file, updated.replace(/#.+$/m, "# " + new Date().toISOString()))
+		cli.writeFile(file, updated.replace(/#.+$/m, "# " + new Date().toISOString()))
 	}
 }
 
