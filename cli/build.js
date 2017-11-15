@@ -214,14 +214,15 @@ function defMap(str) {
 }
 
 function htmlSplit(str, opts) {
-	var newOpts, pos, file, ext, file2, inline, match, match2, match3, banner, out, min, replace, tmp, haveInlineJS
+	var newOpts, pos, file, ext, file2, match, match2, match3, out, min, replace, tmp, haveInlineJS
 	, mined = []
 	, lastIndex = 0
 	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
-	, bannerRe   = /\sbanner=(("|')([^]+?)\2|[^\s]+)/i
+	, banner, bannerRe   = /\sbanner=(("|')([^]+?)\2|[^\s]+)/i
+	, inline, inlineRe = /\sinline\b/i
+	, toggle, toggleRe   = /\stoggle=(("|')([^]*?)\2|[^\s]+)/i
 	, minRe = /\smin\b(?:=["']?(.+?)["'])?/i
 	, requireRe   = /\srequire=(("|')([^]*?)\2|[^\s]+)/i
-	, inlineRe = /\sinline\b/i
 	, excludeRe = /\sexclude\b/i
 	, loadFiles = []
 	, hashes = {}
@@ -242,11 +243,16 @@ function htmlSplit(str, opts) {
 			str.slice(lastIndex = re.lastIndex)
 		)
 
+		banner = bannerRe.exec(match[0])
+		inline = inlineRe.test(match[0])
+		toggle = toggleRe.exec(match[0])
+
 		if (match2 = requireRe.exec(match[0])) {
 			lastStr = opts.root
 			tmp = (match2[2] ? match2[3] : match2[1]).match(/[^,\s]+/g)
 			match2 = File(file, {
-				input: tmp ? tmp.map(defMap, opts) : []
+				input: tmp ? tmp.map(defMap, opts) : [],
+				toggle: toggle ? toggle[3] || toggle[1] : ""
 			})
 		}
 
@@ -254,16 +260,14 @@ function htmlSplit(str, opts) {
 			continue
 		}
 
-		inline = inlineRe.test(match[0])
-		banner = bannerRe.exec(match[0])
-
 		newOpts = {
 			min: 1,
 			replace: inline && [
 				["/*!{loadFiles}*/", loadFiles],
 				["/*!{loadHashes}*/", JSON.stringify(hashes).slice(1, -1)]
 			],
-			banner: banner ? banner[3] || match[1] : ""
+			banner: banner ? banner[3] || banner[1] : "",
+			toggle: toggle ? toggle[3] || toggle[1] : ""
 		}
 
 		if (match3 = minRe.exec(match[0])) {
