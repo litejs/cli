@@ -8,7 +8,7 @@ var undef, fileHashes, conf, CONF_FILE
 , events = require("events")
 , fs = require("fs")
 , cli = require("./")
-, Fn = require("../../fn.js").Fn
+, Fn = require("../fn.js").Fn
 , files = {}
 , hasOwn = files.hasOwnProperty
 , adapters = File.adapters = {
