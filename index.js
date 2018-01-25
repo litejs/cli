@@ -5,6 +5,10 @@ var fs = require("fs")
 , child = require("child_process")
 , opts = {}
 
+global.Fn = require("../fn").Fn
+require("../format")
+
+exports.cp = cp
 exports.mkdirp = mkdirp
 exports.readFile = readFile
 exports.writeFile = writeFile
@@ -39,7 +43,7 @@ case "init":
 	break;
 case "init-app":
 case "init-ui":
-	child.spawnSync("cp", ["-r",
+	child.spawnSync("cp", ["-ruv",
 		process.argv[2].replace("init-", "./node_modules/litejs/lib/template/default/"),
 		process.cwd() + (opts.file ? "/" + opts.file : "")
 	], {stdio: "inherit"})
@@ -51,15 +55,22 @@ default:
 	console.log("Usage: litejs [init|build]")
 }
 
-function mkdirp(dir) {
-	console.log("mkdirp", dir)
-	var parent = path.dirname(dir)
-	try {
-		fs.statSync(parent)
-	} catch (e) {
-		mkdirp(parent)
+function cp(src, dest) {
+	if (fs.copyFileSync) {
+		fs.copyFileSync(src, dest)
+	} else {
+		fs.writeFileSync(dest, fs.readFileSync(src))
 	}
-	fs.mkdirSync(dir)
+}
+
+function mkdirp(dir) {
+	try {
+		fs.statSync(dir)
+	} catch (e) {
+		mkdirp(path.dirname(dir))
+		console.log("mkdir", dir)
+		fs.mkdirSync(dir)
+	}
 }
 
 function readFile(fileName) {
