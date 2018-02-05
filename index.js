@@ -43,7 +43,7 @@ case "init":
 	break;
 case "init-app":
 case "init-ui":
-	child.spawnSync("cp", ["-ruv",
+	child.spawnSync("cp", ["-rv",
 		process.argv[2].replace("init-", "./node_modules/litejs/lib/template/default/"),
 		process.cwd() + (opts.file ? "/" + opts.file : "")
 	], {stdio: "inherit"})
