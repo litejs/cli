@@ -6,7 +6,6 @@ var fs = require("fs")
 , opts = {}
 
 global.Fn = require("../fn").Fn
-require("../format")
 
 exports.cp = cp
 exports.mkdirp = mkdirp

@@ -13,7 +13,7 @@ var undef, fileHashes, conf, CONF_FILE
 , hasOwn = files.hasOwnProperty
 , adapters = File.adapters = {
 	css: { split: cssSplit, sep: "\n", banner: "/*! {0} */\n" },
-	html: { split: htmlSplit, banner: "<!-- {0} -->\n" },
+	html: { split: htmlSplit, sep: "", banner: "<!-- {0} -->\n" },
 	js: { min: jsMin, sep: "\n", banner: "/*! {0} */\n" }
 }
 , translate = {
@@ -146,7 +146,7 @@ File.prototype = {
 		setImmediate(buildResume)
 
 		function min() {
-			file.src = file.content.filter(Boolean).join(adapter.sep || "")
+			file.src = file.content.filter(Boolean).join("sep" in adapter ? adapter.sep : "\n")
 
 			if (opts.replace) {
 				opts.replace.forEach(function(arr) {
