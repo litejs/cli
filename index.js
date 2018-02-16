@@ -34,8 +34,24 @@ function getopts(args, i, opts) {
 	}
 }
 
+//-
+//-  Usage
+//-    litejs [init|build]
+//-
+//-  build options
+//-    --banner, -b    Add commented banner to output
+//-    --input, -i     Input file
+//-    --output, -o    Output file
+//-    --readme, -r    Replase readme tags in file
+//-
+//-  Examples
+//-    litejs build -r README.md -i ui/dev.html -o ui/index.html
+//-
 
 switch (process.argv[2]) {
+case "build":
+	require("./build").execute(process.argv, 3)
+	break;
 case "init":
 	getopts(process.argv.slice(0), 2, opts)
 	require("./" + process.argv[2])(opts)
@@ -47,11 +63,8 @@ case "init-ui":
 		process.cwd() + (opts.file ? "/" + opts.file : "")
 	], {stdio: "inherit"})
 	break;
-case "build":
-	require("./build").execute(process.argv, 3)
-	break;
 default:
-	console.log("Usage: litejs [init|build]")
+	console.log(readFile(__filename).match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
 }
 
 function cp(src, dest) {
