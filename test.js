@@ -37,7 +37,9 @@
 			started = +new Date()
 			print("TAP version 13")
 		}
-
+		if (lastCase && !lastCase.ended) {
+			lastCase.end()
+		}
 		print("# " + (name || "{unnamed test suite}"))
 	}
 
@@ -122,7 +124,7 @@
 
 			if (testCase.failed.length) {
 				failedCases++
-				print("not ok " + name + n + "---" + n + testCase.failed.join(n) + n + "...")
+				print("not ok " + name + n + "---\n" + testCase.failed.join("\n").replace(/^/gm, "  ") + n + "...")
 			} else {
 				print("ok " + name)
 			}
