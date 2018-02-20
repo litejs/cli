@@ -3,7 +3,7 @@
 
 var undef, fileHashes, conf, CONF_FILE
 , spawn = require("child_process").spawn
-, path = require("path")
+, path = require("../path")
 , util = require("util")
 , events = require("events")
 , fs = require("fs")
@@ -307,7 +307,7 @@ function htmlSplit(str, opts) {
 		} else if ((haveInlineJS && match[2]) || dataIf) {
 			loadFiles.push(
 				(dataIf ? "(" + dataIf[1] + ")&&'" : "'") +
-				normalizePath(file.slice(opts.root.length), opts) + "'"
+				replacePath(file.slice(opts.root.length), opts) + "'"
 			)
 		} else {
 			tmp = match[0]
@@ -333,7 +333,7 @@ function htmlMin(str) {
 	.replace(/\t/g, " ")
 	.replace(/\s+(?=<|\/?>|$)/g, "")
 	.replace(/\b(href|src)="(?!data:)(.+?)"/gi, function(_, tag, file) {
-		return tag + '="' + normalizePath(file, opts) + '"'
+		return tag + '="' + replacePath(file, opts) + '"'
 	})
 }
 
@@ -345,7 +345,7 @@ function cssSplit(str, opts) {
 	if (opts.root !== opts.name.replace(/[^\/]*$/, "")) {
 		str = str.replace(/\/\*(?!!)[^]*?\*\/|url\((['"]?)(?!data:)(.+?)\1\)/ig, function(_, q, name) {
 			return name ?
-			'url("' + normalizePath(path.relative(opts.root, path.resolve(opts.name.replace(/[^\/]*$/, name))), opts) + '")' :
+			'url("' + replacePath(path.relative(opts.root, path.resolve(opts.name.replace(/[^\/]*$/, name))), opts) + '")' :
 			_
 		})
 	}
@@ -537,8 +537,8 @@ if (module.parent) {
 	}
 }
 
-function normalizePath(p, opts) {
-	for (; p != (p = p.replace(/[^/]*[^.]\/\.\.\/|(^|[^.])\.\/|(.)\/(?=\/)/, "$1$2")); );
+function replacePath(p, opts) {
+	p = path.normalize(p)
 	if (p.indexOf("{hash}")) {
 		var full = path.resolve(opts.root, p.split("?")[0])
 		if (fileHashes[full]) {
