@@ -1,4 +1,17 @@
 #!/usr/bin/env node
+//-
+//-  Usage
+//-    litejs [init|build|help]
+//-
+//-  build options
+//-    --banner, -b    Add commented banner to output
+//-    --input, -i     Input file
+//-    --output, -o    Output file
+//-    --readme, -r    Replase readme tags in file
+//-
+//-  Examples
+//-    litejs build -r README.md -i ui/dev.html -o ui/index.html
+//-
 
 var fs = require("fs")
 , path = require("path")
@@ -34,37 +47,34 @@ function getopts(args, i, opts) {
 	}
 }
 
-//-
-//-  Usage
-//-    litejs [init|build]
-//-
-//-  build options
-//-    --banner, -b    Add commented banner to output
-//-    --input, -i     Input file
-//-    --output, -o    Output file
-//-    --readme, -r    Replase readme tags in file
-//-
-//-  Examples
-//-    litejs build -r README.md -i ui/dev.html -o ui/index.html
-//-
 
-switch (process.argv[2]) {
-case "build":
-	require("./build").execute(process.argv, 3)
-	break;
-case "init":
-	getopts(process.argv.slice(0), 2, opts)
-	require("./" + process.argv[2])(opts)
-	break;
-case "init-app":
-case "init-ui":
-	child.spawnSync("cp", ["-rv",
-		process.argv[2].replace("init-", "./node_modules/litejs/lib/template/default/"),
-		process.cwd() + (opts.file ? "/" + opts.file : "")
-	], {stdio: "inherit"})
-	break;
-default:
-	console.log(readFile(__filename).match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
+if (!module.parent) {
+	var helpFile = __filename
+	, subHelp = [
+		"build"
+	]
+	switch (process.argv[2]) {
+	case "build":
+		require("./build").execute(process.argv, 3)
+		break;
+	case "init":
+		getopts(process.argv.slice(0), 2, opts)
+		require("./" + process.argv[2])(opts)
+		break;
+	case "init-app":
+	case "init-ui":
+		child.spawnSync("cp", ["-rv",
+			process.argv[2].replace("init-", "./node_modules/litejs/lib/template/default/"),
+			process.cwd() + (opts.file ? "/" + opts.file : "")
+		], {stdio: "inherit"})
+		break;
+	case "help":
+		if (subHelp.indexOf(process.argv[3]) > -1) {
+			helpFile = path.join(path.dirname(__filename), process.argv[3] + ".js")
+		}
+	default:
+		console.log(readFile(helpFile).match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
+	}
 }
 
 function cp(src, dest) {

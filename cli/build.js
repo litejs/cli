@@ -1,4 +1,17 @@
 #! /usr/bin/env node
+//-
+//-  Usage
+//-    litejs build
+//-
+//-  build options
+//-    --banner, -b    Add commented banner to output
+//-    --input, -i     Input file
+//-    --output, -o    Output file
+//-    --readme, -r    Replase readme tags in file
+//-
+//-  Examples
+//-    litejs build -r README.md -i ui/dev.html -o ui/index.html
+//-
 
 
 var undef, fileHashes, conf, CONF_FILE
