@@ -20,9 +20,11 @@ var fs = require("fs")
 
 global.Fn = require("../fn").Fn
 
+exports.command = command
 exports.cp = cp
 exports.mkdirp = mkdirp
 exports.readFile = readFile
+exports.rmrf = rmrf
 exports.writeFile = writeFile
 
 function getopts(args, i, opts) {
@@ -77,6 +79,15 @@ if (!module.parent) {
 	}
 }
 
+function command(name) {
+	var cmd = process.platform === "win32" ? "where " : "command -v "
+	try {
+		return !!child.execSync(cmd + name)
+	} catch (e) {
+		return false
+	}
+}
+
 function cp(src, dest) {
 	if (fs.copyFileSync) {
 		fs.copyFileSync(src, dest)
@@ -90,13 +101,33 @@ function mkdirp(dir) {
 		fs.statSync(dir)
 	} catch (e) {
 		mkdirp(path.dirname(dir))
-		console.log("mkdir", dir)
+		console.error("mkdir", dir)
 		fs.mkdirSync(dir)
 	}
 }
 
 function readFile(fileName) {
 	return fs.readFileSync(path.resolve(fileName.split("?")[0]), "utf8")
+}
+
+// On windows unlinking an opened file will mark it for deletion and the file is still there until it is closed.
+// With anti-virus software, renaming immediately after creation fails with EPERM error, as A/V locking up files for scanning time.
+
+function rmrf(dir) {
+	try {
+		if (fs.lstatSync(dir).isDirectory()) {
+			for (var arr = fs.readdirSync(dir), i = arr.length; i--; ) {
+				rmrf(path.join(dir, arr[i]))
+			}
+			console.error("rmdir", dir)
+			fs.rmdirSync(dir)
+		} else {
+			console.error("rm", dir)
+			fs.unlinkSync(dir)
+		}
+	} catch (e) {
+		if (e.code !== "ENOENT") throw e
+	}
 }
 
 function writeFile(fileName, content) {
