@@ -38,6 +38,7 @@ module.exports = function(opts) {
 	} catch(e) {
 		console.log("Create package.json")
 		makePackage(dir)
+		cli.cp(path.resolve(__dirname, "../template/README.md"), "README.md")
 	}
 
 	try {
