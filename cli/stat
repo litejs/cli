@@ -1,0 +1,157 @@
+#!/bin/sh
+#- Usage: stat [heatmap|commit|files|style|all|short] [src..]
+
+# TODO:2018-03-16:lauri:Rewrite to Javascript
+
+TYPE="short"
+
+case "$1" in heatmap|commit|files|style|all|short)
+	TYPE=$1
+	shift;;
+esac
+
+count() {
+	sort | uniq -c | sort ${1-"-nr"}
+}
+
+ranges() {
+	sed -e 's/0[789]$\|1[0-4]$/07-14/' \
+		-e 's/1[5-9]$\|2[012]$/15-22/' \
+		-e 's/0[0-6]$\|23$/23-06/'
+}
+
+table() {
+	awk -vx="$1" 'BEGIN{sum=0}NF>0{sum+=a[++c]=$1;sub(" *"$1"[\t ]*","");t[c]=$0}END{printf "\n%s: %s\n\n",x,sum;for(;++i<=c;)printf "%6s %3i%%  %s\n",a[i],100*a[i]/sum,t[i]}'
+}
+
+countBlame() {
+	xargs -I{} -0 -n1 git blame -w --line-porcelain "{}" | \
+	grep '^author \|^	' | \
+	grep -B 1 '^	.*[^[:space:]]' | \
+	sed -n 's/^author //p' | \
+	count | table "$1"
+}
+
+printf "Working directory:    %s\n" "$(du -hs --exclude=.git "$@")"
+
+printf "Git directory:        %s\n" "$(du -hs .git)"
+
+printf "Number of developers: %s\n" "$(git shortlog -s -- "$@" | wc -l)"
+
+
+
+git shortlog -sen -- "$@" | \
+	table "Number of commits"
+
+git grep -IlHz '[^[:space:]]' -- "$@" | \
+	countBlame "Number of non-blank lines"
+
+git log --format='%ai %aN <%aE>' -- "$@" | cut -c1-10,26- | sort -u | cut -c11- | \
+	count | table "Number of dates when commited"
+
+git log --format='%ai %aN <%aE>' -- "$@" | cut -c1-13,26- | sort -u | cut -c15- | \
+	count | table "Number of hours when commited"
+
+(git grep -l '' -- "$@"; git grep -Il '' -- "$@") | sort | uniq -u | awk -F '[/.]' '{print $NF}' | \
+	count | table "Number of binary files"
+
+git grep -Il '' -- "$@" | awk -F '[/.]' '{print $NF}' | \
+	count | table "Number of text files"
+
+textFiles=$(git grep -IHz '[^[:space:]]' -- "$@" | awk -F'\x00' '{sub(".*\\.","",$1);print $1}' | count)
+
+echo "$textFiles" | table "Number of non-blank lines"
+
+
+case "$TYPE" in files|all)
+	echo "$textFiles" | while read num ext; do
+		git ls-files -zi -x "*.$ext" -x "*/$ext" -- "$@" | \
+			countBlame "Non-blank lines of $ext"
+	done
+	;;
+esac
+
+
+case "$TYPE" in heatmap|all)
+	log=$(git log --format="%ai %aD" -- "$@")
+	echo "$log" | cut -c12-13 | \
+		count "-n -k2" | table "Number of commits in hour"
+
+	echo "$log" | cut -c12-13 | ranges | \
+		count "-n -k2" | table "Number of commits in hour range"
+
+	echo "$log" | cut -c27-29 | \
+		count | table "Number of commits in weekday"
+
+	echo "$log" | cut -c1-13 | sort -u | cut -c12-13 | \
+		count "-n -k2" | table "Number of dates commited in hour"
+
+	echo "$log" | cut -c1-13 | sort -u | cut -c12-13 | ranges | \
+		count "-n -k2" | table "Number of dates commited in hour range"
+
+	echo "$log" | cut -c1-11,27-29 | sort -u | cut -c12-14 | \
+		count | table "Number of dates commited in weekday"
+	;;
+esac
+
+
+case "$TYPE" in commit|all)
+	git log --shortstat --format="" -- "$@" | cut -d, -f1 | \
+		count | table "Number of files changed by commit"
+
+	git log --shortstat --format="" -- "$@" | \
+		awk '{print 10^int(log($4+$6)/log(10))}' | \
+		count "-n -k2" | table "Number of lines written by commit"
+	;;
+esac
+
+case "$TYPE" in style|all)
+	git grep -Ih "" -- "$@" | awk '{print 10^int(log(length())/log(10))}' | \
+		count "-n -k2" | table "Line lenghts"
+
+	;;
+esac
+
+exit 0
+
+REPOS=$2
+
+log() {
+	if [ -n "$REPOS" ]; then
+		for REPO in $REPOS; do
+			(cd $REPO && git log $1)
+		done
+	else
+		git log $1
+	fi
+}
+
+# $ git rev-list -n 1 --before="2014-10-24 00:00" devel
+# git checkout `git rev-list -n 1 --before="2009-07-27 13:37" master`
+
+
+# $ git checkout 'master@{1979-02-26 18:30:00}'
+# will not work, because it uses the reflog (which expires after some time).
+
+# Number of commits in work time by hour
+# git log --format="%ai %aD" | cut -c12-13,26-29 | sed -e 's/^0[89]\|^1[0-7]/08-17/' -e 's/^[012][0-9] /18-07 /' | sort | uniq -c | sort -nr
+# Number of commits in work time
+# git log --format="%ai %aD" | cut -c12-13,26-29 | sed -e 's/^\(0[89]\|1[0-7]\) \(Mon\|Tue\|Wed\|Thu\|Fri\)/08-17 in week/' -e 's/^[012][0-9] .*/18-07 or weekend/' | sort | uniq -c | sort -nr
+# Number of dates in work time
+# git log --format="%ai %aD" | cut -c1-13,26-29 | sed -e 's/ \(0[89]\|1[0-7]\) \(Mon\|Tue\|Wed\|Thu\|Fri\)/ 08-17 in week/' -e 's/ [012][0-9] .*/ 18-07 or weekend/' | sort -u | cut -c12- | sort | uniq -c | sort -nr
+# Line lenghts
+# git grep -Ih "" | awk '{print 10^int(log(length())/log(10))}' | sort | uniq -c | sort -n -k2
+
+
+#echo "RUN $0 $*"
+
+ranges() {
+	sed -e 's/0[789]$\|1[0-4]$/07-14/' \
+		-e 's/1[5-9]$\|2[012]$/15-22/' \
+		-e 's/0[0-6]$\|23$/23-06/'
+	# sed -e 's/0[2-7]$/02-07/' \
+	# 	-e 's/0[89]$\|1[0-3]$/08-13/' \
+	# 	-e 's/1[4-9]$/14-19/' \
+	# 	-e 's/0[01]$\|2.$/20-01/'
+}
+
