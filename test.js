@@ -53,6 +53,10 @@
 			if (lastCase && !lastCase.ended) {
 				lastCase.end()
 			}
+			if (typeof name === "function") {
+				next = name
+				name = ""
+			}
 			var testSuite = this
 			, testCase = lastCase = new TestCase(name, opts)
 			checkEnd()
