@@ -5,6 +5,7 @@
 	, Fn = require("../lib/fn").Fn
 	, assert = require("../lib/assert")
 	, empty = {}
+	, hasOwn = empty.hasOwnProperty
 	, proc = typeof process == "undefined" ? { argv: [] } : process
 	, color = (proc.stdout || empty).isTTY && proc.argv.indexOf("--no-color") == -1
 	, totalCases = 0
@@ -71,7 +72,10 @@
 				clearTimeout(doneTick)
 				testCase.setTimeout()
 				testCase.resume = testSuite.wait()
-				next(testCase)
+				next(
+					testCase,
+					(testCase.mock = next.length === 2 && new Mock)
+				)
 				return testSuite
 			}
 
@@ -135,6 +139,7 @@
 			if (testCase.timeout) {
 				clearTimeout(testCase.timeout)
 				testCase.timeout = null
+				if (testCase.mock) testCase.mock.restore()
 				testCase.resume()
 				checkEnd()
 			}
@@ -144,6 +149,57 @@
 	Object.keys(assert).forEach(defineAssert)
 
 	chainable(TestSuite, TestCase)
+
+	// Terminology
+	//  - A spy is a wrapper function to verify an invocation
+	//  - A stub is a spy with replaced behavior.
+
+	function Mock() {
+		var mock = this
+		mock.replaced = []
+	}
+	Mock.prototype = {
+		fn: function(origin) {
+			spy.called = 0
+			spy.calls = []
+			return spy
+			function spy() {
+				var result
+				if (typeof origin === "function") {
+					result = origin.apply(this, arguments)
+				}
+				spy.called++
+				spy.calls.push({
+					scope: this,
+					args: arguments,
+					result: result
+				})
+				return result
+			}
+		},
+		map: function(obj, stubs) {
+			// TODO:2018-03-22:lauri:
+		},
+		spy: function(obj, name, stub) {
+			var mock = this
+			if (typeof obj[name] === "function") {
+				mock.replaced.push(obj, name, hasOwn.call(obj, name) && obj[name])
+				obj[name] = mock.fn(stub || obj[name])
+			}
+		},
+		restore: function() {
+			var mock = this
+			, replaced = mock.replaced
+			, i = replaced.length
+			for (; --i > 0; i -= 2) {
+				if (replaced[i]) {
+					replaced[i - 2][replaced[i - 1]] = replaced[i]
+				} else {
+					delete replaced[i - 2][replaced[i - 1]]
+				}
+			}
+		}
+	}
 
 	function print(str) {
 		console.log(str + reset)

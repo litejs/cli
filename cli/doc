@@ -4,7 +4,7 @@
 # [The MIT License](http://lauri.rooden.ee/mit-license.txt)
 #
 #-
-#- Usage: git doc COMMAND
+#- Usage: litejs-doc COMMAND
 #-
 #- The most commonly used make commands are:
 #-
@@ -51,9 +51,12 @@ readme_todo() {
 }
 
 readme_authors() {
+	# git shortlog -sen --date=local --since="1 year ago"
+	# git shortlog -sen --date=local --until="1 year ago"
+	# Barney Rubble <b@rubble.com> (http://barnyrubble.tumblr.com/)
 	{
-		printf "\nAuthors ordered by number of commits.\n\n"
-		git shortlog -sen | sed -E -e 's/[ 	]*([0-9]*)[	 ]*(.*)/  * \2 (\1)/g'
+		printf "\n## Authors ordered by number of commits.\n\n"
+		git shortlog -sen | sed -E -e 's/[ 	]*([0-9]*)[	 ]*(.*)/  * \2 <\1>/g'
 	} | tee AUTHORS
 }
 
