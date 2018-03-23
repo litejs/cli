@@ -178,7 +178,14 @@
 			}
 		},
 		map: function(obj, stubs) {
-			// TODO:2018-03-22:lauri:
+			var key
+			, mock = this
+			for (key in obj) {
+				mock.spy(obj, key, stubs && stubs[key])
+			}
+			if (obj.prototype) {
+				mock.map(obj.prototype, stubs)
+			}
 		},
 		spy: function(obj, name, stub) {
 			var mock = this
