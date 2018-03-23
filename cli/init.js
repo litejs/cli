@@ -48,8 +48,8 @@ module.exports = function(opts) {
 		cli.cp(path.resolve(__dirname, "../../.gitignore"), ".gitignore")
 	}
 
-	// child.spawnSync("npm", ["install", "--save-prod", "litejs"], {stdio: "inherit"})
-	child.spawnSync("npm", ["link", "litejs"], {stdio: "inherit"})
+	child.spawnSync("npm", ["install", "--save-prod", "litejs"], {stdio: "inherit"})
+	//child.spawnSync("npm", ["link", "litejs"], {stdio: "inherit"})
 	child.spawnSync("./node_modules/.bin/litejs", ["init-app", "app"], {stdio: "inherit"})
 	child.spawnSync("./node_modules/.bin/litejs", ["init-ui", "ui"], {stdio: "inherit"})
 	child.spawnSync("git", ["init"], {stdio: "inherit"})
