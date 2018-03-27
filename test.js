@@ -74,7 +74,7 @@
 				testCase.resume = testSuite.wait()
 				next(
 					testCase,
-					(testCase.mock = next.length === 2 && new Mock)
+					(testCase.mock = next.length > 1 && new Mock)
 				)
 				return testSuite
 			}
@@ -164,14 +164,23 @@
 			spy.calls = []
 			return spy
 			function spy() {
-				var result
+				var fn, result
+				, args = timers.slice.call(arguments)
 				if (typeof origin === "function") {
 					result = origin.apply(this, arguments)
+				} else if (Array.isArray(origin)) {
+					result = origin[spy.called % origin.length]
+				} else if (origin && origin.constructor === Object) {
+					result = origin[JSON.stringify(args).slice(1,-1)]
+					fn = typeof origin.fn === "function" ? origin.fn : typeof result === "function" ? result : null
+					if (fn) {
+						result = fn.call(this, result)
+					}
 				}
 				spy.called++
 				spy.calls.push({
 					scope: this,
-					args: arguments,
+					args: args,
 					result: result
 				})
 				return result
