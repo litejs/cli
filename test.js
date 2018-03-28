@@ -4,6 +4,9 @@
 	var doneTick, lastSuite, lastCase, started, ended
 	, Fn = require("../lib/fn").Fn
 	, assert = require("./assert")
+	, nativeTimeout = setTimeout
+	, nativeClearTimeout = clearTimeout
+	, nativeDate = Date
 	, empty = {}
 	, hasOwn = empty.hasOwnProperty
 	, proc = typeof process == "undefined" ? { argv: [] } : process
@@ -35,7 +38,7 @@
 		lastSuite = this
 		checkEnd(lastAssert)
 		if (!started) {
-			started = Date.now()
+			started = nativeDate.now()
 			print("TAP version 13")
 		}
 		if (lastCase && !lastCase.ended) {
@@ -69,7 +72,7 @@
 			})
 
 			if (next) {
-				clearTimeout(doneTick)
+				nativeClearTimeout(doneTick)
 				testCase.setTimeout()
 				testCase.resume = testSuite.wait()
 				next(
@@ -102,8 +105,8 @@
 		},
 		setTimeout: function(ms) {
 			var testCase = this
-			clearTimeout(testCase.timeout)
-			testCase.timeout = setTimeout(function() {
+			nativeClearTimeout(testCase.timeout)
+			testCase.timeout = nativeTimeout(function() {
 				throw Error("Timeout on running '" + testCase.name + "'")
 			}, ms || 5000)
 			return testCase
@@ -118,7 +121,7 @@
 				throw Error("'" + name + "' ended multiple times")
 			}
 
-			testCase.ended = Date.now()
+			testCase.ended = nativeDate.now()
 			name += " [" + testCase.passedAsserts + "/" + testCase.totalAsserts + "]"
 
 			if (testCase.opts.skip) {
@@ -137,9 +140,11 @@
 				print("ok " + name)
 			}
 			if (testCase.timeout) {
-				clearTimeout(testCase.timeout)
+				nativeClearTimeout(testCase.timeout)
 				testCase.timeout = null
-				if (testCase.mock) testCase.mock.restore()
+				if (testCase.mock) {
+					testCase.mock.restore()
+				}
 				testCase.resume()
 				checkEnd()
 			}
@@ -153,6 +158,67 @@
 	// Terminology
 	//  - A spy is a wrapper function to verify an invocation
 	//  - A stub is a spy with replaced behavior.
+	var fakeNow
+	, timers = []
+	, timerId = 0
+	, fakeTimers = {
+		setTimeout: fakeTimeout.bind(null, false),
+		setInterval: fakeTimeout.bind(null, true),
+		clearTimeout: fakeClear,
+		clearInterval: fakeClear,
+		Date: fakeDate
+	}
+	if (global.setImmediate) {
+		fakeTimers.setImmediate = fakeNextTick
+		fakeTimers.clearImmediate = fakeClear
+	}
+	function fakeDate(year, month, date, hr, min, sec, ms) {
+		return (
+			arguments.length > 1 ?
+			new nativeDate(year|0, month|0, date||1, hr|0, min|0, sec|0, ms|0) :
+			new nativeDate(year||fakeNow)
+		)
+	}
+	fakeDate.now = function() {
+		return fakeNow
+	}
+	fakeDate.parse = nativeDate.parse
+
+	function fakeTimeout(repeat, fn, ms) {
+		if (typeof repeat !== "object") {
+			repeat = {
+				id: ++timerId,
+				repeat: repeat,
+				fn: fn,
+				args: timers.slice.call(arguments, 3),
+				at: fakeNow + ms,
+				ms: ms
+			}
+		}
+		for (var i = timers.length; i--; ) {
+			if (timers[i].at <= repeat.at) break
+		}
+		timers.splice(i + 1, 0, repeat)
+		return repeat.id
+	}
+
+	function fakeNextTick(fn) {
+		fakeTimeout({
+			id: ++timerId,
+			fn: fn,
+			args: timers.slice.call(arguments, 1),
+			at: fakeNow - 1
+		})
+	}
+
+	function fakeClear(id) {
+		for (var i = timers.length; i--; ) {
+			if (timers[i].id === id) {
+				timers.splice(i, 1)
+				break
+			}
+		}
+	}
 
 	function Mock() {
 		var mock = this
@@ -186,21 +252,63 @@
 				return result
 			}
 		},
-		map: function(obj, stubs) {
+		map: function(obj, stubs, justStubs) {
 			var key
 			, mock = this
-			for (key in obj) {
+			, obj2 = justStubs ? stubs : obj
+			for (key in obj2) {
 				mock.spy(obj, key, stubs && stubs[key])
 			}
 			if (obj.prototype) {
 				mock.map(obj.prototype, stubs)
 			}
 		},
-		spy: function(obj, name, stub) {
+		replace: function(obj, name, fn) {
 			var mock = this
 			if (typeof obj[name] === "function") {
 				mock.replaced.push(obj, name, hasOwn.call(obj, name) && obj[name])
-				obj[name] = mock.fn(stub || obj[name])
+				obj[name] = fn
+			}
+		},
+		spy: function(obj, name, stub) {
+			var mock = this
+			mock.replace(obj, name, mock.fn(stub || obj[name]))
+		},
+		time: function(newTime) {
+			var key
+			, mock = this
+			if (!mock.timeFreeze) {
+				mock.timeFreeze = fakeNow = nativeDate.now()
+				for (key in fakeTimers) {
+					mock.replace(global, key, fakeTimers[key])
+				}
+				if (proc.nextTick) {
+					mock.replace(proc, "nextTick", fakeNextTick)
+				}
+			}
+			if (newTime) {
+				fakeNow = typeof newTime === "string" ? nativeDate.parse(newTime) : newTime
+				mock.tick(0)
+			}
+		},
+		tick: function(amount, noRepeat) {
+			if (typeof amount === "number") {
+				fakeNow += amount
+			} else if (timers[0]) {
+				fakeNow = timers[0].at
+			}
+
+			for (var t; t = timers[0]; ) {
+				if (t.at <= fakeNow) {
+					timers.shift()
+					if (typeof t.fn === "function") t.fn.apply(null, t.args)
+					if (!noRepeat && t.repeat) {
+						t.at += t.ms
+						fakeTimeout(t)
+					}
+				} else {
+					break
+				}
 			}
 		},
 		restore: function() {
@@ -213,6 +321,9 @@
 				} else {
 					delete replaced[i - 2][replaced[i - 1]]
 				}
+			}
+			if (timers.length) {
+				mock.tick(Infinity, true)
 			}
 		}
 	}
@@ -230,7 +341,7 @@
 		, curCase = lastCase
 		, curAssert = lastAssert
 
-		clearTimeout(doneTick)
+		nativeClearTimeout(doneTick)
 		doneTick = setTimeout(function() {
 			if (curAssert === lastAssert && curCase === lastCase && lastCase && !lastCase.timeout && curSuite == lastSuite) {
 				if (!lastCase.ended) {
@@ -245,8 +356,8 @@
 		if (ended) {
 			throw Error("ended in multiple times")
 		}
-		clearTimeout(doneTick)
-		ended = Date.now()
+		nativeClearTimeout(doneTick)
+		ended = nativeDate.now()
 
 		print("1.." + totalCases)
 
