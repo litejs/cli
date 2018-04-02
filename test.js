@@ -3,7 +3,7 @@
 !function(exports) {
 	var doneTick, lastSuite, lastCase, started, ended
 	, Fn = require("../lib/fn").Fn
-	, assert = require("../lib/assert")
+	, assert = require("./assert")
 	, empty = {}
 	, hasOwn = empty.hasOwnProperty
 	, proc = typeof process == "undefined" ? { argv: [] } : process
