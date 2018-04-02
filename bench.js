@@ -31,10 +31,17 @@ function bench(tests, next) {
 	}
 
 	function respond() {
-		var i
+		var diff, fastest, i, t
 		, result = {}
 		for (i = len; i--; ) {
-			result[keys[i]] = stat(times[i])
+			t = result[keys[i]] = stat(times[i])
+			if (!fastest || t.ops > fastest) {
+				fastest = t.ops
+			}
+		}
+		for (i = len; t = result[keys[--i]]; ) {
+			diff = Math.round((fastest - t.ops) / fastest * 100)
+			t.rel = diff ? diff + "% slower" : "fastest"
 		}
 		if (typeof next === "function") {
 			next(null, result)
@@ -74,7 +81,7 @@ function stat(arr) {
 	}
 	se = ~~(1000 * (Math.sqrt(se / (len - 1)) / Math.sqrt(len)) / mean) / 10
 	return {
-		mean: mean|0,
+		ops: mean|0,
 		se: se,
 		text: ((0|mean) + "").replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " ± " + se + "%"
 	}
