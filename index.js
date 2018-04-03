@@ -52,12 +52,14 @@ function getopts(args, i, opts) {
 
 if (!module.parent) {
 	var helpFile = __filename
+	, cmd = process.argv[2]
 	, subHelp = [
 		"build"
 	]
-	switch (process.argv[2]) {
+	switch (cmd) {
+	case "bench":
 	case "build":
-		require("./build").execute(process.argv, 3)
+		require("./" + cmd).execute(process.argv, 3)
 		break;
 	case "init":
 		getopts(process.argv.slice(0), 2, opts)
