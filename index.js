@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 //-
 //-  Usage
-//-    litejs [init|build|help]
+//-    litejs [init|bench|build|help]
 //-
 //-  build options
 //-    --banner, -b    Add commented banner to output
@@ -54,6 +54,7 @@ if (!module.parent) {
 	var helpFile = __filename
 	, cmd = process.argv[2]
 	, subHelp = [
+		"bench",
 		"build"
 	]
 	switch (cmd) {
