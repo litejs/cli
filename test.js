@@ -165,7 +165,7 @@
 			return spy
 			function spy() {
 				var fn, result
-				, args = timers.slice.call(arguments)
+				, args = spy.calls.slice.call(arguments)
 				if (typeof origin === "function") {
 					result = origin.apply(this, arguments)
 				} else if (Array.isArray(origin)) {
@@ -270,16 +270,16 @@
 		*/
 	}
 
-	function defineAssert(key, fn) {
+	function defineAssert(key, fn, _skip) {
 		if (!assert[key]) {
 			assert[key] = fn
 		}
 		TestSuite.prototype["_" + key] = TestCase.prototype["_" + key] = skip
-		TestSuite.prototype[key] = function() {
+		TestSuite.prototype[key] = _skip === true ? skip : function() {
 			var testCase = this.test("", null)
 			return testCase[key].apply(testCase, arguments)
 		},
-		TestCase.prototype[key] = assertWrapper
+		TestCase.prototype[key] = _skip === true ? skip : assertWrapper
 		function assertWrapper(a, b, c) {
 			var testCase = this
 			if (testCase.opts.skip) {
