@@ -35,7 +35,7 @@
 		lastSuite = this
 		checkEnd(lastAssert)
 		if (!started) {
-			started = +new Date()
+			started = Date.now()
 			print("TAP version 13")
 		}
 		if (lastCase && !lastCase.ended) {
@@ -118,7 +118,7 @@
 				throw Error("'" + name + "' ended multiple times")
 			}
 
-			testCase.ended = new Date()
+			testCase.ended = Date.now()
 			name += " [" + testCase.passedAsserts + "/" + testCase.totalAsserts + "]"
 
 			if (testCase.opts.skip) {
@@ -246,7 +246,7 @@
 			throw Error("ended in multiple times")
 		}
 		clearTimeout(doneTick)
-		ended = +new Date()
+		ended = Date.now()
 
 		print("1.." + totalCases)
 
