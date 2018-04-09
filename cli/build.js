@@ -14,11 +14,10 @@
 
 
 var undef, fileHashes, conf, CONF_FILE
+, fs = require("fs")
 , spawn = require("child_process").spawn
 , path = require("../path")
-, util = require("util")
-, events = require("events")
-, fs = require("fs")
+, events = require("../events")
 , cli = require("./")
 , Fn = require("../fn.js").Fn
 , files = {}
@@ -58,8 +57,6 @@ function File(_name, _opts) {
 	if (!(file instanceof File)) {
 		return new File(name, _opts)
 	}
-
-	events.call(file)
 
 	var opts = file.opts = _opts || {}
 	, ext = file.ext = name.split(".").pop()
@@ -214,8 +211,7 @@ File.prototype = {
 	}
 }
 
-util.inherits(File, events)
-
+events.asEmitter(File.prototype)
 
 function defMap(str) {
 	var chr = str.charAt(0)
