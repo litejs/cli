@@ -225,7 +225,7 @@ function htmlSplit(str, opts) {
 	var newOpts, pos, file, ext, file2, match, match2, match3, out, min, replace, tmp, haveInlineJS
 	, mined = []
 	, lastIndex = 0
-	, re = /<link[^>]+href="([^>]*?)".*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
+	, re = /<link[^>]+href="([^"]*?)"[^>]*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
 	, banner, bannerRe   = /\sbanner=(("|')([^]+?)\2|[^\s]+)/i
 	, inline, inlineRe = /\sinline\b/i
 	, toggle, toggleRe   = /\stoggle=(("|')([^]*?)\2|[^\s]+)/i
@@ -390,7 +390,7 @@ function cssMin(str) {
 	.replace(/(["'])((?:\\?.)*?)\1|[^"']+/g, function(_, q, str) {
 		if (q) return q == "'" && str.indexOf('"') == -1 ? '"' + str + '"' : _
 		return _.replace(/[\t\n]/g, " ")
-		.replace(/ *([,;{}]) */g, "$1")
+		.replace(/ *([,;{}>~+]) */g, "$1")
 		.replace(/^ +|;(?=})/g, "")
 		.replace(/: +/g, ":")
 		.replace(/ and\(/g, " and (")
