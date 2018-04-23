@@ -304,6 +304,11 @@ function htmlSplit(str, opts) {
 		}
 		var dataIf = /\sif="([^"?]+)/.exec(match[0])
 		if (inline) {
+			if (match2 && !match3) {
+				newOpts.input = [match2]
+				newOpts.mem = true
+				file = "mem:" + file
+			}
 			tmp = File(file, newOpts)
 			if (match[2]) haveInlineJS = true
 			mined.push(tmp.wait())
