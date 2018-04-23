@@ -23,7 +23,7 @@ var undef, fileHashes, conf, CONF_FILE
 , files = {}
 , hasOwn = files.hasOwnProperty
 , adapters = File.adapters = {
-	css: { split: cssSplit, sep: "\n", banner: "/*! {0} */\n" },
+	css: { min: cssMin, split: cssSplit, sep: "\n", banner: "/*! {0} */\n" },
 	html: { split: htmlSplit, sep: "", banner: "<!-- {0} -->\n" },
 	js: { min: jsMin, sep: "\n", banner: "/*! {0} */\n" }
 }
@@ -365,43 +365,47 @@ function cssSplit(str, opts) {
 			str.slice(lastIndex = re.lastIndex)
 		)
 	}
-	return out.filter(Boolean).map(cssMin, opts)
+	return out.filter(Boolean)
 }
 
-function cssMin(str) {
-	var opts = this
-	return typeof str !== "string" ? str : str
-	.replace(/\/\*(?!!)[^]*?\*\//g, "")
-	.replace(/[\r\n]+/g, "\n")
+function cssMin(map, opts, next) {
+	var name
+	, out = ""
+	for (name in map) if (hasOwn.call(map, name)) {
+		out += typeof map[name] !== "string" ? map[name] : map[name]
+		.replace(/\/\*(?!!)[^]*?\*\//g, "")
+		.replace(/[\r\n]+/g, "\n")
 
-	.replace(/(.*)\/\*!\s*([\w-]+)\s*([\w-.]*)\s*\*\//g, function(_, line, cmd, param) {
-		switch (cmd) {
-		case "data-uri":
-			line = line.replace(/url\((['"]?)(.+?)\1\)/g, function(_, quote, fileName) {
-				var str = fs.readFileSync(path.resolve(opts.root + fileName), "base64")
-				return 'url("data:image/' + fileName.split(".").pop() + ";base64," + str + '")'
-			})
-			break;
-		}
-		return line
-	})
+		.replace(/(.*)\/\*!\s*([\w-]+)\s*([\w-.]*)\s*\*\//g, function(_, line, cmd, param) {
+			switch (cmd) {
+			case "data-uri":
+				line = line.replace(/url\((['"]?)(.+?)\1\)/g, function(_, quote, fileName) {
+					var str = fs.readFileSync(path.resolve(opts.root + fileName), "base64")
+					return 'url("data:image/' + fileName.split(".").pop() + ";base64," + str + '")'
+				})
+				break;
+			}
+			return line
+		})
 
-	// Remove optional spaces and put each rule to separated line
-	.replace(/(["'])((?:\\?.)*?)\1|[^"']+/g, function(_, q, str) {
-		if (q) return q == "'" && str.indexOf('"') == -1 ? '"' + str + '"' : _
-		return _.replace(/[\t\n]/g, " ")
-		.replace(/ *([,;{}>~+]) */g, "$1")
-		.replace(/^ +|;(?=})/g, "")
-		.replace(/: +/g, ":")
-		.replace(/ and\(/g, " and (")
-		.replace(/}(?!})/g, "}\n")
-	})
+		// Remove optional spaces and put each rule to separated line
+		.replace(/(["'])((?:\\?.)*?)\1|[^"']+/g, function(_, q, str) {
+			if (q) return q == "'" && str.indexOf('"') == -1 ? '"' + str + '"' : _
+			return _.replace(/[\t\n]/g, " ")
+			.replace(/ *([,;{}>~+]) */g, "$1")
+			.replace(/^ +|;(?=})/g, "")
+			.replace(/: +/g, ":")
+			.replace(/ and\(/g, " and (")
+			.replace(/}(?!})/g, "}\n")
+		})
 
-	// Use CSS shorthands
-	.replace(/([^0-9])-?0(px|em|%|in|cm|mm|pc|pt|ex)/g, "$10")
-	.replace(/:0 0( 0 0)?(;|})/g, ":0$2")
-	.replace(/url\("([\w\/_.-]*)"\)/g, "url($1)")
-	.replace(/([ :,])0\.([0-9]+)/g, "$1.$2")
+		// Use CSS shorthands
+		.replace(/([^0-9])-?0(px|em|%|in|cm|mm|pc|pt|ex)/g, "$10")
+		.replace(/:0 0( 0 0)?(;|})/g, ":0$2")
+		.replace(/url\("([\w\/_.-]*)"\)/g, "url($1)")
+		.replace(/([ :,])0\.([0-9]+)/g, "$1.$2")
+	}
+	next(null, out)
 }
 
 var npmChild
