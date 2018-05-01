@@ -262,6 +262,9 @@ function htmlSplit(str, opts) {
 				input: tmp ? tmp.map(defMap, opts) : [],
 				toggle: toggle ? toggle[3] || toggle[1] : ""
 			})
+			if (!tmp) {
+				match2._requireNext = true
+			}
 		}
 
 		if (excludeRe.test(match[0])) {
@@ -290,14 +293,12 @@ function htmlSplit(str, opts) {
 				min = File(file2, newOpts)
 				mined.push(min.wait())
 			}
-			if (match2) {
-				min.opts.input.push(match2)
+			min.opts.input.push(match2 || file.replace(/\?.*/, ""))
+			if (match2 && match2._requireNext) {
 				min = match2
-			} else {
-				min.opts.input.push(file.replace(/\?.*/, ""))
-				if (min.isLoaded) {
-					continue
-				}
+			}
+			if (min.isLoaded) {
+				continue
 			}
 			min.isLoaded = 1
 			file = file2
