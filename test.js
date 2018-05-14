@@ -50,8 +50,8 @@
 	TestSuite.prototype = {
 		wait: Fn.hold,
 		describe: describe,
-		it: function(name, opts) {
-			return this.test("it " + name, null, opts)
+		it: function(name, next, opts) {
+			return this.test("it " + name, next, opts)
 		},
 		test: function(name, next, opts) {
 			if (lastCase && !lastCase.ended) {
@@ -60,6 +60,10 @@
 			if (typeof name === "function") {
 				next = name
 				name = ""
+			}
+			if (typeof next !== "function") {
+				opts = next
+				next = null
 			}
 			var testSuite = this
 			, testCase = lastCase = new TestCase(name, opts)
