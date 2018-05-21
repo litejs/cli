@@ -180,13 +180,18 @@
 		return (
 			arguments.length > 1 ?
 			new nativeDate(year|0, month|0, date||1, hr|0, min|0, sec|0, ms|0) :
-			new nativeDate(year||fakeNow)
+			new nativeDate(year || Math.floor(fakeNow))
 		)
 	}
 	fakeDate.now = function() {
-		return fakeNow
+		return Math.floor(fakeNow)
 	}
 	fakeDate.parse = nativeDate.parse
+	// [seconds, nanoseconds]
+	function fakeHrtime(time) {
+		var diff = Array.isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
+		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3]
+	}
 
 	function fakeTimeout(repeat, fn, ms) {
 		if (typeof repeat !== "object") {
@@ -288,6 +293,7 @@
 				}
 				if (proc.nextTick) {
 					mock.replace(proc, "nextTick", fakeNextTick)
+					mock.replace(proc, "hrtime", fakeHrtime)
 				}
 			}
 			if (newTime) {
