@@ -104,7 +104,6 @@ File.prototype = {
 	depends: function(child) {
 		var file = this
 		child.on("change", file.write)
-		return file
 	},
 	reset: function() {
 		var file = this
@@ -114,7 +113,6 @@ File.prototype = {
 		})
 		file._depends.length = 0
 		file.content = []
-		return file
 	},
 	build: function() {
 		var file = this
@@ -194,7 +192,6 @@ File.prototype = {
 		if (typeof next == "function") {
 			next.call(scope || this)
 		}
-		return this
 	},
 	toString: function() {
 		var file = this
