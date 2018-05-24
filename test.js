@@ -11,6 +11,7 @@
 	, hasOwn = empty.hasOwnProperty
 	, proc = typeof process == "undefined" ? { argv: [] } : process
 	, color = (proc.stdout || empty).isTTY && proc.argv.indexOf("--no-color") == -1
+	, only = proc.argv.slice(2)
 	, totalCases = 0
 	, failedCases = 0
 	, skipCases = 0
@@ -75,7 +76,7 @@
 				}
 			})
 
-			if (next) {
+			if (next && !testCase.opts.skip) {
 				nativeClearTimeout(doneTick)
 				testCase.setTimeout()
 				testCase.resume = testSuite.wait()
@@ -88,16 +89,22 @@
 
 			return testCase
 		},
+		_it: This,
 		_test: This
 	}
 
 	function TestCase(name, opts) {
 		var testCase = this
 		, opts = testCase.opts = opts || {}
-		testCase.name = (++totalCases) + " - " + (name || "{unnamed test case}")
+		, id = ++totalCases
+		testCase.name = id + " - " + (name || "{unnamed test case}")
 		testCase.failed = []
 		testCase.passedAsserts = 0
 		testCase.totalAsserts = 0
+
+		if (only.length && only.indexOf("" + id) === -1) {
+			opts.skip = "command line"
+		}
 
 		return testCase
 	}
