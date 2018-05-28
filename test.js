@@ -40,12 +40,16 @@
 		checkEnd(lastAssert)
 		if (!started) {
 			started = nativeDate.now()
-			print("TAP version 13")
+			if (!only.length) {
+				print("TAP version 13")
+			}
 		}
 		if (lastCase && !lastCase.ended) {
 			lastCase.end()
 		}
-		print("# " + (name || "{unnamed test suite}"))
+		if (!only.length) {
+			print("# " + (name || "{unnamed test suite}"))
+		}
 	}
 
 	TestSuite.prototype = {
@@ -137,7 +141,10 @@
 
 			if (testCase.opts.skip) {
 				skipCases++
-				return print("ok " + name + " # skip - " + testCase.opts.skip)
+				if (only.length === 0) {
+					print("ok " + name + " # skip - " + testCase.opts.skip)
+				}
+				return
 			}
 
 			if (testCase.planned != void 0 && testCase.planned !== testCase.totalAsserts) {
@@ -376,19 +383,21 @@
 		nativeClearTimeout(doneTick)
 		ended = nativeDate.now()
 
-		print("1.." + totalCases)
+		if (!only.length) {
+			print("1.." + totalCases)
 
-		if (skipAssert) {
-			print("# " + yellow + bold + "skip  " + skipCases + "/" + skipAssert)
+			if (skipAssert) {
+				print("# " + yellow + bold + "skip  " + skipCases + "/" + skipAssert)
+			}
+
+			print("#" + (failedCases ? "" : green + bold) + " pass  " + (totalCases - failedCases)
+				+ "/" + totalCases
+				+ " [" + passedAsserts + "/" + lastAssert + "]"
+				+ " in " + (ended - started) + " ms")
+
+			failedCases && print("#" + red + bold + " fail  " + failedCases
+				+ " [" + (lastAssert - passedAsserts) + "]")
 		}
-
-		print("#" + (failedCases ? "" : green + bold) + " pass  " + (totalCases - failedCases)
-			+ "/" + totalCases
-			+ " [" + passedAsserts + "/" + lastAssert + "]"
-			+ " in " + (ended - started) + " ms")
-
-		failedCases && print("#" + red + bold + " fail  " + failedCases
-			+ " [" + (lastAssert - passedAsserts) + "]")
 
 		if (typeof next == "function") next()
 		/*
