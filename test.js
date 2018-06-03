@@ -2,16 +2,28 @@
 
 !function(exports) {
 	var doneTick, lastSuite, lastCase, started, ended
-	, Fn = require("../lib/fn").Fn
-	, assert = require("./assert")
+	, _global = exports.window || global
+	, Fn = exports.Fn || require("../lib/fn").Fn
+	, assert = exports.assert || require("./assert")
 	, nativeTimeout = setTimeout
 	, nativeClearTimeout = clearTimeout
 	, nativeDate = Date
 	, empty = {}
 	, hasOwn = empty.hasOwnProperty
-	, proc = typeof process == "undefined" ? { argv: [] } : process
-	, color = (proc.stdout || empty).isTTY && proc.argv.indexOf("--no-color") == -1
-	, only = proc.argv.slice(2)
+	/*** mockTime */
+	, fakeNow
+	, timers = []
+	, timerId = 0
+	, fakeTimers = {
+		setTimeout: fakeTimeout.bind(null, false),
+		setInterval: fakeTimeout.bind(null, true),
+		clearTimeout: fakeClear,
+		clearInterval: fakeClear,
+		Date: fakeDate
+	}
+	/* mock time end */
+	, color = (process.stdout || empty).isTTY && process.argv.indexOf("--no-color") == -1
+	, only = process.argv.slice(2)
 	, totalCases = 0
 	, failedCases = 0
 	, skipCases = 0
@@ -30,8 +42,11 @@
 
 	exports.defineAssert = defineAssert
 	exports.describe = describe
-	exports.test = function(name, next) {
-		return describe().test(name, next)
+	exports.test = function(name, next, opts) {
+		return (lastSuite || describe()).test(name, next)
+	}
+	exports.it = function(name, next, opts) {
+		return exports.test("it " + name, next, opts)
 	}
 
 
@@ -176,17 +191,7 @@
 	// Terminology
 	//  - A spy is a wrapper function to verify an invocation
 	//  - A stub is a spy with replaced behavior.
-	var fakeNow
-	, timers = []
-	, timerId = 0
-	, fakeTimers = {
-		setTimeout: fakeTimeout.bind(null, false),
-		setInterval: fakeTimeout.bind(null, true),
-		clearTimeout: fakeClear,
-		clearInterval: fakeClear,
-		Date: fakeDate
-	}
-	if (global.setImmediate) {
+	if (_global.setImmediate) {
 		fakeTimers.setImmediate = fakeNextTick
 		fakeTimers.clearImmediate = fakeClear
 	}
@@ -303,11 +308,11 @@
 			if (!mock.timeFreeze) {
 				mock.timeFreeze = fakeNow = nativeDate.now()
 				for (key in fakeTimers) {
-					mock.replace(global, key, fakeTimers[key])
+					mock.replace(_global, key, fakeTimers[key])
 				}
-				if (proc.nextTick) {
-					mock.replace(proc, "nextTick", fakeNextTick)
-					mock.replace(proc, "hrtime", fakeHrtime)
+				if (process.nextTick) {
+					mock.replace(process, "nextTick", fakeNextTick)
+					mock.replace(process, "hrtime", fakeHrtime)
 				}
 			}
 			if (newTime) {
