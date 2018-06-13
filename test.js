@@ -381,7 +381,7 @@
 		}, 1)
 	}
 
-	function end(next) {
+	function end() {
 		if (ended) {
 			throw Error("ended in multiple times")
 		}
@@ -404,7 +404,9 @@
 				+ " [" + (lastAssert - passedAsserts) + "]")
 		}
 
-		if (typeof next == "function") next()
+		if (process.exit) {
+			process.exit(failedCases ? 1 : 0)
+		}
 		/*
 		* FAILED tests 1, 3, 6
 		* Failed 3/6 tests, 50.00% okay
