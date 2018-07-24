@@ -82,10 +82,10 @@ function File(_name, _opts) {
 		if (!opts.replace) {
 			opts.replace = []
 		}
-		opts.replace.push([
-			new RegExp("\\/\\/(?=\\*\\*\\s+(?:" + opts.toggle + "))", "g"),
-			"/*"
-		])
+		opts.replace.push(
+			[ new RegExp("\\/\\/(?=\\*\\*\\s+(?:" + opts.toggle.replace(/[\s,]+/g, "|") + "))", "g"), "/"],
+			[ new RegExp("\\/\\*{3}\\s+(?:" + opts.toggle.replace(/[\s,]+/g, "|") + ")", "g"), "$& */"]
+		)
 	}
 
 	file.reset()
