@@ -25,8 +25,21 @@ function run(mod, next) {
 	if (Array.isArray(mod)) {
 		loop()
 	} else {
-		console.log("---\nBench: " + Object.keys(mod).join(" vs ") + "\n---")
-		bench(mod, function(err, result) {
+		var skip = []
+		, enabled = Object.keys(mod).reduce(function(map, name) {
+			if (name && name.charAt(0) !== "_") {
+				map[name] = mod[name]
+			} else {
+				skip.push(name)
+			}
+			return map
+		}, {})
+		console.log(
+			"---\nBench: %s%s\n---",
+			Object.keys(enabled).join(" vs "),
+			skip.length ? "\n Skip: " + skip.join(", ") : ""
+		)
+		bench(enabled, function(err, result) {
 			Object.keys(result).forEach(function(name) {
 				console.log(name + "\n  " + result[name].text + " ops/s, " + result[name].rel)
 			})
