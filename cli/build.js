@@ -218,6 +218,13 @@ function defMap(str) {
 	(chr == "." && this.root ? this.root : "") + (lastStr = str)
 }
 
+function htmlQuote(filename) {
+	return (
+		/[^-.:\w]/.test(filename) ? '"' + filename + '"' :
+		filename
+	)
+}
+
 function htmlSplit(str, opts) {
 	var newOpts, pos, file, ext, file2, match, match2, match3, out, min, replace, tmp, haveInlineJS
 	, mined = []
@@ -233,10 +240,10 @@ function htmlSplit(str, opts) {
 	, hashes = {}
 
 	str = str
-	.replace(/<!((?:--)+)[^]*?\1>/g, "")
-	.replace(/\sdata-manifest=("|')?(.+?)\1/, function(match, q, file) {
+	.replace(/<!--(?!\[if)[^]*?-->/g, "")
+	.replace(/(<html[^>]+)\bdata-manifest=("|')?(.+?)\2/, function(match, pre, q, file) {
 		updateManifest(opts.root + file, opts, hashes)
-		return " data=" + file
+		return pre + "manifest=" + htmlQuote(file)
 	})
 
 	for (out = [ str ]; match = re.exec(str); ) {
@@ -339,8 +346,7 @@ function htmlSplit(str, opts) {
 function htmlMin(str) {
 	var opts = this
 	return typeof str !== "string" ? str : str
-	.replace(/[\r\n]+/g, "\n")
-	.replace(/\n\s*\n/g, "\n")
+	.replace(/[\r\n][\r\n\s]*[\r\n]/g, "\n")
 	.replace(/\t/g, " ")
 	.replace(/\s+(?=<|\/?>|$)/g, "")
 	.replace(/\b(href|src)="(?!data:)(.+?)"/gi, function(_, tag, file) {
