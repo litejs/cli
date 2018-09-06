@@ -13,7 +13,7 @@
 //-
 
 
-var undef, fileHashes, conf, CONF_FILE
+var undef, fileHashes, conf
 , fs = require("fs")
 , spawn = require("child_process").spawn
 , path = require("../path")
@@ -35,8 +35,7 @@ var undef, fileHashes, conf, CONF_FILE
 , linked = __dirname.indexOf(process.cwd()) !== 0
 
 try {
-	CONF_FILE = path.resolve("package.json")
-	conf = require(CONF_FILE)
+	conf = require(path.resolve("package.json"))
 } catch(e) {
 	conf = {}
 }
@@ -185,7 +184,7 @@ File.prototype = {
 			cli.writeFile(file.name, file.toString())
 		}
 		if (file.opts.warnings.length) {
-			console.log("WARNINGS:\n - " + file.opts.warnings.join("\n - "))
+			console.error("WARNINGS:\n - " + file.opts.warnings.join("\n - "))
 		}
 	},
 	then: function(next, scope) {
@@ -583,7 +582,7 @@ function updateReadme(file) {
 	, updated = format(current)
 
 	if (current != updated) {
-		console.log("# Update readme: " + file)
+		console.error("# Update readme: " + file)
 		cli.writeFile(file, updated)
 	}
 }
@@ -605,7 +604,7 @@ function updateManifest(file, opts, hashes) {
 	})
 
 	if (current != updated) {
-		console.log("# Update manifest: " + file)
+		console.error("# Update manifest: " + file)
 		cli.writeFile(file, updated.replace(/#.+$/m, "# " + new Date().toISOString()))
 	}
 }
