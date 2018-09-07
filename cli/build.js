@@ -90,7 +90,7 @@ function File(_name, _opts) {
 	file.reset()
 
 	setImmediate(file.wait())
-	readFileHashes(opts, file.wait())
+	readFileHashes(file.wait())
 
 	file.build()
 
@@ -468,7 +468,7 @@ function jsMin(str, opts, next, afterInstall) {
 	}
 }
 
-function readFileHashes(opts, next) {
+function readFileHashes(next) {
 	if (fileHashes) return next()
 	fileHashes = {}
 	// $ git ls-tree -r --abbrev=1 HEAD
@@ -513,6 +513,15 @@ function execute(args, i) {
 		case "-o":
 		case "--output":
 			output = args[i++]
+			break;
+		case "-m":
+		case "--manifest":
+			readFileHashes(function(file) {
+				var opts = { warnings: [] }
+				return function() {
+					updateManifest(file, opts, {})
+				}
+			}(args[i++]))
 			break;
 		case "-r":
 		case "--readme":
