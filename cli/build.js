@@ -16,6 +16,7 @@
 var undef, fileHashes, conf
 , fs = require("fs")
 , spawn = require("child_process").spawn
+, now = new Date()
 , path = require("../path")
 , events = require("../events")
 , cli = require("./")
@@ -30,13 +31,14 @@ var undef, fileHashes, conf
 , translate = {
 	// http://nodejs.org/api/documentation.html
 	stability: "0 - Deprecated,1 - Experimental,2 - Unstable,3 - Stable,4 - API Frozen,5 - Locked".split(","),
-	date: new Date().toISOString().split("T")[0]
+	date: now.toISOString().split("T")[0]
 }
 , linked = __dirname.indexOf(process.cwd()) !== 0
 
 try {
 	conf = require(path.resolve("package.json"))
 } catch(e) {
+	console.error(e)
 	conf = {}
 }
 
@@ -527,6 +529,11 @@ function execute(args, i) {
 		case "--readme":
 			updateReadme(args[i++])
 			break;
+		case "-v":
+		case "--version":
+			var opts = { warnings: [] }
+			updateVersion(args[i++])
+			break;
 		default:
 			if (arg.charAt(0) == "-") {
 				args.splice.apply(
@@ -551,19 +558,18 @@ if (module.parent) {
 	exports.File = File
 	exports.updateReadme = updateReadme
 	exports.execute = execute
-} else {
-	// executed as standalone
-	execute(process.argv, 2)
+
 	if (conf.readmeFilename) {
 		updateReadme(conf.readmeFilename)
 	}
-	if (conf.buildman) {
-		Object.keys(conf.buildman).forEach(function(key) {
-			var opts = conf.buildman[key]
-			opts.min = 1
-			File(key, opts)
+	if (conf.litejs && Array.isArray(conf.litejs.build)) {
+		conf.litejs.build.forEach(function(row) {
+			execute(row.split(/\s+/), 0)
 		})
 	}
+} else {
+	// executed as standalone
+	execute(process.argv, 2)
 }
 
 function replacePath(p, opts) {
@@ -596,6 +602,18 @@ function updateReadme(file) {
 	}
 }
 
+function updateVersion(file) {
+	var re = /(\s+VERSION\s*=\s*)("|').*?\2/
+	, current = cli.readFile(file)
+	, updated = current.replace(re, function(_, a, q) {
+		return a + q + now.toISOString() + q
+	})
+	if (current !== updated) {
+		console.error("# Update version: " + file)
+		cli.writeFile(file, updated)
+	}
+}
+
 function updateManifest(file, opts, hashes) {
 	var root = file.replace(/[^\/]+$/, "")
 	, current = cli.readFile(file)
@@ -614,7 +632,7 @@ function updateManifest(file, opts, hashes) {
 
 	if (current != updated) {
 		console.error("# Update manifest: " + file)
-		cli.writeFile(file, updated.replace(/#.+$/m, "# " + new Date().toISOString()))
+		cli.writeFile(file, updated.replace(/#.+$/m, "# " + now.toISOString()))
 	}
 }
 
