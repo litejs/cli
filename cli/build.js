@@ -13,7 +13,7 @@
 //-
 
 
-var undef, fileHashes, conf
+var undef, conf
 , fs = require("fs")
 , spawn = require("child_process").spawn
 , now = new Date()
@@ -22,6 +22,7 @@ var undef, fileHashes, conf
 , cli = require("./")
 , Fn = require("../fn.js").Fn
 , files = {}
+, fileHashes = {}
 , hasOwn = files.hasOwnProperty
 , adapters = File.adapters = {
 	css: { min: cssMin, split: cssSplit, sep: "\n", banner: "/*! {0} */\n" },
@@ -92,7 +93,6 @@ function File(_name, _opts) {
 	file.reset()
 
 	setImmediate(file.wait())
-	readFileHashes(file.wait())
 
 	file.build()
 
@@ -471,31 +471,35 @@ function jsMin(str, opts, next, afterInstall) {
 }
 
 function readFileHashes(next) {
-	if (fileHashes) return next()
-	fileHashes = {}
+	var leftover = ""
+	, cwd = process.cwd() + "/"
+	, git = spawn("git", ["ls-files", "-sz", "--abbrev=1"])
+
+	git.stdout.on("data", onData).on("end", onEnd)
+	git.stderr.pipe(process.stderr)
+
+	function onData(data) {
+		var lines = (leftover + data).split("\0")
+		// keep the last partial line buffered
+		leftover = lines.pop()
+		lines.forEach(onLine)
+	}
+
+	function onEnd() {
+		onLine(leftover)
+		next()
+	}
+
+	function onLine(line) {
+		if (line !== "") {
+			fileHashes[cwd + line.slice(1 + line.indexOf("\t"))] = line.split(" ")[1]
+		}
+	}
+
 	// $ git ls-tree -r --abbrev=1 HEAD
 	// 100644 blob 1f537	public/robots.txt
 	// 100644 blob 0230	public/templates/devices.haml
 	// $ git cat-file -p 1f537
-	var data = ""
-	, git = spawn("git", ["ls-files", "-sz", "--abbrev=1"])
-	, cwd = process.cwd() + "/"
-
-	git.stdout.on("data", function (_data) {
-		data += _data
-	})
-	git.stderr.pipe(process.stderr)
-
-	git.on("close", function (code) {
-		data.split("\0").reduceRight(function(map, line, index) {
-			if (line) {
-				index = line.indexOf("\t")
-				map[cwd + line.slice(1 + index)] = line.split(" ")[1]
-			}
-			return map
-		}, fileHashes)
-		next()
-	})
 }
 
 function execute(args, i) {
@@ -518,12 +522,8 @@ function execute(args, i) {
 			break;
 		case "-m":
 		case "--manifest":
-			readFileHashes(function(file) {
-				var opts = { warnings: [] }
-				return function() {
-					updateManifest(file, opts, {})
-				}
-			}(args[i++]))
+			var opts = { warnings: [] }
+			updateManifest(args[i++], opts, {})
 			break;
 		case "-r":
 		case "--readme":
@@ -557,28 +557,29 @@ if (module.parent) {
 	// Used as module
 	exports.File = File
 	exports.updateReadme = updateReadme
-	exports.execute = execute
+	exports.execute = function(args, i) {
+		readFileHashes(function() {
+			exports.execute = execute
+			execute(args, i)
 
-	if (conf.readmeFilename) {
-		updateReadme(conf.readmeFilename)
-	}
-	if (conf.litejs && Array.isArray(conf.litejs.build)) {
-		conf.litejs.build.forEach(function(row) {
-			execute(row.split(/\s+/), 0)
+			if (conf.readmeFilename) {
+				updateReadme(conf.readmeFilename)
+			}
+			if (conf.litejs && Array.isArray(conf.litejs.build)) {
+				conf.litejs.build.forEach(function(row) {
+					execute(row.split(/\s+/), 0)
+				})
+			}
 		})
 	}
-} else {
-	// executed as standalone
-	execute(process.argv, 2)
 }
 
-function replacePath(p, opts) {
-	p = path.normalize(p)
-	if (p.indexOf("{hash}")) {
+function replacePath(_p, opts) {
+	var p = path.normalize(_p)
+	if (p.indexOf("{hash}") > -1) {
 		var full = path.resolve(opts.root, p.split("?")[0])
-		if (fileHashes[full]) {
-			p = p.replace(/{hash}/g, fileHashes[full] || "")
-		} else {
+		p = p.replace(/{hash}/g, fileHashes[full] || +now)
+		if (!fileHashes[full]) {
 			opts.warnings.pushUniq("'" + full + "' not commited?")
 		}
 	}
