@@ -16,10 +16,15 @@ var fs = require("fs")
 		"ui"
 	],
 	"scripts": {
-		"build": "litejs build -i ui/dev.html -o ui/index.html",
+		"build": "litejs build",
 		"start": "node app",
 		"test": "node --allow-natives-syntax test/index.js",
 		"test-trace": "node --allow-natives-syntax --trace_opt --trace_deopt test/index.js"
+	},
+	"litejs": {
+		"build": [
+			"-i ui/dev.html -o ui/index.html"
+		]
 	},
 	"repository": "git://github.com/{project}/{name}.git",
 	"bugs": {
