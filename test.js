@@ -43,7 +43,7 @@
 	exports.defineAssert = defineAssert
 	exports.describe = describe
 	exports.test = function(name, next, opts) {
-		return (lastSuite || describe()).test(name, next)
+		return (lastSuite || describe()).test(name, next, opts)
 	}
 	exports.it = function(name, next, opts) {
 		return exports.test("it " + name, next, opts)
@@ -259,13 +259,13 @@
 			return spy
 			function spy() {
 				var fn, result
-				, args = spy.calls.slice.call(arguments)
+				, args = timers.slice.call(arguments)
 				if (typeof origin === "function") {
 					result = origin.apply(this, arguments)
 				} else if (Array.isArray(origin)) {
 					result = origin[spy.called % origin.length]
 				} else if (origin && origin.constructor === Object) {
-					result = origin[JSON.stringify(args).slice(1,-1)]
+					result = origin[JSON.stringify(args).slice(1, -1)]
 					fn = typeof origin.fn === "function" ? origin.fn : typeof result === "function" ? result : null
 					if (fn) {
 						result = fn.call(this, result)
@@ -341,18 +341,17 @@
 			}
 		},
 		restore: function() {
-			var mock = this
-			, replaced = mock.replaced
-			, i = replaced.length
+			var arr = this.replaced
+			, i = arr.length
 			for (; --i > 0; i -= 2) {
-				if (replaced[i]) {
-					replaced[i - 2][replaced[i - 1]] = replaced[i]
+				if (arr[i]) {
+					arr[i - 2][arr[i - 1]] = arr[i]
 				} else {
-					delete replaced[i - 2][replaced[i - 1]]
+					delete arr[i - 2][arr[i - 1]]
 				}
 			}
 			if (timers.length) {
-				mock.tick(Infinity, true)
+				this.tick(Infinity, true)
 			}
 		}
 	}
