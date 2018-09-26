@@ -8,8 +8,8 @@
 	, nativeTimeout = setTimeout
 	, nativeClearTimeout = clearTimeout
 	, nativeDate = Date
-	, empty = {}
-	, hasOwn = empty.hasOwnProperty
+	, updateSnaps = exports.testUpdateSnaps = {}
+	, hasOwn = updateSnaps.hasOwnProperty
 	/*** mockTime */
 	, fakeNow
 	, timers = []
@@ -22,8 +22,8 @@
 		Date: fakeDate
 	}
 	/* mock time end */
-	, color = (process.stdout || empty).isTTY && process.argv.indexOf("--no-color") == -1
-	, only = process.argv.slice(2)
+	, color = (process.stdout || updateSnaps).isTTY && process.argv.indexOf("--no-color") == -1
+	, only = []
 	, totalCases = 0
 	, failedCases = 0
 	, skipCases = 0
@@ -39,6 +39,13 @@
 	, yellow    = color ? "\x1b[33m" : ""
 	, reset     = color ? "\x1b[0m"  : ""
 
+	for (var arg, argi = 2; arg = process.argv[argi++]; ) {
+		if (arg === "-u") {
+			updateSnaps[process.argv[argi++]] = true
+		} else {
+			only.push(arg)
+		}
+	}
 
 	exports.defineAssert = defineAssert
 	exports.describe = describe
