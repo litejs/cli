@@ -265,18 +265,15 @@
 			spy.calls = []
 			return spy
 			function spy() {
-				var fn, result
+				var key, result
 				, args = timers.slice.call(arguments)
 				if (typeof origin === "function") {
 					result = origin.apply(this, arguments)
 				} else if (Array.isArray(origin)) {
 					result = origin[spy.called % origin.length]
 				} else if (origin && origin.constructor === Object) {
-					result = origin[JSON.stringify(args).slice(1, -1)]
-					fn = typeof origin.fn === "function" ? origin.fn : typeof result === "function" ? result : null
-					if (fn) {
-						result = fn.call(this, result)
-					}
+					key = JSON.stringify(args).slice(1, -1)
+					result = hasOwn.call(origin, key) ? origin[key] : origin["*"]
 				}
 				spy.called++
 				spy.calls.push({
