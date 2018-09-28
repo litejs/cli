@@ -219,10 +219,12 @@ function defMap(str) {
 	(chr == "." && this.root ? this.root : "") + (lastStr = str)
 }
 
-function htmlQuote(filename) {
+function htmlQuote(val) {
+	// a valid unquoted attribute value in HTML is
+	// a not empty string that doesn’t contain spaces, tabs, line feeds, form feeds, carriage returns, "'`=<>
 	return (
-		/[^-.:\w]/.test(filename) ? '"' + filename + '"' :
-		filename
+		/^[^\s'"`<>=]+$/.test(val) ? '"' + val + '"' :
+		val
 	)
 }
 
