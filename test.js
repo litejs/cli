@@ -334,6 +334,7 @@
 			for (var t; t = timers[0]; ) {
 				if (t.at <= fakeNow) {
 					timers.shift()
+					if (typeof t.fn === "string") t.fn = Function(t.fn)
 					if (typeof t.fn === "function") t.fn.apply(null, t.args)
 					if (!noRepeat && t.repeat) {
 						t.at += t.ms
