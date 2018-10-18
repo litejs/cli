@@ -10,10 +10,11 @@ function bench(tests, next) {
 	, len = keys.length
 	, times = []
 	, samples = 7
+	, warmupTime = 0|(2000/len)
 
 	// warmup
-	for (i = keys.length; i--; ) {
-		measure(tests[keys[i]], 100)
+	for (i = len; i--; ) {
+		measure(tests[keys[i]], warmupTime)
 		times[i] = Array(samples)
 	}
 
