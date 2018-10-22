@@ -234,7 +234,10 @@
 			if (timers[i].at <= repeat.at) break
 		}
 		timers.splice(i + 1, 0, repeat)
-		return repeat.id
+		return {
+			id: repeat.id,
+			unref: This
+		}
 	}
 
 	function fakeNextTick(fn) {
@@ -247,8 +250,8 @@
 	}
 
 	function fakeClear(id) {
-		for (var i = timers.length; i--; ) {
-			if (timers[i].id === id) {
+		if (id != null) for (var i = timers.length; i--; ) {
+			if (timers[i].id === id || timers[i].id === id.id) {
 				timers.splice(i, 1)
 				break
 			}
