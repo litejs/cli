@@ -423,53 +423,37 @@ function cssMin(map, opts, next) {
 var npmChild
 
 
-function jsMin(str, opts, next, afterInstall) {
-	var expectVersion = require("../../package.json").devDependencies["uglify-js"]
-	try {
-		delete require.cache[require.resolve("uglify-js/package.json")]
-		if (require("uglify-js/package.json").version !== expectVersion) {
-			throw Error("Wrong uglify-js version")
-		}
-		var res = require("uglify-js").minify(str, {
-			warnings: true,
-			compress: {
-				// evaluate will drop `ie678 = !+"\v1"` as side-effect-free code
-				evaluate: false,
-				properties: false
-			},
-			output: {
-				semicolons: false,
-				keep_quoted_props: true
-			}
-		})
-		if (res.warnings) opts.warnings.push.apply(opts.warnings, res.warnings)
-		if (res.error) throw res.error
-		next(null, res.code)
-	} catch(e) {
-		if (!afterInstall && (
-			e.message == "Cannot find module 'uglify-js/package.json'" ||
-			e.message == "Wrong uglify-js version"
-			)) {
-			if (!npmChild) {
-				console.error(e.message, "Trying to Install .. " + expectVersion)
-				npmChild = spawn("npm", [ "install", "--no-save", "uglify-js@" + expectVersion ])
-				npmChild.stdout.pipe(process.stdout)
-				npmChild.stderr.pipe(process.stderr)
-				npmChild.stdin.end()
-			}
-			npmChild.on("close", function() {
-				npmChild = null
-				jsMin(str, opts, next, true)
-			})
-		} else {
-			var line = e.line || e.lineNumber
-			, source = str[e.filename] || str
-			if (line > -1) {
-				console.error("Line: " + line + "\n---\n" + source.split("\n").slice(line - 2, line + 3).join("\n"))
-			}
-			throw e
-		}
+function jsMin(map, opts, next, afterInstall) {
+	if (!cli.command("uglifyjs")) {
+		console.error("Error: uglify-js not found, run: npm i -g uglify-js\n")
+		process.exit(1)
 	}
+	var name
+	, result = ""
+	, child = spawn("uglifyjs", [
+		"--warn",
+		"--compress", "evaluate=false,properties=false",
+		"--mangle",
+		"--beautify", "beautify=false,semicolons=false,keep_quoted_props=true"
+	])
+
+	child.stderr.on("data", function onError(data) {
+		opts.warnings.push(data.toString())
+	})
+	child.stdout.on("data", function(data) {
+		result += data.toString()
+	})
+	child.on("close", function(code) {
+		if (code !== 0) {
+			console.error(opts.warnings)
+			throw Error("uglifyjs exited with " + code)
+		}
+		next(null, result)
+	})
+	for (name in map) if (hasOwn.call(map, name)) {
+		child.stdin.write(map[name])
+	}
+	child.stdin.end()
 }
 
 function readFileHashes(next) {
