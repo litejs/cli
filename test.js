@@ -300,10 +300,12 @@
 		},
 		replace: function(obj, name, fn) {
 			var mock = this
-			if (typeof obj[name] === "function") {
-				mock.replaced.push(obj, name, hasOwn.call(obj, name) && obj[name])
+			, existing = obj[name]
+			if (typeof existing === "function") {
+				mock.replaced.push(obj, name, hasOwn.call(obj, name) && existing)
 				obj[name] = fn
 			}
+			return existing
 		},
 		spy: function(obj, name, stub) {
 			var mock = this
