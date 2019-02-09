@@ -413,7 +413,7 @@ function cssMin(map, opts, next) {
 
 		// Use CSS shorthands
 		//.replace(/([^0-9])-?0(px|em|%|in|cm|mm|pc|pt|ex)/g, "$10")
-		.replace(/:0 0( 0 0)?(;|})/g, ":0$2")
+		//.replace(/:0 0( 0 0)?(;|})/g, ":0$2")
 		.replace(/url\("([\w\/_.-]*)"\)/g, "url($1)")
 		.replace(/([ :,])0\.([0-9]+)/g, "$1.$2")
 	}
