@@ -244,10 +244,6 @@ function htmlSplit(str, opts) {
 
 	str = str
 	.replace(/<!--(?!\[if)[^]*?-->/g, "")
-	.replace(/(<html[^>]+)\bdata-manifest=("|')?(.+?)\2/, function(match, pre, q, file) {
-		updateManifest(opts.root + file, opts, hashes)
-		return pre + "manifest=" + htmlQuote(file)
-	})
 
 	for (out = [ str ]; match = re.exec(str); ) {
 		file = opts.root + (match[1] || match[3])
@@ -506,10 +502,10 @@ function execute(args, i) {
 		case "--output":
 			output = args[i++]
 			break;
-		case "-m":
-		case "--manifest":
+		case "-w":
+		case "--worker":
 			var opts = { warnings: [] }
-			updateManifest(args[i++], opts, {})
+			updateWorker(args[i++], opts, {})
 			break;
 		case "-r":
 		case "--readme":
@@ -601,24 +597,32 @@ function updateVersion(file) {
 	}
 }
 
-function updateManifest(file, opts, hashes) {
+function updateWorker(file, opts, hashes) {
 	var root = file.replace(/[^\/]+$/, "")
+	, re = /(\s+VERSION\s*=\s*)("|').*?\2/
 	, current = cli.readFile(file)
 	, updated = current
-	.replace(/^(?![#*]|CACHE MANIFEST|\w+:)[^\n\r]+/gm, function(line) {
-		var name = line.replace(/\?.*/, "")
-		, full = path.resolve(root, name)
-		if (!fileHashes[full]) {
-			opts.warnings.pushUniq("'" + full + "' not commited?")
-		} else if (name !== line) {
-			hashes[name] = fileHashes[full]
-			return name + "?" + fileHashes[full]
-		}
-		return line
+	.replace(re, function(_, a, q) {
+		return a + q + now.toISOString() + q
+	})
+	.replace(/ FILES = (\[[^\]]+?\])/, function(all, files) {
+		files = JSON.parse(files)
+		.map(function(line) {
+			var name = line.replace(/\?.*/, "")
+			, full = path.resolve(root, name)
+			if (!fileHashes[full]) {
+				opts.warnings.pushUniq("'" + full + "' not commited?")
+			} else if (name !== line) {
+				hashes[name] = fileHashes[full]
+				return name + "?" + fileHashes[full]
+			}
+			return line
+		})
+		return " FILES = " + JSON.stringify(files, null, "\t")
 	})
 
 	if (current != updated) {
-		console.error("# Update manifest: " + file)
+		console.error("# Update worker: " + file)
 		cli.writeFile(file, updated.replace(/#.+$/m, "# " + now.toISOString()))
 	}
 }
