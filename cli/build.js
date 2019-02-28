@@ -542,12 +542,8 @@ if (module.parent) {
 	exports.execute = function(args, i) {
 		readFileHashes(function() {
 			exports.execute = execute
-			execute(args, i)
-
-			if (conf.readmeFilename) {
-				updateReadme(conf.readmeFilename)
-			}
-			if (conf.litejs && Array.isArray(conf.litejs.build)) {
+			if (args.length > i) execute(args, i)
+			else if (conf.litejs && Array.isArray(conf.litejs.build)) {
 				conf.litejs.build.forEach(function(row) {
 					execute(row.split(/\s+/), 0)
 				})
