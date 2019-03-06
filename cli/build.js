@@ -80,13 +80,13 @@ function File(_name, _opts) {
 	if (opts.sourceMap === true) {
 		opts.sourceMap = name.replace(/\?|$/, ".map$&").slice(opts.root.length)
 	}
-	if (opts.toggle) {
+	if (opts.drop) {
 		if (!opts.replace) {
 			opts.replace = []
 		}
 		opts.replace.push(
-			[ new RegExp("\\/\\/(?=\\*\\*\\s+(?:" + opts.toggle.replace(/[\s,]+/g, "|") + "))", "g"), "/"],
-			[ new RegExp("\\/\\*{3}\\s+(?:" + opts.toggle.replace(/[\s,]+/g, "|") + ")", "g"), "$& */"]
+			[ new RegExp("\\/\\/(?=\\*\\*\\s+(?:" + opts.drop.replace(/[\s,]+/g, "|") + "))", "g"), "/"],
+			[ new RegExp("\\/(\\*{2,})\\s+(?:" + opts.drop.replace(/[^\w]+/g, "|") + ")\\s+\\1\\/", "g"), "$&/*"]
 		)
 	}
 
@@ -235,7 +235,7 @@ function htmlSplit(str, opts) {
 	, re = /<link[^>]+href="([^"]*?)"[^>]*?>|<(script)[^>]+src="([^>]*?)"[^>]*><\/\2>/ig
 	, banner, bannerRe   = /\sbanner=(("|')([^]+?)\2|[^\s]+)/i
 	, inline, inlineRe = /\sinline\b/i
-	, toggle, toggleRe   = /\stoggle=(("|')([^]*?)\2|[^\s]+)/i
+	, drop, dropRe   = /\sdrop=(("|')([^]*?)\2|[^\s]+)/i
 	, minRe = /\smin\b(?:=["']?(.+?)["'])?/i
 	, requireRe   = /\srequire=(("|')([^]*?)\2|[^\s]+)/i
 	, excludeRe = /\sexclude\b/i
@@ -256,14 +256,14 @@ function htmlSplit(str, opts) {
 
 		banner = bannerRe.exec(match[0])
 		inline = inlineRe.test(match[0])
-		toggle = toggleRe.exec(match[0])
+		drop = dropRe.exec(match[0])
 
 		if (match2 = requireRe.exec(match[0])) {
 			lastStr = opts.root
 			tmp = (match2[2] ? match2[3] : match2[1]).match(/[^,\s]+/g)
 			match2 = File(file, {
 				input: tmp ? tmp.map(defMap, opts) : [],
-				toggle: toggle ? toggle[3] || toggle[1] : ""
+				drop: drop ? drop[3] || drop[1] : ""
 			})
 			if (!tmp) {
 				match2._requireNext = true
@@ -281,7 +281,7 @@ function htmlSplit(str, opts) {
 				["/*!{loadHashes}*/", JSON.stringify(hashes).slice(1, -1)]
 			],
 			banner: banner ? banner[3] || banner[1] : "",
-			toggle: toggle ? toggle[3] || toggle[1] : ""
+			drop: drop ? drop[3] || drop[1] : ""
 		}
 
 		if (match3 = minRe.exec(match[0])) {
