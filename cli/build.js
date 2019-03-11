@@ -287,7 +287,7 @@ function htmlSplit(str, opts) {
 		if (match3 = minRe.exec(match[0])) {
 			lastStr = file.slice(opts.root.length)
 			file2 = (
-				match3[1] ? opts.root + defMap(match3[1]) :
+				match3[1] ? path.resolve(opts.root, defMap.call(opts, match3[1])) :
 				min && min.ext == ext ? min.name :
 				opts.root + mined.length.toString(32) + "." + ext
 			)
@@ -324,7 +324,7 @@ function htmlSplit(str, opts) {
 		} else if ((haveInlineJS && match[2]) || dataIf) {
 			loadFiles.push(
 				(dataIf ? "(" + dataIf[1] + ")&&'" : "'") +
-				replacePath(file.slice(opts.root.length), opts) + "'"
+				replacePath(path.relative(opts.root, file), opts) + "'"
 			)
 		} else {
 			tmp = match[0]
@@ -333,7 +333,7 @@ function htmlSplit(str, opts) {
 				.replace(minRe, "")
 				.replace(requireRe, "")
 				.replace(bannerRe, "")
-				.replace(match[1] || match[3], file.slice(opts.root.length))
+				.replace(match[1] || match[3], path.relative(opts.root, file))
 			}
 			out[pos] = tmp
 		}
