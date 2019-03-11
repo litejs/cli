@@ -419,7 +419,7 @@ function cssMin(map, opts, next) {
 var npmChild
 
 
-function jsMin(map, opts, next, afterInstall) {
+function jsMin(map, opts, next) {
 	if (!cli.command("uglifyjs")) {
 		console.error("Error: uglify-js not found, run: npm i -g uglify-js\n")
 		process.exit(1)
@@ -619,7 +619,7 @@ function updateWorker(file, opts, hashes) {
 
 	if (current != updated) {
 		console.error("# Update worker: " + file)
-		cli.writeFile(file, updated.replace(/#.+$/m, "# " + now.toISOString()))
+		cli.writeFile(file, updated)
 	}
 }
 
