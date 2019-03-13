@@ -25,9 +25,18 @@ var undef, conf
 , fileHashes = {}
 , hasOwn = files.hasOwnProperty
 , adapters = File.adapters = {
-	css: { min: cssMin, split: cssSplit, sep: "\n", banner: "/*! {0} */\n" },
-	html: { split: htmlSplit, sep: "", banner: "<!-- {0} -->\n" },
-	js: { min: jsMin, sep: "\n", banner: "/*! {0} */\n" }
+	css: {
+		split: cssSplit, min: cssMin, banner: "/*! {0} */\n"
+	},
+	html: {
+		split: htmlSplit, sep: "", banner: "<!-- {0} -->\n"
+	},
+	js: {
+		min: jsMin, banner: "/*! {0} */\n"
+	},
+	tpl: {
+		min: tplMin, banner: "/{0}\n"
+	}
 }
 , translate = {
 	// http://nodejs.org/api/documentation.html
@@ -35,6 +44,8 @@ var undef, conf
 	date: now.toISOString().split("T")[0]
 }
 , linked = __dirname.indexOf(process.cwd()) !== 0
+
+adapters.view = adapters.tpl
 
 try {
 	conf = require(path.resolve("package.json"))
@@ -144,9 +155,10 @@ File.prototype = {
 			})
 			file.write()
 		} else {
-			var source = cli.readFile(file.name)
-
-			file.content = adapter.split ? adapter.split(source, opts) : [ source ]
+			if (!opts.mem) {
+				var source = cli.readFile(file.name)
+				file.content = adapter.split ? adapter.split(source, opts) : [ source ]
+			}
 			file.content.forEach(function(junk, i, arr) {
 				if (junk instanceof File) {
 					file.depends(junk)
@@ -199,6 +211,7 @@ File.prototype = {
 		if (typeof next == "function") {
 			next.call(scope || this)
 		}
+		return this
 	},
 	toString: function() {
 		var file = this
@@ -206,12 +219,17 @@ File.prototype = {
 		, adapter = adapters[file.ext] || {}
 		, banner = opts.banner && adapter.banner && adapter.banner.replace(/\{0\}/g, opts.banner)
 		, str = adapter.min && opts.min ? file.min : format(file.src)
-
-		return (
+		, out = (
 			(banner ? format(banner) : "") +
 			str.trim() +
 			(opts.sourceMap ? "\n//# sourceMappingURL=" + opts.sourceMap + "\n" : "")
 		)
+
+		if (opts.outPrefix) {
+			out = opts.outPrefix + out.split("\n").join("\n" + opts.outPrefix)
+		}
+
+		return out
 	}
 }
 
@@ -253,7 +271,7 @@ function htmlSplit(str, opts) {
 
 	for (out = [ str ]; match = re.exec(str); ) {
 		file = opts.root + (match[1] || match[3])
-		ext = match[2] ? "js" : "css"
+		ext = file.split(".").pop()
 		pos = out.length
 		out.splice(-1, 1,
 			str.slice(lastIndex, match.index), "",
@@ -294,7 +312,10 @@ function htmlSplit(str, opts) {
 			lastStr = file.slice(opts.root.length)
 			file2 = (
 				match3[1] ? path.resolve(opts.root, defMap.call(opts, match3[1])) :
-				min && min.ext == ext ? min.name :
+				min && (
+					min.ext == ext ||
+					File.adapters[min.ext] === File.adapters[ext]
+				) ? min.name :
 				opts.root + mined.length.toString(32) + "." + ext
 			)
 			if (!min || min.name !== file2) {
@@ -424,7 +445,6 @@ function cssMin(map, opts, next) {
 
 var npmChild
 
-
 function jsMin(map, opts, next) {
 	if (!cli.command("uglifyjs")) {
 		console.error("Error: uglify-js not found, run: npm i -g uglify-js\n")
@@ -440,7 +460,8 @@ function jsMin(map, opts, next) {
 	])
 
 	child.stderr.on("data", function onError(data) {
-		opts.warnings.push(data.toString())
+		data = data.toString().trim()
+		if (data !== "") opts.warnings.push(data)
 	})
 	child.stdout.on("data", function(data) {
 		result += data.toString()
@@ -456,6 +477,64 @@ function jsMin(map, opts, next) {
 		child.stdin.write(map[name])
 	}
 	child.stdin.end()
+}
+
+function tplMin(map, opts, next) {
+	var out = Object.keys(map)
+	, pos = 0
+
+	min()
+
+	function min() {
+		var i = pos++
+		if (i < out.length) {
+			_tplSplit(map[out[i]], opts, function(err, str) {
+				out[i] = str
+				min()
+			})
+		} else {
+			next(null, out.join("\n"))
+		}
+	}
+}
+
+function _tplSplit(str, opts, next) {
+	var templateRe = /^([ \t]*)(@?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]=])*)[ \t]*(([\])}]?).*?([[({]?))$/gm
+	, out = [""]
+	, parent = 0
+	, stack = [-1]
+	, resume = Fn.wait(function() {
+		next(null, out.join("\n"))
+	})
+
+	str.replace(templateRe, work)
+
+	resume()
+
+	function work(all, indent, plugin, name, q, text, mapEnd, mapStart, offset) {
+		if (offset && all === indent) return
+
+		for (q = indent.length; q <= stack[0]; ) {
+			if (typeof out[parent] !== "string") {
+				parent = out.push("") - 1
+			}
+			stack.shift()
+		}
+
+		if (typeof out[parent] !== "string") {
+			if (!out[parent].content.length) out[parent].content.push(all)
+			else out[parent].content[0] += all + "\n"
+		} else if (plugin && (name === "js" || name === "css")) {
+			out[parent] += all
+			parent = out.push(
+				File("", {mem:1, min:1, ext:name, outPrefix: indent + " "}).then(resume.wait())
+			) - 1
+			stack.unshift(q)
+		} else {
+			if (text && text.charAt(0) === "/") return
+			out[parent] += all + "\n"
+		}
+	}
 }
 
 function readFileHashes(next) {
