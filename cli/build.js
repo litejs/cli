@@ -51,17 +51,21 @@ if (linked) {
 
 function File(_name, _opts) {
 	var file = this
-	, name = path.resolve(_name.split("?")[0])
+	, name = _name === "-" ? _name : path.resolve(_name.split("?")[0])
 
-	if (files[name]) {
+	if (_name && files[name]) {
 		return files[name]
 	}
 	if (!(file instanceof File)) {
-		return new File(name, _opts)
+		return new File(_name, _opts)
 	}
 
 	var opts = file.opts = _opts || {}
-	, ext = file.ext = name.split(".").pop()
+	, ext = file.ext = opts.ext || (
+		name === "-" ?
+		"" + opts.input :
+		name
+	).split(".").pop()
 
 	files[name] = file
 	file._depends = []
@@ -182,7 +186,9 @@ File.prototype = {
 	},
 	write: function(by) {
 		var file = this
-		if (!file.opts.mem) {
+		if (file.name === "-") {
+			process.stdout.write(file.toString())
+		} else if (!file.opts.mem) {
 			cli.writeFile(file.name, file.toString())
 		}
 		if (file.opts.warnings.length) {
