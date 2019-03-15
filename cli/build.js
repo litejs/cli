@@ -29,10 +29,16 @@ var undef, conf
 		split: cssSplit, min: cssMin, banner: "/*! {0} */\n"
 	},
 	html: {
-		split: htmlSplit, sep: "", banner: "<!-- {0} -->\n"
+		split: htmlSplit, sep: "", banner: "<!-- {0} -->\n",
+		transpilers: {
+			js: jsToHtml, css: cssToHtml
+		}
 	},
 	js: {
-		min: jsMin, banner: "/*! {0} */\n"
+		min: jsMin, banner: "/*! {0} */\n",
+		transpilers: {
+			tpl: tplToJs, view: tplToJs
+		}
 	},
 	tpl: {
 		min: tplMin, banner: "/{0}\n"
@@ -170,7 +176,18 @@ File.prototype = {
 		setImmediate(buildResume)
 
 		function min() {
-			file.src = file.content.filter(Boolean).join("sep" in adapter ? adapter.sep : "\n")
+			file.src = file.content
+			.filter(Boolean)
+			.map(function(f) {
+				if (
+					typeof f === "string" ||
+					adapters[file.ext] === adapters[f.ext] ||
+					!adapters[file.ext].transpilers ||
+					!adapters[file.ext].transpilers[f.ext]
+				) return f
+				return adapters[file.ext].transpilers[f.ext](f.toString())
+			})
+			.join("sep" in adapter ? adapter.sep : "\n")
 
 			if (opts.replace) {
 				opts.replace.forEach(function(arr) {
@@ -179,12 +196,19 @@ File.prototype = {
 			}
 
 			if (adapter.min && opts.min) {
-				var map = file.content.reduce(function(map, file) {
-					var str = file instanceof File ? file.src : file
+				var map = file.content.reduce(function(map, f) {
+					var str = f instanceof File ? f.src : f
 					if (opts.replace) opts.replace.forEach(function(arr) {
 						str = str.replace(arr[0], arr[1])
 					})
-					map[file.name] = str
+					map[f.name] = (
+						typeof f !== "string" &&
+						adapters[file.ext] !== adapters[f.ext] &&
+						adapters[file.ext].transpilers &&
+						adapters[file.ext].transpilers[f.ext] ?
+						adapters[file.ext].transpilers[f.ext](f.toString()) :
+						str
+					)
 					return map
 				}, {})
 				adapter.min(map, opts, function(err, res) {
@@ -313,8 +337,8 @@ function htmlSplit(str, opts) {
 			file2 = (
 				match3[1] ? path.resolve(opts.root, defMap.call(opts, match3[1])) :
 				min && (
-					min.ext == ext ||
-					File.adapters[min.ext] === File.adapters[ext]
+					adapters[min.ext] === adapters[ext] ||
+					(adapters[min.ext].transpilers||[])[ext]
 				) ? min.name :
 				opts.root + mined.length.toString(32) + "." + ext
 			)
@@ -343,11 +367,7 @@ function htmlSplit(str, opts) {
 			tmp = File(file, newOpts)
 			if (match[2]) haveInlineJS = true
 			mined.push(tmp.wait())
-			out.splice(-2, 1,
-				match[2] ? "<script>" : "<style>",
-				tmp,
-				match[2] ? "</script>" : "</style>"
-			)
+			out[pos] = tmp
 		} else if ((haveInlineJS && match[2]) || dataIf) {
 			loadFiles.push(
 				(dataIf ? "(" + dataIf[1] + ")&&'" : "'") +
@@ -378,6 +398,14 @@ function htmlMin(str) {
 	.replace(/\b(href|src)="(?!data:)(.+?)"/gi, function(_, tag, file) {
 		return tag + '="' + replacePath(file, opts) + '"'
 	})
+}
+
+function jsToHtml(str) {
+	return '<script>' + str + '</script>'
+
+}
+function cssToHtml(str) {
+	return '<style>' + str + '</style>'
 }
 
 function cssSplit(str, opts) {
@@ -535,6 +563,22 @@ function _tplSplit(str, opts, next) {
 			out[parent] += all + "\n"
 		}
 	}
+}
+
+function tplToJs(input) {
+	var i = input.length
+	, singles = 0
+	, doubles = 0
+	for (; i--; ) {
+		if (input.charCodeAt(i) === 34) doubles++
+		else if (input.charCodeAt(i) === 39) singles++
+	}
+	input = input.replace(/\n+/g, "\\n")
+	return(
+		singles > doubles ?
+		'El.tpl("' + input.replace(/"/g, '\\"') + '")' :
+		"El.tpl('" + input.replace(/'/g, "\\'") + "')"
+	)
 }
 
 function readFileHashes(next) {
