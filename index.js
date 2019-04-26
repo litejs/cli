@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 //-
 //-  Usage
-//-    litejs [init|bench|build|help]
+//-    litejs [init|bench|build|help|test]
 //-
 //-  build options
 //-    --banner, -b    Add commented banner to output
@@ -72,6 +72,16 @@ if (!module.parent) {
 			process.argv[2].replace("init-", "./node_modules/litejs/lib/template/default/"),
 			process.cwd() + (opts.file ? "/" + opts.file : "")
 		], {stdio: "inherit"})
+		break;
+	case "test":
+		var arr = process.argv.slice(process.argv.length > 3 ? 3 : 2)
+		arr.unshift("-r", "litejs")
+		child.spawn(process.argv[0], arr, {
+			env: {
+				NODE_PATH: process.argv[1].replace("/bin/litejs", "/lib/node_modules/")
+			},
+			stdio: 'inherit'
+		})
 		break;
 	case "help":
 		if (subHelp.indexOf(process.argv[3]) > -1) {
