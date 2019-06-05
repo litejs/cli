@@ -52,7 +52,10 @@ function getopts(args, i, opts) {
 
 if (!module.parent) {
 	var helpFile = __filename
-	, cmd = process.argv[2]
+	, shortcut = {
+		b: "build"
+	}
+	, cmd = shortcut[process.argv[2]] || process.argv[2]
 	, subHelp = [
 		"bench",
 		"build"
