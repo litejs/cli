@@ -53,7 +53,8 @@ function getopts(args, i, opts) {
 if (!module.parent) {
 	var helpFile = __filename
 	, shortcut = {
-		b: "build"
+		b: "build",
+		t: "test"
 	}
 	, cmd = shortcut[process.argv[2]] || process.argv[2]
 	, subHelp = [
@@ -77,8 +78,8 @@ if (!module.parent) {
 		], {stdio: "inherit"})
 		break;
 	case "test":
-		var arr = process.argv.slice(process.argv.length > 3 ? 3 : 2)
-		arr.unshift("-r", "litejs")
+		var arr = process.argv.slice(process.argv.length > 3 ? 4 : 3)
+		arr.unshift("-r", "litejs", "test")
 		child.spawn(process.argv[0], arr, {
 			env: {
 				NODE_PATH: process.argv[1].replace("/bin/litejs", "/lib/node_modules/")
