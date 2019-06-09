@@ -15,7 +15,8 @@
 
 var undef, conf
 , fs = require("fs")
-, spawn = require("child_process").spawn
+, child = require("child_process")
+, spawn = child.spawn
 , now = new Date()
 , path = require("../path")
 , events = require("../events")
@@ -226,6 +227,11 @@ File.prototype = {
 			process.stdout.write(file.toString())
 		} else if (!file.opts.mem) {
 			cli.writeFile(file.name, file.toString())
+			if (fileHashes[file.name]) {
+				// git rev-parse --short=4 $(git hash-object app/net/ssdp.js)
+				var fullHash = child.execSync("git hash-object " + file.name).toString("utf8")
+				fileHashes[file.name] = child.execSync("git rev-parse --short=4 " + fullHash).toString("utf8")
+			}
 		}
 		if (file.opts.warnings.length) {
 			console.error("WARNINGS:\n - " + file.opts.warnings.join("\n - "))
