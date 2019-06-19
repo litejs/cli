@@ -14,6 +14,7 @@
 
 
 var undef, conf
+, PAC = require("../../package.json")
 , fs = require("fs")
 , child = require("child_process")
 , spawn = child.spawn
@@ -56,6 +57,7 @@ adapters.view = adapters.tpl
 
 try {
 	conf = require(path.resolve("package.json"))
+	console.log("Build %s@%s with %s@%s", conf.name, conf.version, PAC.name, PAC.version)
 } catch(e) {
 	console.error(e)
 	conf = {}
