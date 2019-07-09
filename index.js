@@ -82,7 +82,7 @@ if (!module.parent) {
 		arr.unshift("-r", "litejs", "test")
 		child.spawn(process.argv[0], arr, {
 			env: {
-				NODE_PATH: process.argv[1].replace("/bin/litejs", "/lib/node_modules/")
+				NODE_PATH: process.argv[1].replace(/bin\/\w+$/, "lib/node_modules/")
 			},
 			stdio: 'inherit'
 		})
