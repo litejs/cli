@@ -1,15 +1,24 @@
 
 
+
 !function(exports) {
-	var doneTick, lastSuite, lastCase, started, ended
+	var tick, started, testSuite, timerType
 	, _global = exports.window || global
-	, Fn = exports.Fn || require("../lib/fn").Fn
-	, assert = exports.assert || require("./assert")
-	, nativeTimeout = setTimeout
-	, nativeClearTimeout = clearTimeout
-	, nativeDate = Date
-	, updateSnaps = exports.testUpdateSnaps = {}
-	, hasOwn = updateSnaps.hasOwnProperty
+	, _process = _global.process || {}
+	, _setTimeout = setTimeout
+	, _clearTimeout = clearTimeout
+	, _Date = Date
+	, isArray = Array.isArray
+	, tests = []
+	, totalCases = 0
+	, failedCases = []
+	, failedStacks = []
+	, totalAsserts = 0
+	, passedAsserts = 0
+
+	, skipped = 0
+	, runPos = 0
+	, splicePos = 0
 	/*** mockTime */
 	, fakeNow
 	, timers = []
@@ -22,182 +31,233 @@
 		Date: fakeDate
 	}
 	/* mock time end */
-	, color = (process.stdout || updateSnaps).isTTY && process.argv.indexOf("--no-color") == -1
-	, only = []
-	, totalCases = 0
-	, failedCases = 0
-	, skipCases = 0
-	, lastAssert = 0
-	, skipAssert = 0
-	, passedAsserts = 0
-	, bold      = color ? "\x1b[1m"  : ""
-	, italic    = color ? "\x1b[3m"  : ""
-	, strike    = color ? "\x1b[9m"  : ""
-	, underline = color ? "\x1b[4m"  : ""
-	, red       = color ? "\x1b[31m" : ""
-	, green     = color ? "\x1b[32m" : ""
-	, yellow    = color ? "\x1b[33m" : ""
-	, reset     = color ? "\x1b[0m"  : ""
-
-	for (var arg, argi = 2; arg = process.argv[argi++]; ) {
-		if (arg === "-u") {
-			updateSnaps[process.argv[argi++]] = true
-		} else {
-			only.push(arg)
-		}
-	}
-
-	exports.defineAssert = defineAssert
-	exports.describe = describe
-	exports.test = function(name, next, opts) {
-		return (lastSuite || describe()).test(name, next, opts)
-	}
-	exports.it = function(name, next, opts) {
-		return exports.test("it " + name, next, opts)
-	}
-
-
-	function TestSuite(name) {
-		lastSuite = this
-		checkEnd(lastAssert)
-		if (!started) {
-			started = nativeDate.now()
-			if (!only.length) {
-				print("TAP version 13")
-			}
-		}
-		if (lastCase && !lastCase.ended) {
-			lastCase.end()
-		}
-		if (!only.length) {
-			print("# " + (name || "{unnamed test suite}"))
-		}
-	}
-
-	TestSuite.prototype = {
-		wait: Fn.hold,
-		describe: describe,
-		it: function(name, next, opts) {
-			return this.test("it " + name, next, opts)
-		},
-		test: function(name, next, opts) {
-			if (lastCase && !lastCase.ended) {
-				lastCase.end()
-			}
-			if (typeof name === "function") {
-				next = name
-				name = ""
-			}
-			if (typeof next !== "function") {
-				opts = next
-				next = null
-			}
-			var testSuite = this
-			, testCase = lastCase = new TestCase(name, opts)
-			checkEnd()
-
-			;["describe", "it", "test"].forEach(function(name) {
-				testCase[name] = function() {
-					return testSuite[name].apply(testSuite, arguments)
+	, describe = exports.describe = def.bind(exports, 1)
+	, assert = {
+		ok: function assertOk(value, message, _, _stackStart) {
+			this.total++
+			if (!value) {
+				if (!message) {
+					message = stringify(value) + " == true"
+				} else if (isArray(message)) {
+					message = message[1] +
+					"\nexpected: " + stringify(message[2], 160) +
+					"\nactual:   " + stringify(message[0], 160)
 				}
-			})
-
-			if (next && !testCase.opts.skip) {
-				nativeClearTimeout(doneTick)
-				testCase.setTimeout()
-				testCase.resume = testSuite.wait()
-				next(
-					testCase,
-					(testCase.mock = next.length > 1 && new Mock)
-				)
-				return testSuite
+				this.errors.push(new AssertionError(message + " #" + this.total, _stackStart || assertOk))
 			}
-
-			return testCase
-		},
-		_it: This,
-		_test: This
-	}
-
-	function TestCase(name, opts) {
-		var testCase = this
-		, opts = testCase.opts = opts || {}
-		, id = ++totalCases
-		testCase.name = id + " - " + (name || "{unnamed test case}")
-		testCase.failed = []
-		testCase.passedAsserts = 0
-		testCase.totalAsserts = 0
-
-		if (only.length && only.indexOf("" + id) === -1) {
-			opts.skip = "command line"
-		}
-
-		return testCase
-	}
-
-	TestCase.prototype = {
-		plan: function(num) {
-			this.planned = num
+			if (this.planned <= this.total) {
+				this.end()
+			}
 			return this
 		},
-		setTimeout: function(ms) {
-			var testCase = this
-			nativeClearTimeout(testCase.timeout)
-			testCase.timeout = nativeTimeout(function() {
-				throw Error("Timeout on running '" + testCase.name + "'")
-			}, ms || 5000)
-			return testCase
+		notOk: function notOk(value, message, _, _stackStart) {
+			return this.ok(
+				!value,
+				message || [value, "==", null],
+				null,
+				_stackStart || notOk
+			)
 		},
-		end: function() {
-			var testCase = this
-			, name = testCase.name
-			, n = "\n  "
-
-			if (testCase.ended) {
-				failedCases++
-				throw Error("'" + name + "' ended multiple times")
+		equal: function assertEqual(actual, expected, message, _stackStart) {
+			return this.ok(
+				_deepEqual(actual, expected, []),
+				message || [actual, "==", expected],
+				null,
+				_stackStart || assertEqual
+			)
+		},
+		notEqual: function notEqual(actual, expected, message, _stackStart) {
+			return this.ok(
+				!_deepEqual(actual, expected, []),
+				message || [actual, "!=", expected],
+				null,
+				_stackStart || notEqual
+			)
+		},
+		strictEqual: function strictEqual(actual, expected, message, _stackStart) {
+			return this.ok(
+				actual === expected,
+				message || [actual, "===", expected],
+				null,
+				_stackStart || strictEqual
+			)
+		},
+		notStrictEqual: function notStrictEqual(actual, expected, message, _stackStart) {
+			return this.ok(
+				actual !== expected,
+				message || [actual, "!==", expected],
+				null,
+				_stackStart || notStrictEqual
+			)
+		},
+		throws: function assertThrows(fn, message, _, _stackStart) {
+			var actual = false
+			try {
+				fn()
+			} catch(e) {
+				actual = true
 			}
+			return this.ok(actual, message || "throws", null, _stackStart || assertThrows)
+		},
+		type: function assertType(thing, expected, _, _stackStart) {
+			var actual = type(thing)
+			return this.ok(
+				actual === expected,
+				"type should be " + expected + ", got " + actual,
+				null,
+				_stackStart || assertType
+			)
+		},
+		anyOf: function anyOf(a, b, _, _stackStart) {
+			return this.ok(
+				isArray(b) && b.indexOf(a) != -1,
+				"should be one from " + stringify(b) + ", got " + a,
+				null,
+				_stackStart || anyOf
+			)
+		}
+	}
+	, toStr = assert.toString
+	, hasOwn = assert.hasOwnProperty
+	, argv = describe.argv = _process.argv && _process.argv.slice(2) || []
+	, color = (_process.stdout || exports).isTTY && argv.indexOf("--no-color") < 0
+	, bold = color ? "\x1b[1m"  : ""
+	, red = color ? "\x1b[31m" : ""
+	, green = color ? "\x1b[32m" : ""
+	, yellow = color ? "\x1b[33m" : ""
+	, reset = color ? "\x1b[0m"  : ""
 
-			testCase.ended = nativeDate.now()
-			name += " [" + testCase.passedAsserts + "/" + testCase.totalAsserts + "]"
+	describe.output = ""
 
-			if (testCase.opts.skip) {
-				skipCases++
-				if (only.length === 0) {
-					print("ok " + name + " # skip - " + testCase.opts.skip)
+	exports.test = def.bind(exports, 2)
+	exports.it = def.bind(exports, 3)
+	exports.defineAssert = function defineAssert(key, fn, _skip) {
+		assert[key] = _skip !== true ? fn : function skip() {
+			skipped++
+			return this
+		}
+		return this
+	}
+
+	function def(type, name, fn, opts) {
+		tests.splice(++splicePos, 0, arguments)
+		arguments.skip = name.charAt(0) === "#" && "by name" || opts && opts.skip
+		if (!started) {
+			started = new Date()
+			print("TAP version 13")
+			timerType = typeof _setTimeout(nextCase, 1)
+		}
+		return exports
+	}
+
+	function nextCase() {
+		var testCase
+		, args = tests[splicePos = runPos++]
+		_clearTimeout(tick)
+		if (args == null) {
+			var failed = failedCases.length
+			print("1.." + totalCases)
+			if (skipped) {
+				print("# " + yellow + bold + "skip  " + skipped)
+			}
+			print(
+				"#" + (failed ? "" : green + bold) + " pass  " + (totalCases - failed) + "/" + totalCases
+				+ " [" + passedAsserts + "/" + totalAsserts + "]"
+				+ " in " + (_Date.now() - started) + " ms"
+				+ " at " + started.toTimeString().slice(0,8)
+			)
+
+			if (failed) {
+				print("#" + red + bold + " FAILED tests " + failedCases.join(", "))
+				print(failedStacks.join("\n").replace(/^/gm, "  "))
+			}
+		} else if (args[0] === 1) {
+			if (!argv.length) print("# " + args[1])
+			testSuite = args
+			if (typeof args[2] === "function") {
+				args[2]()
+			}
+			nextCase()
+		} else {
+			totalCases++
+			var name = totalCases + (args[0] === 3 ? " - it " : " - ") + args[1]
+			if (testSuite && testSuite.skip || args.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
+				skipped++
+				if (!argv.length) {
+					print("ok " + name.replace(/#\s*/, "") + " # skip - " + (args.skip || "by suite"))
 				}
-				return
+				return nextCase()
 			}
-
-			if (testCase.planned != void 0 && testCase.planned !== testCase.totalAsserts) {
-				testCase.failed.push("Planned " + testCase.planned + " actual " + testCase.totalAsserts)
-			}
-
-			if (testCase.failed.length) {
-				failedCases++
-				print("not ok " + name + n + "---\n" + testCase.failed.join("\n").replace(/^/gm, "  ") + n + "...")
-			} else {
-				print("ok " + name)
-			}
-			if (testCase.timeout) {
-				nativeClearTimeout(testCase.timeout)
-				testCase.timeout = null
-				if (testCase.mock) {
-					testCase.mock.restore()
+			testCase = Object.assign({
+				total: 0,
+				passed: 0,
+				errors: [],
+				plan: function(planned) {
+					testCase.planned = planned
+					return testCase
+				},
+				setTimeout: function(ms) {
+					_clearTimeout(tick)
+					tick = _setTimeout(endCase, ms, "TIMEOUT " + ms + "ms")
+					return testCase
+				},
+				end: function() {
+					if (testCase.ended) {
+						throw Error("ended multiple times")
+					}
+					testCase.ended = Date.now()
+					endCase()
 				}
-				testCase.resume()
-				checkEnd()
+			}, assert)
+
+			try {
+				testCase.setTimeout(args[3] && args[3].timeout || 5000)
+				if (typeof args[2] === "function") {
+					args[2](testCase, (testCase.mock = args[2].length > 1 && new Mock))
+				}
+			} catch (e) {
+				endCase("INVALID TEST " + e.stack)
 			}
+		}
+		function endCase(err) {
+			if (err) {
+				testCase.errors.push(err)
+			}
+			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
+				testCase.errors.push("Planned " + testCase.planned + " actual " + testCase.total)
+			}
+			if (testCase.mock) {
+				testCase.mock.restore()
+			}
+
+			var failed = testCase.errors.length
+			if (failed) {
+				failedCases.push(totalCases)
+				failedStacks.push("---\n" + name + "\n" + testCase.errors.join("\n") + "\n...")
+			}
+
+			totalAsserts += testCase.total
+			passedAsserts += testCase.total - failed
+
+			print(
+				(failed ? "not ok " : "ok ") +
+				name + " [" + (testCase.total - failed) + "/" + testCase.total + "]"
+			)
+			if (runPos % 1000) nextCase()
+			else _setTimeout(nextCase, 1)
 		}
 	}
 
-	Object.keys(assert).forEach(defineAssert)
 
-	chainable(TestSuite, TestCase)
 
-	// Terminology
-	//  - A spy is a wrapper function to verify an invocation
-	//  - A stub is a spy with replaced behavior.
+	function This() {
+		return this
+	}
+	function print(str) {
+		describe.output += str + "\n"
+		if (console.log) console.log(str + reset)
+	}
+
 	if (_global.setImmediate) {
 		fakeTimers.setImmediate = fakeNextTick
 		fakeTimers.clearImmediate = fakeClear
@@ -205,18 +265,17 @@
 	function fakeDate(year, month, date, hr, min, sec, ms) {
 		return (
 			arguments.length > 1 ?
-			new nativeDate(year|0, month|0, date||1, hr|0, min|0, sec|0, ms|0) :
-			new nativeDate(year || Math.floor(fakeNow))
+			new _Date(year|0, month|0, date||1, hr|0, min|0, sec|0, ms|0) :
+			new _Date(year || Math.floor(fakeNow))
 		)
 	}
 	fakeDate.now = function() {
 		return Math.floor(fakeNow)
 	}
-	fakeDate.parse = nativeDate.parse
-	// [seconds, nanoseconds]
+	fakeDate.parse = _Date.parse
 	function fakeHrtime(time) {
-		var diff = Array.isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
-		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3]
+		var diff = isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
+		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3] // [seconds, nanoseconds]
 	}
 
 	function fakeTimeout(repeat, fn, ms) {
@@ -234,7 +293,7 @@
 			if (timers[i].at <= repeat.at) break
 		}
 		timers.splice(i + 1, 0, repeat)
-		return {
+		return timerType == "number" ? repeat.id : {
 			id: repeat.id,
 			unref: This
 		}
@@ -258,6 +317,8 @@
 		}
 	}
 
+	//  A spy is a wrapper function to verify an invocation
+	//  A stub is a spy with replaced behavior
 	function Mock() {
 		var mock = this
 		mock.replaced = []
@@ -272,7 +333,7 @@
 				, args = timers.slice.call(arguments)
 				if (typeof origin === "function") {
 					result = origin.apply(this, arguments)
-				} else if (Array.isArray(origin)) {
+				} else if (isArray(origin)) {
 					result = origin[spy.called % origin.length]
 				} else if (origin && origin.constructor === Object) {
 					key = JSON.stringify(args).slice(1, -1)
@@ -315,17 +376,17 @@
 			var key
 			, mock = this
 			if (!mock.timeFreeze) {
-				mock.timeFreeze = fakeNow = nativeDate.now()
+				mock.timeFreeze = fakeNow = _Date.now()
 				for (key in fakeTimers) {
 					mock.replace(_global, key, fakeTimers[key])
 				}
-				if (process.nextTick) {
-					mock.replace(process, "nextTick", fakeNextTick)
-					mock.replace(process, "hrtime", fakeHrtime)
+				if (_process.nextTick) {
+					mock.replace(_process, "nextTick", fakeNextTick)
+					mock.replace(_process, "hrtime", fakeHrtime)
 				}
 			}
 			if (newTime) {
-				fakeNow = typeof newTime === "string" ? nativeDate.parse(newTime) : newTime
+				fakeNow = typeof newTime === "string" ? _Date.parse(newTime) : newTime
 				mock.tick(0)
 			}
 		},
@@ -366,144 +427,114 @@
 		}
 	}
 
-	function print(str) {
-		console.log(str + reset)
+
+
+	function AssertionError(message, _stackStart) {
+		this.name = "AssertionError"
+		this.message = message
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, _stackStart || AssertionError)
+		} else {
+			this.stack = this.toString() + "\n" + (new Error()).stack
+		}
 	}
+	AssertionError.prototype = Object.create(Error.prototype)
 
-	function describe(name) {
-		return lastSuite && lastSuite !== this ? lastSuite.describe(name) : new TestSuite(name)
-	}
 
-	function checkEnd() {
-		var curSuite = lastSuite
-		, curCase = lastCase
-		, curAssert = lastAssert
+	function _deepEqual(actual, expected, circ) {
+		if (
+			actual === expected ||
+			// null == undefined
+			expected === null && actual == expected ||
+			// make NaN equal to NaN
+			actual !== actual && expected !== expected
+		) return true
 
-		nativeClearTimeout(doneTick)
-		doneTick = setTimeout(function() {
-			if (curAssert === lastAssert && curCase === lastCase && lastCase && !lastCase.timeout && curSuite == lastSuite) {
-				if (!lastCase.ended) {
-					lastCase.end()
-				}
-				end()
+		var key, aKeys, len
+		, aType = typeof actual
+
+		if (
+			aType !== "object" ||
+			actual == null ||
+			aType !== typeof expected ||
+			(aType = type(actual)) != type(expected) ||
+			actual.constructor !== expected.constructor ||
+			(aType == "date" && actual.getTime() !== expected.getTime()) ||
+			(aType == "regexp" && ""+actual !== ""+expected)
+		) {
+			return false
+		}
+
+		key = circ.indexOf(actual)
+		if (key > -1) return true
+		circ.push(actual)
+
+		if (aType == "array" || aType == "arguments") {
+			len = actual.length
+			if (len !== expected.length) return false
+			for (; len--; ) {
+				if (!_deepEqual(actual[len], expected[len], circ)) return false
 			}
-		}, 1)
-	}
-
-	function end() {
-		if (ended) {
-			throw Error("ended in multiple times")
-		}
-		nativeClearTimeout(doneTick)
-		ended = nativeDate.now()
-
-		if (!only.length) {
-			print("1.." + totalCases)
-
-			if (skipAssert) {
-				print("# " + yellow + bold + "skip  " + skipCases + "/" + skipAssert)
-			}
-
-			print("#" + (failedCases ? "" : green + bold) + " pass  " + (totalCases - failedCases)
-				+ "/" + totalCases
-				+ " [" + passedAsserts + "/" + lastAssert + "]"
-				+ " in " + (ended - started) + " ms")
-
-			failedCases && print("#" + red + bold + " fail  " + failedCases
-				+ " [" + (lastAssert - passedAsserts) + "]")
-		}
-
-		if (process.exit) {
-			process.exit(failedCases ? 1 : 0)
-		}
-		/*
-		* FAILED tests 1, 3, 6
-		* Failed 3/6 tests, 50.00% okay
-		* PASS 1 test executed in 0.023s, 1 passed, 0 failed, 0 dubious, 0 skipped.
-		*/
-	}
-
-	function defineAssert(key, fn, _skip) {
-		if (!assert[key]) {
-			assert[key] = fn
-		}
-		TestSuite.prototype["_" + key] = TestCase.prototype["_" + key] = skip
-		TestSuite.prototype[key] = _skip === true ? skip : function() {
-			var testCase = this.test("", null)
-			return testCase[key].apply(testCase, arguments)
-		},
-		TestCase.prototype[key] = _skip === true ? skip : assertWrapper
-		function assertWrapper(a, b, c) {
-			var testCase = this
-			if (testCase.opts.skip) {
-				return skip.call(testCase)
-			}
-			lastAssert++
-			if (!testCase.timeout) checkEnd()
-			testCase.totalAsserts++
-			try {
-				assert[key].call(assert, a, b, c, assertWrapper)
-				passedAsserts++
-				testCase.passedAsserts++
-			} catch(e) {
-				testCase.failed.push(testCase.opts.noStack ? e.message : e.stack)
-			}
-			if (testCase.planned != null && testCase.planned <= testCase.totalAsserts) {
-				testCase.end()
-			}
-			return testCase
-		}
-		return this
-	}
-
-	function chainable() {
-		var a
-		, arr = []
-		, j, i = 0
-		for (; a = arguments[i++]; ) {
-			arr.push.apply(arr, Object.keys(a.prototype))
-		}
-		for (i = 0; a = arguments[i++]; ) {
-			for (j = arr.length; j--; ) {
-				if (!a.prototype[arr[j]]) {
-					a.prototype[arr[j]] = This
-				}
+		} else {
+			aKeys = Object.keys(actual)
+			len = aKeys.length
+			if (len !== Object.keys(expected).length) return false
+			for (; len--; ) {
+				key = aKeys[len]
+				if (
+					!hasOwn.call(expected, key) ||
+					!_deepEqual(actual[key], expected[key], circ)
+				) return false
 			}
 		}
+		return true
 	}
 
-	function skip() {
-		skipAssert++
-		return this
+	function type(obj) {
+		// Standard clearly states that NaN is a number
+		// but this is not useful for testing.
+		return obj !== obj ? "nan" : toStr.call(obj).slice(8, -1).toLowerCase()
 	}
 
-	function This() {
-		return this
+	function stringify(item, maxLen) {
+		var max = maxLen > 9 ? maxLen : 70
+		, str = _stringify(item, max, [])
+		return str.length > max ? str.slice(0, max - 3) + ".." + str.slice(-1) : str
 	}
 
-	describe.diff = diff
-	describe.colorDiff = colorDiff
+	function _stringify(item, max, circ) {
+		var i, tmp
+		, left = max
+		, t = type(item)
+		, str =
+			t === "string" ? JSON.stringify(item) :
+			t === "function" ? ("" + item).split(/n | *\{/)[1] :
+			(!item || t === "number" || t === "regexp" || item === true) ? "" + item :
+			item.toJSON ? item.toJSON() :
+			item
 
-	function colorDiff(a, b) {
-		var res = diff(a, b)
-		console.log(
-			a.slice(0, res[0]) +
-			bold + red + strike + a.slice(res[0], res[0] + res[1]) +
-			green + b.slice(res[0], res[0]+res[2]) +
-			reset + a.slice(res[0] + res[1])
-		)
-	}
+		if (typeof str == "object") {
+			if (circ.indexOf(str) > -1) return "[Circular]"
+			circ.push(str)
+			tmp = []
+			for (i in str) if (hasOwn.call(str, i)) {
+				i = (t === "object" ? i + ":" : "") + _stringify(str[i], left, circ)
+				tmp.push(i)
+				left -= i.length
+				if (left < 0) break
+			}
+			str =
+			t === "array" ? "[" + tmp + "]" :
+			t === "arguments" ? t + "[" + tmp + "]" :
+			"{" + tmp + "}"
 
-	function diff(a, b, re) {
-		var c = 0, d = a.length, e = b.length
-		for (; a.charAt(c) && a.charAt(c) == b.charAt(c); c++);
-		for (; d > c && e > c && a.charAt(d - 1) == b.charAt(e - 1); d--) e--;
-		return [c, d - c, e - c]
+			if (t === "object" && item.constructor !== Object) {
+				str = item.constructor.name + str
+			}
+		}
+
+		return str
 	}
 }(this)
 
-
-/*
-* http://sourceforge.net/projects/portableapps/files/
-*/
 

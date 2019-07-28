@@ -21,7 +21,7 @@ try {
 
 require("./index")
 .defineAssert("isFast", function isFast(obj, a, b, _stackStart) {
-	this.ok(
+	return this.ok(
 		v8.HasFastProperties(obj),
 		"Should have fast properties",
 		0,
@@ -30,7 +30,7 @@ require("./index")
 	)
 }, !v8.HasFastProperties)
 .defineAssert("isNotFast", function isNotFast(obj, a, b, _stackStart) {
-	this.ok(
+	return this.ok(
 		!v8.HasFastProperties(obj),
 		"Should not have fast properties",
 		0,
@@ -60,7 +60,7 @@ require("./index")
 	│ └─────────────────────╸ is executing
 	└───────────────────────╸ topmost frame is turbo fanned */
 
-	this.ok(
+	return this.ok(
 		status == 1 || (status & 16 || status & 32),
 		v8.statusTexts[status],
 		null,
