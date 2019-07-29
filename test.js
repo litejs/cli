@@ -194,6 +194,32 @@
 					tick = _setTimeout(endCase, ms, "TIMEOUT " + ms + "ms")
 					return testCase
 				},
+				wait: function() {
+					var k
+					, obj = this
+					, hooks = []
+					, hooked = []
+
+					for (k in obj) if (type(obj[k]) == "function") !function(k) {
+						hooked.push(k, obj[k])
+						obj[k] = function() {
+							hooks.push(k, arguments)
+							return obj
+						}
+					}(k)
+
+					return function resume() {
+						if (!hooks) return
+						for (var v, scope = obj, i = hooked.length; i--; i--) {
+							obj[hooked[i-1]] = hooked[i]
+						}
+						// i == -1 from previous loop
+						for (; v = hooks[++i]; ) {
+							scope = scope[v].apply(scope, hooks[++i]) || scope
+						}
+						hooks = hooked = null
+					}
+				},
 				end: function() {
 					if (testCase.ended) {
 						throw Error("ended multiple times")
