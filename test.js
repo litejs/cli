@@ -32,7 +32,7 @@
 	}
 	/* mock time end */
 	, describe = exports.describe = def.bind(exports, 1)
-	, assert = {
+	, assert = describe.assert = {
 		ok: function assertOk(value, message, _, _stackStart) {
 			this.total++
 			if (!value) {
@@ -90,6 +90,10 @@
 				_stackStart || notStrictEqual
 			)
 		},
+		skip: function skip() {
+			skipped++
+			return this
+		},
 		throws: function assertThrows(fn, message, _, _stackStart) {
 			var actual = false
 			try {
@@ -131,13 +135,6 @@
 
 	exports.test = def.bind(exports, 2)
 	exports.it = def.bind(exports, 3)
-	exports.defineAssert = function defineAssert(key, fn, _skip) {
-		assert[key] = _skip !== true ? fn : function skip() {
-			skipped++
-			return this
-		}
-		return this
-	}
 
 	function def(_, name, fn, opts) {
 		tests.splice(++splicePos, 0, arguments)

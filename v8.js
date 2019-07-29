@@ -19,8 +19,9 @@ try {
 	v8.isNative = true
 } catch(e) {}
 
-require("./index")
-.defineAssert("isFast", function isFast(obj, a, b, _stackStart) {
+var assert = require("./").describe.assert
+
+assert.isFast = !v8.HasFastProperties ? assert.skip : function isFast(obj, a, b, _stackStart) {
 	return this.ok(
 		v8.HasFastProperties(obj),
 		"Should have fast properties",
@@ -28,8 +29,9 @@ require("./index")
 		0,
 		_stackStart || isFast
 	)
-}, !v8.HasFastProperties)
-.defineAssert("isNotFast", function isNotFast(obj, a, b, _stackStart) {
+}
+
+assert.isNotFast = !v8.HasFastProperties ? assert.skip : function isNotFast(obj, a, b, _stackStart) {
 	return this.ok(
 		!v8.HasFastProperties(obj),
 		"Should not have fast properties",
@@ -37,8 +39,9 @@ require("./index")
 		0,
 		_stackStart || isNotFast
 	)
-}, !v8.HasFastProperties)
-.defineAssert("isOptimized", function isOptimized(fn, args, scope, _stackStart) {
+}
+
+assert.isOptimized = !v8.GetOptimizationStatus ? assert.skip : function isOptimized(fn, args, scope, _stackStart) {
 	fn.apply(scope, args)
 	fn.apply(scope, args)
 	v8.OptimizeFunctionOnNextCall(fn)
@@ -66,6 +69,6 @@ require("./index")
 		null,
 		_stackStart || isOptimized
 	)
-}, !v8.GetOptimizationStatus)
+}
 
 
