@@ -139,13 +139,13 @@
 		return this
 	}
 
-	function def(type, name, fn, opts) {
+	function def(_, name, fn, opts) {
 		tests.splice(++splicePos, 0, arguments)
 		arguments.skip = name.charAt(0) === "#" && "by name" || opts && opts.skip
 		if (!started) {
 			started = new Date()
 			print("TAP version 13")
-			timerType = typeof _setTimeout(nextCase, 1)
+			timerType = type(_setTimeout(nextCase, 1))
 		}
 		return exports
 	}
@@ -174,7 +174,7 @@
 		} else if (args[0] === 1) {
 			if (!argv.length) print("# " + args[1])
 			testSuite = args
-			if (typeof args[2] === "function") {
+			if (type(args[2]) === "function") {
 				args[2]()
 			}
 			nextCase()
@@ -212,8 +212,8 @@
 
 			try {
 				testCase.setTimeout(args[3] && args[3].timeout || 5000)
-				if (typeof args[2] === "function") {
-					args[2](testCase, (testCase.mock = args[2].length > 1 && new Mock))
+				if (type(args[2]) === "function") {
+					args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock))
 				}
 			} catch (e) {
 				endCase("INVALID TEST " + e.stack)
@@ -279,7 +279,7 @@
 	}
 
 	function fakeTimeout(repeat, fn, ms) {
-		if (typeof repeat !== "object") {
+		if (type(repeat) !== "object") {
 			repeat = {
 				id: ++timerId,
 				repeat: repeat,
@@ -331,7 +331,7 @@
 			function spy() {
 				var key, result
 				, args = timers.slice.call(arguments)
-				if (typeof origin === "function") {
+				if (type(origin) === "function") {
 					result = origin.apply(this, arguments)
 				} else if (isArray(origin)) {
 					result = origin[spy.called % origin.length]
@@ -362,7 +362,7 @@
 		replace: function(obj, name, fn) {
 			var mock = this
 			, existing = obj[name]
-			if (typeof existing === "function") {
+			if (type(existing) === "function") {
 				mock.replaced.push(obj, name, hasOwn.call(obj, name) && existing)
 				obj[name] = fn
 			}
@@ -386,12 +386,12 @@
 				}
 			}
 			if (newTime) {
-				fakeNow = typeof newTime === "string" ? _Date.parse(newTime) : newTime
+				fakeNow = type(newTime) === "string" ? _Date.parse(newTime) : newTime
 				mock.tick(0)
 			}
 		},
 		tick: function(amount, noRepeat) {
-			if (typeof amount === "number") {
+			if (type(amount) === "number") {
 				fakeNow += amount
 			} else if (timers[0]) {
 				fakeNow = timers[0].at
@@ -400,8 +400,8 @@
 			for (var t; t = timers[0]; ) {
 				if (t.at <= fakeNow) {
 					timers.shift()
-					if (typeof t.fn === "string") t.fn = Function(t.fn)
-					if (typeof t.fn === "function") t.fn.apply(null, t.args)
+					if (type(t.fn) === "string") t.fn = Function(t.fn)
+					if (type(t.fn) === "function") t.fn.apply(null, t.args)
 					if (!noRepeat && t.repeat) {
 						t.at += t.ms
 						fakeTimeout(t)
