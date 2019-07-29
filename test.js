@@ -151,7 +151,7 @@
 	}
 
 	function nextCase() {
-		var testCase
+		var name, testCase
 		, args = tests[splicePos = runPos++]
 		_clearTimeout(tick)
 		if (args == null) {
@@ -176,11 +176,15 @@
 			testSuite = args
 			if (type(args[2]) === "function") {
 				args[2]()
+			} else if (type(args[2]) === "object") {
+				for (name in args[2]) if (hasOwn.call(args[2], name)) {
+					def(2, name, args[2][name])
+				}
 			}
 			nextCase()
 		} else {
 			totalCases++
-			var name = totalCases + (args[0] === 3 ? " - it " : " - ") + args[1]
+			name = totalCases + (args[0] === 3 ? " - it " : " - ") + args[1]
 			if (testSuite && testSuite.skip || args.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
 				skipped++
 				if (!argv.length) {
