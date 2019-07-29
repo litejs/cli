@@ -33,7 +33,7 @@
 	/* mock time end */
 	, describe = exports.describe = def.bind(exports, 1)
 	, assert = describe.assert = {
-		ok: function assertOk(value, message, _, _stackStart) {
+		ok: function assertOk(value, message, _stackStart) {
 			this.total++
 			if (!value) {
 				if (!message) {
@@ -50,19 +50,13 @@
 			}
 			return this
 		},
-		notOk: function notOk(value, message, _, _stackStart) {
-			return this.ok(
-				!value,
-				message || [value, "==", null],
-				null,
-				_stackStart || notOk
-			)
+		notOk: function notOk(value, message, _stackStart) {
+			return this.ok(!value, message || [value, "==", null], _stackStart || notOk)
 		},
 		equal: function assertEqual(actual, expected, message, _stackStart) {
 			return this.ok(
 				_deepEqual(actual, expected, []),
 				message || [actual, "==", expected],
-				null,
 				_stackStart || assertEqual
 			)
 		},
@@ -70,7 +64,6 @@
 			return this.ok(
 				!_deepEqual(actual, expected, []),
 				message || [actual, "!=", expected],
-				null,
 				_stackStart || notEqual
 			)
 		},
@@ -78,7 +71,6 @@
 			return this.ok(
 				actual === expected,
 				message || [actual, "===", expected],
-				null,
 				_stackStart || strictEqual
 			)
 		},
@@ -86,7 +78,6 @@
 			return this.ok(
 				actual !== expected,
 				message || [actual, "!==", expected],
-				null,
 				_stackStart || notStrictEqual
 			)
 		},
@@ -101,14 +92,13 @@
 			} catch(e) {
 				actual = true
 			}
-			return this.ok(actual, message || "throws", null, _stackStart || assertThrows)
+			return this.ok(actual, message || "throws", _stackStart || assertThrows)
 		},
 		type: function assertType(thing, expected, _, _stackStart) {
 			var actual = type(thing)
 			return this.ok(
 				actual === expected,
 				"type should be " + expected + ", got " + actual,
-				null,
 				_stackStart || assertType
 			)
 		},
@@ -116,7 +106,6 @@
 			return this.ok(
 				isArray(b) && b.indexOf(a) != -1,
 				"should be one from " + stringify(b) + ", got " + a,
-				null,
 				_stackStart || anyOf
 			)
 		}

@@ -25,8 +25,6 @@ assert.isFast = !v8.HasFastProperties ? assert.skip : function isFast(obj, a, b,
 	return this.ok(
 		v8.HasFastProperties(obj),
 		"Should have fast properties",
-		0,
-		0,
 		_stackStart || isFast
 	)
 }
@@ -35,8 +33,6 @@ assert.isNotFast = !v8.HasFastProperties ? assert.skip : function isNotFast(obj,
 	return this.ok(
 		!v8.HasFastProperties(obj),
 		"Should not have fast properties",
-		0,
-		0,
 		_stackStart || isNotFast
 	)
 }
@@ -66,7 +62,6 @@ assert.isOptimized = !v8.GetOptimizationStatus ? assert.skip : function isOptimi
 	return this.ok(
 		status == 1 || (status & 16 || status & 32),
 		v8.statusTexts[status],
-		null,
 		_stackStart || isOptimized
 	)
 }
