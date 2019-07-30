@@ -201,7 +201,7 @@
 			}, assert)
 
 			try {
-				testCase.setTimeout(args[3] && args[3].timeout || 5000)
+				testCase.setTimeout(args[3] && args[3].timeout || 999)
 				if (type(args[2]) === "function") {
 					args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock))
 				}
