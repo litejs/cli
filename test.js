@@ -127,7 +127,10 @@
 
 	function def(_, name, fn, opts) {
 		tests.splice(++splicePos, 0, arguments)
-		arguments.skip = name.charAt(0) === "#" && "by name" || opts && opts.skip
+		arguments.skip =
+			_ > 1 && type(fn) != "function" && "pending" ||
+			name.charAt(0) === "#" && "by name" ||
+			opts && opts.skip
 		if (!started) {
 			started = new Date()
 			print("TAP version 13")
@@ -171,7 +174,7 @@
 		} else {
 			totalCases++
 			name = totalCases + (args[0] === 3 ? " - it " : " - ") + args[1]
-			if (testSuite && testSuite.skip || args.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
+			if (args.skip || testSuite && testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
 				skipped++
 				if (!argv.length) {
 					print("ok " + name.replace(/#\s*/, "") + " # skip - " + (args.skip || "by suite"))
