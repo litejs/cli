@@ -12,7 +12,6 @@
 	, tests = []
 	, totalCases = 0
 	, failedCases = []
-	, failedStacks = []
 	, totalAsserts = 0
 	, passedAsserts = 0
 
@@ -33,23 +32,6 @@
 	/* mock time end */
 	, describe = exports.describe = def.bind(exports, 1)
 	, assert = describe.assert = {
-		ok: function assertOk(value, message, _stackStart) {
-			this.total++
-			if (!value) {
-				if (!message) {
-					message = stringify(value) + " == true"
-				} else if (isArray(message)) {
-					message = message[1] +
-					"\nexpected: " + stringify(message[2], 160) +
-					"\nactual:   " + stringify(message[0], 160)
-				}
-				this.errors.push(new AssertionError(message + " #" + this.total, _stackStart || assertOk))
-			}
-			if (this.planned <= this.total) {
-				this.end()
-			}
-			return this
-		},
 		notOk: function notOk(value, message, _stackStart) {
 			return this.ok(!value, message || [value, "==", null], _stackStart || notOk)
 		},
@@ -140,7 +122,7 @@
 	}
 
 	function nextCase() {
-		var name, testCase
+		var name, num, testCase
 		, args = tests[splicePos = runPos++]
 		_clearTimeout(tick)
 		if (args == null) {
@@ -157,8 +139,12 @@
 			)
 
 			if (failed) {
-				print("#" + red + bold + " FAILED tests " + failedCases.join(", "))
-				print(failedStacks.join("\n").replace(/^/gm, "  "))
+				for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
+					nums[failed] = testCase.num
+					stack[failed] = testCase.name + "\n" + testCase.errors.join("\n")
+				}
+				print("#" + red + bold + " FAILED tests " + nums.join(", "))
+				print(("---\n" + stack.join("\n---\n") + "\n...").replace(/^/gm, "  "))
 			}
 		} else if (args[0] === 1) {
 			if (!argv.length) print("# " + args[1])
@@ -172,9 +158,9 @@
 			}
 			nextCase()
 		} else {
-			totalCases++
-			name = totalCases + (args[0] === 3 ? " - it " : " - ") + args[1]
-			if (args.skip || testSuite && testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
+			num = ++totalCases
+			name = num + (args[0] === 3 ? " - it " : " - ") + args[1]
+			if (args.skip || testSuite && testSuite.skip || argv.length && argv.indexOf("" + num) < 0) {
 				skipped++
 				if (!argv.length) {
 					print("ok " + name.replace(/#\s*/, "") + " # skip - " + (args.skip || "by suite"))
@@ -182,9 +168,33 @@
 				return nextCase()
 			}
 			testCase = Object.assign({
+				name: name,
+				num: num,
 				total: 0,
-				passed: 0,
 				errors: [],
+				ok: function assertOk(value, message, _stackStart) {
+					testCase.total++
+					if (!value) {
+						testCase.fail(message || stringify(value) + " == true", _stackStart || assertOk)
+					}
+					if (testCase.planned <= testCase.total) {
+						testCase.end()
+					}
+					return testCase
+				},
+				fail: function fail(message, _stackStart) {
+					if (!message) {
+						message = stringify(value) + " == true"
+					} else if (isArray(message)) {
+						message = message[1] +
+						"\nexpected: " + stringify(message[2], 160) +
+						"\nactual:   " + stringify(message[0], 160)
+					}
+					if (testCase.errors.push(new AssertionError(message + " #" + testCase.total, _stackStart || fail)) == 1) {
+						failedCases.push(testCase)
+					}
+					return testCase
+				},
 				plan: function(planned) {
 					testCase.planned = planned
 					return testCase
@@ -220,13 +230,7 @@
 						hooks = hooked = null
 					}
 				},
-				end: function() {
-					if (testCase.ended) {
-						throw Error("ended multiple times")
-					}
-					testCase.ended = Date.now()
-					endCase()
-				}
+				end: endCase
 			}, assert)
 
 			try {
@@ -240,20 +244,19 @@
 		}
 		function endCase(err) {
 			if (err) {
-				testCase.errors.push(err)
+				testCase.fail(err)
+			}
+			if (testCase.ended) {
+				testCase.fail("ended multiple times")
 			}
 			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
-				testCase.errors.push("Planned " + testCase.planned + " actual " + testCase.total)
+				testCase.fail("Planned " + testCase.planned + " actual " + testCase.total)
 			}
 			if (testCase.mock) {
 				testCase.mock.restore()
 			}
-
+			if (testCase.ended) return
 			var failed = testCase.errors.length
-			if (failed) {
-				failedCases.push(totalCases)
-				failedStacks.push("---\n" + name + "\n" + testCase.errors.join("\n") + "\n...")
-			}
 
 			totalAsserts += testCase.total
 			passedAsserts += testCase.total - failed
@@ -262,6 +265,7 @@
 				(failed ? "not ok " : "ok ") +
 				name + " [" + (testCase.total - failed) + "/" + testCase.total + "]"
 			)
+			testCase.ended = Date.now()
 			if (runPos % 1000) nextCase()
 			else _setTimeout(nextCase, 1)
 		}
