@@ -33,32 +33,32 @@
 	, describe = exports.describe = def.bind(exports, 1)
 	, assert = describe.assert = {
 		notOk: function notOk(value, message, _stackStart) {
-			return this.ok(!value, message || [value, "==", null], _stackStart || notOk)
+			return this.ok(!value, message || stringify(value) + " is falsy", _stackStart || notOk)
 		},
 		equal: function assertEqual(actual, expected, message, _stackStart) {
 			return this.ok(
-				_deepEqual(actual, expected, []),
-				message || [actual, "==", expected],
+				arguments.length > 1 && _deepEqual(actual, expected, []),
+				message || [actual, "equal", expected],
 				_stackStart || assertEqual
 			)
 		},
 		notEqual: function notEqual(actual, expected, message, _stackStart) {
 			return this.ok(
-				!_deepEqual(actual, expected, []),
-				message || [actual, "!=", expected],
+				arguments.length > 1 && !_deepEqual(actual, expected, []),
+				message || [actual, "notEqual", expected],
 				_stackStart || notEqual
 			)
 		},
 		strictEqual: function strictEqual(actual, expected, message, _stackStart) {
 			return this.ok(
-				actual === expected,
+				arguments.length > 1 && actual === expected,
 				message || [actual, "===", expected],
 				_stackStart || strictEqual
 			)
 		},
 		notStrictEqual: function notStrictEqual(actual, expected, message, _stackStart) {
 			return this.ok(
-				actual !== expected,
+				arguments.length > 1 && actual !== expected,
 				message || [actual, "!==", expected],
 				_stackStart || notStrictEqual
 			)
@@ -135,7 +135,7 @@
 				ok: function assertOk(value, message, _stackStart) {
 					testCase.total++
 					if (!value) {
-						fail(message || stringify(value) + " == true", _stackStart || assertOk)
+						fail(message || stringify(value) + " is truthy", _stackStart || assertOk)
 					}
 					if (testCase.planned <= testCase.total) {
 						testCase.end()
@@ -202,7 +202,7 @@
 				"\nexpected: " + stringify(message[2], 160) +
 				"\nactual:   " + stringify(message[0], 160)
 			}
-			if (testCase.errors.push(new AssertionError(message + " #" + testCase.total, _stackStart || fail)) == 1) {
+			if (testCase.errors.push(new AssertionError(message + " #" + testCase.total, _stackStart || fail).stack) == 1) {
 				failedCases.push(testCase)
 			}
 		}
