@@ -126,18 +126,8 @@
 		, args = tests[splicePos = runPos++]
 		_clearTimeout(tick)
 		if (args == null) printResult()
-		else if (args[0] === 1) {
-			if (!argv.length) print("# " + args[1])
-			testSuite = args
-			if (type(args[2]) === "function") {
-				args[2]()
-			} else if (type(args[2]) === "object") {
-				for (name in args[2]) if (hasOwn.call(args[2], name)) {
-					def(2, name, args[2][name])
-				}
-			}
-			nextCase()
-		} else {
+		else if (args[0] === 1) nextSuite(testSuite = args)
+		else {
 			num = ++totalCases
 			name = num + (args[0] === 3 ? " - it " : " - ") + args[1]
 			if (args.skip || testSuite && testSuite.skip || argv.length && argv.indexOf("" + num) < 0) {
@@ -249,6 +239,17 @@
 			if (runPos % 1000) nextCase()
 			else _setTimeout(nextCase, 1)
 		}
+	}
+	function nextSuite(testSuite) {
+		if (!argv.length) print("# " + testSuite[1])
+		if (type(testSuite[2]) === "function") {
+			testSuite[2].call(exports)
+		} else if (type(testSuite[2]) === "object") {
+			for (var name in testSuite[2]) if (hasOwn.call(testSuite[2], name)) {
+				def(2, name, testSuite[2][name])
+			}
+		}
+		nextCase()
 	}
 	function printResult() {
 		var failed = failedCases.length
