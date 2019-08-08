@@ -125,28 +125,8 @@
 		var name, num, testCase
 		, args = tests[splicePos = runPos++]
 		_clearTimeout(tick)
-		if (args == null) {
-			var failed = failedCases.length
-			print("1.." + totalCases)
-			if (skipped) {
-				print("# " + yellow + bold + "skip  " + skipped)
-			}
-			print(
-				"#" + (failed ? "" : green + bold) + " pass  " + (totalCases - failed) + "/" + totalCases
-				+ " [" + passedAsserts + "/" + totalAsserts + "]"
-				+ " in " + (_Date.now() - started) + " ms"
-				+ " at " + started.toTimeString().slice(0,8)
-			)
-
-			if (failed) {
-				for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
-					nums[failed] = testCase.num
-					stack[failed] = testCase.name + "\n" + testCase.errors.join("\n")
-				}
-				print("#" + red + bold + " FAILED tests " + nums.join(", "))
-				print(("---\n" + stack.join("\n---\n") + "\n...").replace(/^/gm, "  "))
-			}
-		} else if (args[0] === 1) {
+		if (args == null) printResult()
+		else if (args[0] === 1) {
 			if (!argv.length) print("# " + args[1])
 			testSuite = args
 			if (type(args[2]) === "function") {
@@ -268,6 +248,28 @@
 			testCase.ended = Date.now()
 			if (runPos % 1000) nextCase()
 			else _setTimeout(nextCase, 1)
+		}
+	}
+	function printResult() {
+		var failed = failedCases.length
+		print("1.." + totalCases)
+		if (skipped) {
+			print("# " + yellow + bold + "skip  " + skipped)
+		}
+		print(
+			"#" + (failed ? "" : green + bold) + " pass  " + (totalCases - failed) + "/" + totalCases
+			+ " [" + passedAsserts + "/" + totalAsserts + "]"
+			+ " in " + (_Date.now() - started) + " ms"
+			+ " at " + started.toTimeString().slice(0,8)
+		)
+
+		if (failed) {
+			for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
+				nums[failed] = testCase.num
+				stack[failed] = testCase.name + "\n" + testCase.errors.join("\n")
+			}
+			print("#" + red + bold + " FAILED tests " + nums.join(", "))
+			print(("---\n" + stack.join("\n---\n") + "\n...").replace(/^/gm, "  "))
 		}
 	}
 
