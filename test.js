@@ -145,23 +145,10 @@
 				ok: function assertOk(value, message, _stackStart) {
 					testCase.total++
 					if (!value) {
-						testCase.fail(message || stringify(value) + " == true", _stackStart || assertOk)
+						fail(message || stringify(value) + " == true", _stackStart || assertOk)
 					}
 					if (testCase.planned <= testCase.total) {
 						testCase.end()
-					}
-					return testCase
-				},
-				fail: function fail(message, _stackStart) {
-					if (!message) {
-						message = stringify(value) + " == true"
-					} else if (isArray(message)) {
-						message = message[1] +
-						"\nexpected: " + stringify(message[2], 160) +
-						"\nactual:   " + stringify(message[0], 160)
-					}
-					if (testCase.errors.push(new AssertionError(message + " #" + testCase.total, _stackStart || fail)) == 1) {
-						failedCases.push(testCase)
 					}
 					return testCase
 				},
@@ -212,15 +199,21 @@
 				endCase("INVALID TEST " + e.stack)
 			}
 		}
+		function fail(message, _stackStart) {
+			if (isArray(message)) {
+				message = message[1] +
+				"\nexpected: " + stringify(message[2], 160) +
+				"\nactual:   " + stringify(message[0], 160)
+			}
+			if (testCase.errors.push(new AssertionError(message + " #" + testCase.total, _stackStart || fail)) == 1) {
+				failedCases.push(testCase)
+			}
+		}
 		function endCase(err) {
-			if (err) {
-				testCase.fail(err)
-			}
-			if (testCase.ended) {
-				testCase.fail("ended multiple times")
-			}
+			if (err) fail(err)
+			if (testCase.ended) fail("ended multiple times")
 			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
-				testCase.fail("Planned " + testCase.planned + " actual " + testCase.total)
+				fail("Planned " + testCase.planned + " actual " + testCase.total)
 			}
 			if (testCase.mock) {
 				testCase.mock.restore()
