@@ -122,24 +122,15 @@
 	}
 
 	function nextCase() {
-		var name, num, testCase
+		var testCase
 		, args = tests[splicePos = runPos++]
 		_clearTimeout(tick)
 		if (args == null) printResult()
 		else if (args[0] === 1) nextSuite(testSuite = args)
 		else {
-			num = ++totalCases
-			name = num + (args[0] === 3 ? " - it " : " - ") + args[1]
-			if (args.skip || testSuite && testSuite.skip || argv.length && argv.indexOf("" + num) < 0) {
-				skipped++
-				if (!argv.length) {
-					print("ok " + name.replace(/#\s*/, "") + " # skip - " + (args.skip || "by suite"))
-				}
-				return nextCase()
-			}
 			testCase = Object.assign({
-				name: name,
-				num: num,
+				num: ++totalCases,
+				name: totalCases + (args[0] === 3 ? " - it " : " - ") + args[1],
 				total: 0,
 				errors: [],
 				ok: function assertOk(value, message, _stackStart) {
@@ -189,6 +180,13 @@
 				},
 				end: endCase
 			}, assert)
+			if (args.skip || testSuite && testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
+				skipped++
+				if (!argv.length) {
+					print("ok " + testCase.name.replace(/#\s*/, "") + " # skip - " + (args.skip || "by suite"))
+				}
+				return nextCase()
+			}
 
 			try {
 				testCase.setTimeout(args[3] && args[3].timeout || 999)
@@ -226,7 +224,7 @@
 
 			print(
 				(failed ? "not ok " : "ok ") +
-				name + " [" + (testCase.total - failed) + "/" + testCase.total + "]"
+				testCase.name + " [" + (testCase.total - failed) + "/" + testCase.total + "]"
 			)
 			testCase.ended = Date.now()
 			if (runPos % 1000) nextCase()
