@@ -2,7 +2,7 @@
 
 
 !function(exports) {
-	var tick, started, testSuite, timerType
+	var started, testSuite, timerType
 	, _global = exports.window || global
 	, _process = _global.process || {}
 	, _setTimeout = setTimeout
@@ -122,9 +122,8 @@
 	}
 
 	function nextCase() {
-		var testCase
+		var testCase, tick
 		, args = tests[splicePos = runPos++]
-		_clearTimeout(tick)
 		if (args == null) printResult()
 		else if (args[0] === 1) nextSuite(testSuite = args)
 		else {
@@ -208,6 +207,7 @@
 			}
 		}
 		function endCase(err) {
+			_clearTimeout(tick)
 			if (err) fail(err)
 			if (testCase.ended) fail("ended multiple times")
 			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
