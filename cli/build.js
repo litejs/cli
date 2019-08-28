@@ -491,7 +491,7 @@ function jsMin(map, opts, next) {
 	, child = spawn("uglifyjs", [
 		"--warn",
 		"--compress", "evaluate=false,properties=false",
-		"--mangle",
+		"--mangle", "eval",
 		"--beautify", "beautify=false,semicolons=false,keep_quoted_props=true"
 	])
 
