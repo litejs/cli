@@ -346,20 +346,28 @@
 			spy.calls = []
 			return spy
 			function spy() {
-				var key, result
+				var err, key, result
 				, args = timers.slice.call(arguments)
 				if (type(origin) === "function") {
-					result = origin.apply(this, arguments)
+					try {
+						result = origin.apply(this, arguments)
+					} catch(e) {
+						err = e
+					}
 				} else if (isArray(origin)) {
 					result = origin[spy.called % origin.length]
 				} else if (origin && origin.constructor === Object) {
 					key = JSON.stringify(args).slice(1, -1)
 					result = hasOwn.call(origin, key) ? origin[key] : origin["*"]
 				}
+				// TODO:2019-09-09:lauri:
+				// var spy = assert.spy(Item, "method")
+				// assert.equal(spy.callCount, 1)
 				spy.called++
 				spy.calls.push({
 					scope: this,
 					args: args,
+					error: err,
 					result: result
 				})
 				return result
