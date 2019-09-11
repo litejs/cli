@@ -248,13 +248,6 @@
 		if (skipped) {
 			print("# " + yellow + bold + "skip  " + skipped)
 		}
-		print(
-			"#" + (failed ? "" : green + bold) + " pass  " + (totalCases - failed) + "/" + totalCases
-			+ " [" + passedAsserts + "/" + totalAsserts + "]"
-			+ " in " + (_Date.now() - started) + " ms"
-			+ " at " + started.toTimeString().slice(0,8)
-		)
-
 		if (failed) {
 			for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
 				nums[failed] = testCase.num
@@ -263,9 +256,13 @@
 			print("#" + red + bold + " FAILED tests " + nums.join(", "))
 			print(("---\n" + stack.join("\n---\n") + "\n...").replace(/^/gm, "  "))
 		}
+		print(
+			"#" + (failed ? "" : green + bold) + " pass  " + (totalCases - failed) + "/" + totalCases
+			+ " [" + passedAsserts + "/" + totalAsserts + "]"
+			+ " in " + (_Date.now() - started) + " ms"
+			+ " at " + started.toTimeString().slice(0,8)
+		)
 	}
-
-
 
 	function This() {
 		return this
