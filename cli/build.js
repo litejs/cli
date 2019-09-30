@@ -6,7 +6,7 @@
 //-    --banner, -b    Add commented banner to output
 //-    --input, -i     Input file
 //-    --output, -o    Output file
-//-    --readme, -r    Replase readme tags in file
+//-    --readme, -r    Replace readme tags in file
 //-
 //-  Examples
 //-    litejs build -r README.md -i ui/dev.html -o ui/index.html
@@ -490,8 +490,10 @@ function jsMin(map, opts, next) {
 	, result = ""
 	, child = spawn("uglifyjs", [
 		"--warn",
+		"--ie8",
 		"--compress", "evaluate=false,properties=false",
 		"--mangle", "eval",
+		"--comments", "/^[@!]/",
 		"--beautify", "beautify=false,semicolons=false,keep_quoted_props=true"
 	])
 
@@ -507,6 +509,9 @@ function jsMin(map, opts, next) {
 			console.error(opts.warnings)
 			throw Error("uglifyjs exited with " + code)
 		}
+		result = result
+		.replace(/\/\*!cc_on\*\//g, "/*@cc_on")
+		.replace(/\/\*!cc_off\*\//g, "@*/")
 		next(null, result)
 	})
 	for (name in map) if (hasOwn.call(map, name)) {
