@@ -540,7 +540,7 @@ function tplMin(map, opts, next) {
 }
 
 function _tplSplit(str, opts, next) {
-	var templateRe = /^([ \t]*)(@?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]=])*)[ \t]*(([\])}]?).*?([[({]?))$/gm
+	var templateRe = /^([ \t]*)(%?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]=])*)[ \t]*(([\])}]?).*?([[({]?))$/gm
 	, out = [""]
 	, parent = 0
 	, stack = [-1]
