@@ -32,63 +32,57 @@
 	/* mock time end */
 	, describe = exports.describe = def.bind(exports, 1)
 	, assert = describe.assert = {
-		notOk: function notOk(value, message, _stackStart) {
-			return this.ok(!value, message || stringify(value) + " is falsy", _stackStart || notOk)
+		notOk: function(value, message) {
+			return this.ok(!value, message || stringify(value) + " is falsy")
 		},
-		equal: function assertEqual(actual, expected, message, _stackStart) {
+		equal: function(actual, expected, message) {
 			return this.ok(
 				arguments.length > 1 && _deepEqual(actual, expected, []),
-				message || [actual, "equal", expected],
-				_stackStart || assertEqual
+				message || [actual, "equal", expected]
 			)
 		},
-		notEqual: function notEqual(actual, expected, message, _stackStart) {
+		notEqual: function(actual, expected, message) {
 			return this.ok(
 				arguments.length > 1 && !_deepEqual(actual, expected, []),
-				message || [actual, "notEqual", expected],
-				_stackStart || notEqual
+				message || [actual, "notEqual", expected]
 			)
 		},
-		strictEqual: function strictEqual(actual, expected, message, _stackStart) {
+		strictEqual: function(actual, expected, message) {
 			return this.ok(
 				arguments.length > 1 && actual === expected,
-				message || [actual, "===", expected],
-				_stackStart || strictEqual
+				message || [actual, "===", expected]
 			)
 		},
-		notStrictEqual: function notStrictEqual(actual, expected, message, _stackStart) {
+		notStrictEqual: function(actual, expected, message) {
 			return this.ok(
 				arguments.length > 1 && actual !== expected,
-				message || [actual, "!==", expected],
-				_stackStart || notStrictEqual
+				message || [actual, "!==", expected]
 			)
 		},
-		skip: function skip() {
+		skip: function() {
 			skipped++
 			return this
 		},
-		throws: function assertThrows(fn, message, _, _stackStart) {
+		throws: function(fn, message) {
 			var actual = false
 			try {
 				fn()
 			} catch(e) {
 				actual = true
 			}
-			return this.ok(actual, message || "throws", _stackStart || assertThrows)
+			return this.ok(actual, message || "throws")
 		},
-		type: function assertType(thing, expected, _, _stackStart) {
+		type: function(thing, expected) {
 			var actual = type(thing)
 			return this.ok(
 				actual === expected,
-				"type should be " + expected + ", got " + actual,
-				_stackStart || assertType
+				"type should be " + expected + ", got " + actual
 			)
 		},
-		anyOf: function anyOf(a, b, _, _stackStart) {
+		anyOf: function(a, b) {
 			return this.ok(
 				isArray(b) && b.indexOf(a) != -1,
-				"should be one from " + stringify(b) + ", got " + a,
-				_stackStart || anyOf
+				"should be one from " + stringify(b) + ", got " + a
 			)
 		}
 	}
@@ -132,13 +126,19 @@
 				name: totalCases + (args[0] === 3 ? " - it " : " - ") + args[1],
 				total: 0,
 				errors: [],
-				ok: function assertOk(value, message, _stackStart) {
+				ok: function(value, message) {
 					testCase.total++
 					if (!value) {
-						fail(message || stringify(value) + " is truthy", _stackStart || assertOk)
+						if (isArray(message)) {
+							message = message[1] +
+							"\nexpected: " + stringify(message[2], 160) +
+							"\nactual:   " + stringify(message[0], 160)
+						}
+
+						fail("AssertionError#" + testCase.total + ": " + (message || stringify(value)), Error().stack)
 					}
 					if (testCase.planned <= testCase.total) {
-						testCase.end()
+						endCase()
 					}
 					return testCase
 				},
@@ -148,7 +148,7 @@
 				},
 				setTimeout: function(ms) {
 					_clearTimeout(tick)
-					tick = _setTimeout(endCase, ms, "TIMEOUT " + ms + "ms")
+					tick = _setTimeout(endCase, ms, "TIMEOUT: " + ms + "ms")
 					return testCase
 				},
 				wait: function() {
@@ -165,7 +165,7 @@
 						}
 					}(k)
 
-					return function resume() {
+					return function() {
 						if (!hooks) return
 						for (var v, scope = obj, i = hooked.length; i--; i--) {
 							obj[hooked[i-1]] = hooked[i]
@@ -193,25 +193,27 @@
 					args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock))
 				}
 			} catch (e) {
-				endCase("INVALID TEST " + e.stack)
+				fail(e, e.stack)
+				endCase()
 			}
 		}
-		function fail(message, _stackStart) {
-			if (isArray(message)) {
-				message = message[1] +
-				"\nexpected: " + stringify(message[2], 160) +
-				"\nactual:   " + stringify(message[0], 160)
+		function fail(message, stack) {
+			for (var row, start = 0, i = 0, arr = (stack || "").split("\n"); row = arr[++i]; ) {
+				if (row.indexOf("/litejs/test/index.js:") < 0) {
+					if (!start) start = i
+				} else if (start) break
 			}
-			if (testCase.errors.push(new AssertionError(message + " #" + testCase.total, _stackStart || fail).stack) == 1) {
+
+			if (testCase.errors.push(message + "\n" + arr.slice(start, i).join("\n")) == 1) {
 				failedCases.push(testCase)
 			}
 		}
 		function endCase(err) {
 			_clearTimeout(tick)
 			if (err) fail(err)
-			if (testCase.ended) fail("ended multiple times")
+			if (testCase.ended) fail("Error: ended multiple times")
 			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
-				fail("Planned " + testCase.planned + " actual " + testCase.total)
+				fail("Error: planned " + testCase.planned + " actual " + testCase.total)
 			}
 			if (testCase.mock) {
 				testCase.mock.restore()
@@ -243,25 +245,25 @@
 		nextCase()
 	}
 	function printResult() {
-		var failed = failedCases.length
 		print("1.." + totalCases)
-		if (skipped) {
-			print("# " + yellow + bold + "skip  " + skipped)
-		}
+		var failed = failedCases.length
 		if (failed) {
 			for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
 				nums[failed] = testCase.num
 				stack[failed] = testCase.name + "\n" + testCase.errors.join("\n")
 			}
-			print("#" + red + bold + " FAILED tests " + nums.join(", "))
 			print(("---\n" + stack.join("\n---\n") + "\n...").replace(/^/gm, "  "))
+			print("#" + red + bold + " FAIL  tests " + nums.join(", "))
 		}
 		print(
-			"#" + (failed ? "" : green + bold) + " pass  " + (totalCases - failed) + "/" + totalCases
+			"#" + (failed ? "" : green + bold) + " pass  " + (totalCases - failedCases.length) + "/" + totalCases
 			+ " [" + passedAsserts + "/" + totalAsserts + "]"
 			+ " in " + (_Date.now() - started) + " ms"
-			+ " at " + started.toTimeString().slice(0,8)
+			+ " at " + started.toTimeString().slice(0, 8)
 		)
+		if (skipped) {
+			print("# " + yellow + bold + "skip  " + skipped)
+		}
 	}
 
 	function This() {
@@ -449,18 +451,6 @@
 		}
 	}
 
-
-
-	function AssertionError(message, _stackStart) {
-		this.name = "AssertionError"
-		this.message = message
-		if (Error.captureStackTrace) {
-			Error.captureStackTrace(this, _stackStart || AssertionError)
-		} else {
-			this.stack = this.toString() + "\n" + (new Error()).stack
-		}
-	}
-	AssertionError.prototype = Object.create(Error.prototype)
 
 
 	function _deepEqual(actual, expected, circ) {
