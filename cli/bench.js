@@ -6,10 +6,14 @@
 //-    litejs bench test/bench/date.js
 //-
 
-var bench = require("../../test/bench")
+var tmp
+, child = require("child_process")
+, fs = require("fs")
 , path = require("path")
+, bench = require("../../test/bench")
 
 exports.execute = execute
+global.requireGit = requireGit
 
 function execute(argv, i) {
 	var file = process.argv[i]
@@ -53,5 +57,29 @@ function run(mod, next) {
 		if (cur) run(cur, loop)
 		else if (typeof next === "function") next()
 	}
+}
+
+function requireGit(id) {
+	if (!tmp) {
+		tmp = fs.mkdtempSync(
+			path.join(require("os").tmpdir(), "bench-")
+		)
+		console.log("mkdtemp", tmp)
+		process.on("exit", cleanup)
+	}
+
+	id = id.replace(/:(.*)/, function(_, file) {
+		return ":" + path.relative(process.cwd(), path.join(__filename, "..", file))
+	})
+
+	var cleared = tmp + "/" + id.replace(/\.?\.\/|\/|:/g, "-")
+	, content = child.spawnSync("git", ["show", id]).output.join("")
+
+	fs.writeFileSync(cleared, content, "utf8")
+	return require(cleared)
+}
+
+function cleanup() {
+	module.parent.exports.rmrf(tmp)
 }
 

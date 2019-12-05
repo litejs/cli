@@ -15,7 +15,7 @@
 
 var fs = require("fs")
 , child = require("child_process")
-, path = require("../path")
+, path = require("path")
 , opts = {}
 
 global.Fn = require("../fn").Fn
