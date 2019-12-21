@@ -16,7 +16,12 @@
 var fs = require("fs")
 , child = require("child_process")
 , path = require("path")
+, conf = {}
 , opts = {}
+
+try {
+	conf = require(path.resolve("package.json")).litejs || {}
+} catch(e) {}
 
 global.Fn = require("../fn").Fn
 
@@ -56,11 +61,12 @@ if (!module.parent) {
 		b: "build",
 		t: "test"
 	}
-	, cmd = shortcut[process.argv[2]] || process.argv[2]
 	, subHelp = [
 		"bench",
 		"build"
 	]
+	, cmd = shortcut[process.argv[2]] || process.argv[2]
+
 	switch (cmd) {
 	case "bench":
 	case "build":
@@ -75,16 +81,18 @@ if (!module.parent) {
 		child.spawnSync("cp", ["-rv",
 			process.argv[2].replace("init-", "./node_modules/litejs/lib/template/default/"),
 			process.cwd() + (opts.file ? "/" + opts.file : "")
-		], {stdio: "inherit"})
+		], { stdio: "inherit" })
 		break;
 	case "test":
-		var arr = process.argv.slice(process.argv.length > 3 ? 4 : 3)
-		arr.unshift("-r", "litejs", "test")
+		var arr = [ "-r", "litejs" ].concat(
+			conf.test || "test",
+			process.argv.slice(process.argv.length > 3 ? 4 : 3)
+		)
 		child.spawn(process.argv[0], arr, {
 			env: {
 				NODE_PATH: process.argv[1].replace(/bin\/\w+$/, "lib/node_modules/")
 			},
-			stdio: 'inherit'
+			stdio: "inherit"
 		})
 		break;
 	case "help":
