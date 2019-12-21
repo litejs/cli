@@ -59,6 +59,7 @@ if (!module.parent) {
 	var helpFile = __filename
 	, shortcut = {
 		b: "build",
+		r: "release",
 		t: "test"
 	}
 	, subHelp = [
@@ -70,6 +71,7 @@ if (!module.parent) {
 	switch (cmd) {
 	case "bench":
 	case "build":
+	case "release":
 		require("./" + cmd).execute(process.argv, 3)
 		break;
 	case "init":

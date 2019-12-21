@@ -57,7 +57,7 @@ adapters.view = adapters.tpl
 
 try {
 	conf = require(path.resolve("package.json"))
-	console.log("Build %s@%s with %s@%s", conf.name, conf.version, PAC.name, PAC.version)
+	console.log("# Build %s@%s with %s@%s", conf.name, conf.version, PAC.name, PAC.version)
 } catch(e) {
 	console.error(e)
 	conf = {}

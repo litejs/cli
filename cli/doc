@@ -29,7 +29,7 @@ title() {
 tag_title() {
 	DATE=$(git show -s --format="%ci" $1 | tail -n1)
 	NAME=$(git describe --tags --exact-match $1 2>/dev/null)
-	[ "$NAME" ] && title "${DATE%% *} version ${NAME#?}" "-" && printf "\n"
+	[ "$NAME" ] && title "${DATE%% *} Version ${NAME#?}" "-" && printf "\n"
 }
 
 comments() {
