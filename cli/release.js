@@ -44,10 +44,11 @@ function execute(args, i) {
 	child.spawnSync("lj", ["build"])
 	child.spawnSync("git", ["add", "-u"])
 	child.spawnSync("lj", ["build"])
+	child.spawnSync("git", ["add", "-u"])
 
 	msg += child.spawnSync("lj", ["test"]).stdout.toString("utf8").split("\n").slice(-3).join("\n")
 
-	child.spawnSync("git", ["commit", "-a", "-m", "Release " + cur.version, rewrite ? "--amend" : []], { stdio: "inherit" })
+	child.spawnSync("git", ["commit", "-m", "Release " + cur.version, (rewrite ? "--amend" : "--")], { stdio: "inherit" })
 
 	cli.writeFile(TAG_MSG, msg)
 
@@ -56,7 +57,7 @@ function execute(args, i) {
 	child.spawn(editor, [TAG_MSG], { stdio: "inherit" })
 	.on("exit", function (e, code) {
 
-		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, rewrite ? "-f" : []], { stdio: "inherit" })
+		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, rewrite ? "-f" : "--"], { stdio: "inherit" })
 
 		console.log(`VERSION: ${cur.version}`)
 		console.log(`PUBLISH: npm publish${len === 3?'':' --tag next'}`)
