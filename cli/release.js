@@ -1,6 +1,7 @@
 
 var TAG_MSG = ".git/TAG_MSG"
 , child = require("child_process")
+, path = require("path")
 , cli = require("./")
 
 
@@ -16,7 +17,7 @@ function execute(args, i) {
 	, msg = ""
 	, now = (new Date().toISOString().slice(2, 8) + "0").split("-")
 	, com = JSON.parse(child.execSync("git show HEAD:package.json").toString("utf8"))
-	, cur = require("../../package.json")
+	, cur = require(path.resolve("package.json"))
 	, junks = com.version.split(".")
 	, len = junks.length
 	, rewrite = args[i] === "-f"
