@@ -13,8 +13,7 @@ if (module.parent) {
 }
 
 function execute(args, i) {
-	var tmp
-	, msg = ""
+	var msg
 	, now = (new Date().toISOString().slice(2, 8) + "0").split("-")
 	, com = JSON.parse(child.execSync("git show HEAD:package.json").toString("utf8"))
 	, cur = require(path.resolve("package.json"))
@@ -33,29 +32,26 @@ function execute(args, i) {
 		cli.writeFile("package.json", JSON.stringify(cur, null, "  ") + "\n")
 	}
 
-	msg += "Version " + cur.version + "\n\n"
-	msg += "API Changes:\n\nNew Features:\n\nEnhancements:\n\nBreaking Changes:\n"
-	msg += child.spawnSync("git", ["log", "--grep", "break", "-i", lastTag + "..@"], {stdio: ["ignore", "pipe", "inherit"]}).stdout.toString("utf8")
-	msg += "\n\nFixes:\n\nRemoved Features:\n\n"
-	msg += child.spawnSync("git", ["log", lastTag + "..@"]).stdout.toString("utf8")
-	msg += child.spawnSync("lj", ["build"]).stdout.toString("utf8")
+	msg = "Release " + cur.version + "\n\n"
+	run(["build"])
+	run(["test"])
 
 	// TODO:2019-12-21:lauri:Build three times till hash calculation is fixed in build
 	child.spawnSync("git", ["add", "-u"])
 	child.spawnSync("lj", ["build"])
 	child.spawnSync("git", ["add", "-u"])
 	child.spawnSync("lj", ["build"])
-	child.spawnSync("git", ["add", "-u"])
 
-	msg += child.spawnSync("lj", ["test"]).stdout.toString("utf8").split("\n").slice(-3).join("\n")
+	child.spawnSync("git", ["commit", "-a", "-m", msg, (rewrite ? "--amend" : "--")], { stdio: "inherit" })
 
-	child.spawnSync("git", ["commit", "-m", "Release " + cur.version, (rewrite ? "--amend" : "--")], { stdio: "inherit" })
+	msg = "API Changes:\n\nNew Features:\n\nEnhancements:\n\nBreaking Changes:\n"
+	msg += child.spawnSync("git", ["log", "--grep", "break", "-i", lastTag + "..@"], {stdio: ["ignore", "pipe", "inherit"]}).stdout.toString("utf8")
+	msg += "\n\nFixes:\n\nRemoved Features:\n\n"
+	msg += child.spawnSync("git", ["log", lastTag + "..@"]).stdout.toString("utf8")
 
 	cli.writeFile(TAG_MSG, msg)
 
-	var editor = process.env.EDITOR || "vim"
-
-	child.spawn(editor, [TAG_MSG], { stdio: "inherit" })
+	child.spawn(process.env.EDITOR || "vim", [TAG_MSG], { stdio: "inherit" })
 	.on("exit", function (e, code) {
 
 		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, rewrite ? "-f" : "--"], { stdio: "inherit" })
@@ -63,5 +59,15 @@ function execute(args, i) {
 		console.log(`VERSION: ${cur.version}`)
 		console.log(`PUBLISH: npm publish${len === 3?'':' --tag next'}`)
 	})
+
+	function run(args) {
+		var sub = child.spawnSync("lj", args)
+		if (sub.status) {
+			console.error(`EXIT: ${sub.status}`, args)
+			process.stderr.write(sub.stderr)
+			process.exit(1)
+		}
+		msg += sub.stdout.toString("utf8")
+	}
 }
 
