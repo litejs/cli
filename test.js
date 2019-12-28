@@ -4,7 +4,7 @@
 !function(exports) {
 	var started, testSuite, timerType
 	, _global = exports.window || global
-	, _process = _global.process || {}
+	, _process = _global.process || { exit: This }
 	, _setTimeout = setTimeout
 	, _clearTimeout = clearTimeout
 	, _Date = Date
@@ -264,6 +264,7 @@
 		if (skipped) {
 			print("# " + yellow + bold + "skip  " + skipped)
 		}
+		_process.exit(failed)
 	}
 
 	function This() {
