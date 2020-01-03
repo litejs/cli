@@ -14,7 +14,7 @@ if (module.parent) {
 
 function execute(args, i) {
 	var msg
-	, now = (new Date().toISOString().slice(2, 8) + "0").split("-")
+	, now = (new Date().toISOString().slice(2, 8) + "00").split(/-0?/)
 	, com = JSON.parse(child.execSync("git show HEAD:package.json").toString("utf8"))
 	, cur = require(path.resolve("package.json"))
 	, junks = com.version.split(".")
