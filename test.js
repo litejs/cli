@@ -146,10 +146,13 @@
 				num: ++totalCases,
 				name: totalCases + (args[0] === 3 ? " - it " : " - ") + args[1],
 				total: 0,
+				passed: 0,
 				errors: [],
 				ok: function(value, message) {
 					testCase.total++
-					if (!value) {
+					if (value) {
+						testCase.passed++
+					} else {
 						if (isArray(message)) {
 							message = message[1] +
 							"\nexpected: " + stringify(message[2], 160) +
@@ -236,24 +239,23 @@
 		function endCase(err) {
 			_clearTimeout(tick)
 			if (err) fail(err)
-			if (testCase.ended) fail("Error: ended multiple times")
+			if (testCase.ended) return fail("Error: ended multiple times")
+			testCase.ended = Date.now()
+
 			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
 				fail("Error: planned " + testCase.planned + " actual " + testCase.total)
 			}
 			if (testCase.mock) {
 				testCase.mock.restore()
 			}
-			if (testCase.ended) return
-			var failed = testCase.errors.length
 
 			totalAsserts += testCase.total
-			passedAsserts += testCase.total - failed
+			passedAsserts += testCase.passed
 
 			print(
-				(failed ? "not ok " : "ok ") +
-				testCase.name + " [" + (testCase.total - failed) + "/" + testCase.total + "]"
+				(testCase.errors.length ? "not ok " : "ok ") +
+				testCase.name + " [" + testCase.passed + "/" + testCase.total + "]"
 			)
-			testCase.ended = Date.now()
 			if (runPos % 1000) nextCase()
 			else _setTimeout(nextCase, 1)
 		}
