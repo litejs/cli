@@ -88,7 +88,7 @@ if (!module.parent) {
 	case "test":
 		var arr = [ "-r", "litejs" ].concat(
 			conf.test || "test",
-			process.argv.slice(process.argv.length > 3 ? 4 : 3)
+			process.argv.slice(3)
 		)
 		child.spawn(process.argv[0], arr, {
 			env: {

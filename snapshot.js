@@ -4,7 +4,7 @@ var cli = require("../lib/cli")
 
 describe.assert.matchSnapshot = function(file, transform) {
 	var expected
-	, actual = transform(cli.readFile(file))
+	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform
 
 	try {
 		expected = cli.readFile(file + ".snap")
@@ -12,7 +12,7 @@ describe.assert.matchSnapshot = function(file, transform) {
 		expected = ""
 	}
 
-	if (actual !== expected && describe.argv.indexOf("-u") > -1) {
+	if (actual !== expected && describe.conf.ok) {
 		console.error("# Update snapshot %s", file)
 		cli.writeFile(file + ".snap", actual)
 	} else {

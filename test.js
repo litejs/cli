@@ -2,7 +2,7 @@
 
 
 !function(exports) {
-	var started, testSuite, timerType
+	var tmp, started, testSuite, timerType
 	, _global = exports.window || global
 	, _process = _global.process || { exit: This }
 	, _setTimeout = setTimeout
@@ -31,6 +31,11 @@
 	}
 	/* mock time end */
 	, describe = exports.describe = def.bind(exports, 1)
+	, conf = describe.conf = {
+		color: (_process.stdout || exports).isTTY,
+		status: 1,
+		trace: 1
+	}
 	, assert = describe.assert = {
 		notOk: function(value, message) {
 			return this.ok(!value, message || stringify(value) + " is falsy")
@@ -89,12 +94,28 @@
 	, toStr = assert.toString
 	, hasOwn = assert.hasOwnProperty
 	, argv = describe.argv = _process.argv && _process.argv.slice(2) || []
-	, color = (_process.stdout || exports).isTTY && argv.indexOf("--no-color") < 0
-	, bold = color ? "\x1b[1m"  : ""
-	, red = color ? "\x1b[31m" : ""
-	, green = color ? "\x1b[32m" : ""
-	, yellow = color ? "\x1b[33m" : ""
-	, reset = color ? "\x1b[0m"  : ""
+	, argi = argv.length
+	, bold = "\x1b[1m"
+	, red = "\x1b[31m"
+	, green = "\x1b[32m"
+	, yellow = "\x1b[33m"
+	, reset = "\x1b[0m"
+
+	for (; argi--; ) {
+		tmp = argv[argi].split(/[-=]/)
+		if (tmp[0] + tmp[1] == "") {
+			if (tmp[2] == "no") {
+				conf[tmp[3]] = false
+			} else {
+				conf[tmp[2]] = tmp[3] || true
+			}
+			argv.splice(argi, 1)
+		}
+	}
+
+	if (!conf.color) {
+		bold = red = green = yellow = reset = ""
+	}
 
 	describe.output = ""
 
@@ -198,13 +219,17 @@
 			}
 		}
 		function fail(message, stack) {
-			for (var row, start = 0, i = 0, arr = (stack || "").split("\n"); row = arr[++i]; ) {
-				if (row.indexOf("/litejs/test/index.js:") < 0) {
-					if (!start) start = i
-				} else if (start) break
+			if (stack) {
+				for (var row, start, i = 0, arr = (stack || "").split("\n"); row = arr[++i]; ) {
+					if (row.indexOf("/litejs/test/index.js:") < 0) {
+						if (!start) start = i
+					}
+					if (i - start >= conf.trace) break
+				}
+				message = [ message ].concat(arr.slice(start, i)).join("\n")
 			}
 
-			if (testCase.errors.push(message + "\n" + arr.slice(start, i).join("\n")) == 1) {
+			if (testCase.errors.push(message) == 1) {
 				failedCases.push(testCase)
 			}
 		}
@@ -248,6 +273,7 @@
 		print("1.." + totalCases)
 		var failed = failedCases.length
 		if (failed) {
+			if (conf.status) _process.exitCode = failed
 			for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
 				nums[failed] = testCase.num
 				stack[failed] = testCase.name + "\n" + testCase.errors.join("\n")
@@ -264,7 +290,6 @@
 		if (skipped) {
 			print("# " + yellow + bold + "skip  " + skipped)
 		}
-		_process.exit(failed)
 	}
 
 	function This() {
