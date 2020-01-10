@@ -34,6 +34,7 @@
 	, conf = describe.conf = {
 		color: (_process.stdout || exports).isTTY,
 		status: 1,
+		time: 1,
 		trace: 1
 	}
 	, assert = describe.assert = {
@@ -118,6 +119,7 @@
 	}
 
 	describe.output = ""
+	describe.failed = 0
 
 	exports.test = def.bind(exports, 2)
 	exports.it = def.bind(exports, 3)
@@ -150,6 +152,9 @@
 				errors: [],
 				ok: function(value, message) {
 					testCase.total++
+					if (testCase.ended) {
+						fail("Error: assertion after end")
+					}
 					if (value) {
 						testCase.passed++
 					} else {
@@ -235,6 +240,7 @@
 			if (testCase.errors.push(message) == 1) {
 				failedCases.push(testCase)
 			}
+			if (describe.result) printResult()
 		}
 		function endCase(err) {
 			_clearTimeout(tick)
@@ -275,19 +281,24 @@
 		print("1.." + totalCases)
 		var failed = failedCases.length
 		if (failed) {
-			if (conf.status) _process.exitCode = failed
+			describe.failed += failed
+			if (conf.status) _process.exitCode = describe.failed
 			for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
 				nums[failed] = testCase.num
 				stack[failed] = testCase.name + "\n" + testCase.errors.join("\n")
 			}
 			print(("---\n" + stack.join("\n---\n") + "\n...").replace(/^/gm, "  "))
 			print("#" + red + bold + " FAIL  tests " + nums.join(", "))
+			failedCases.length = 0
 		}
 		print(
-			"#" + (failed ? "" : green + bold) + " pass  " + (totalCases - failedCases.length) + "/" + totalCases
+			describe.result = "#" + (failed ? "" : green + bold) + " pass  " + (totalCases - describe.failed) + "/" + totalCases
 			+ " [" + passedAsserts + "/" + totalAsserts + "]"
-			+ " in " + (_Date.now() - started) + " ms"
-			+ " at " + started.toTimeString().slice(0, 8)
+			+ (
+				conf.time ?
+				" in " + (_Date.now() - started) + " ms at " + started.toTimeString().slice(0, 8) :
+				""
+			)
 		)
 		if (skipped) {
 			print("# " + yellow + bold + "skip  " + skipped)
