@@ -13,7 +13,7 @@ if (module.parent) {
 }
 
 function execute(args, i) {
-	var msg
+	var g, i, msg
 	, now = (new Date().toISOString().slice(2, 8) + "00").split(/-0?/)
 	, com = JSON.parse(child.execSync("git show HEAD:package.json").toString("utf8"))
 	, cur = require(path.resolve("package.json"))
@@ -21,6 +21,19 @@ function execute(args, i) {
 	, len = junks.length
 	, rewrite = args[i] === "-f"
 	, lastTag = child.execSync("git describe --tags --abbrev=0 @^").toString("utf8").trim()
+	, group = [
+		{ name: "New Features",      re: /add\b/i, log: [] },
+		{ name: "Removed Features",  re: /remove\b/i, log: [] },
+		{ name: "API Changes",       re: /api\b/i, log: [] },
+		{ name: "Breaking Changes",  re: /breake\b/i,
+			log: child.spawnSync("git", [
+				"log", "-z", "--grep", "break", "-i", lastTag + "..@"
+			], {stdio: ["ignore", "pipe", "inherit"]})
+			.stdout.toString("utf8").split("\0").filter(Boolean)
+		},
+		{ name: "Fixes",             re: /fix\b/i, log: [] },
+		{ name: "Enhancements",      re: null, log: [] }
+	]
 
 	if (!rewrite && com.version === cur.version) {
 		if (len > 3 || !(now[0] > junks[0] || now[1] > junks[1])) {
@@ -44,10 +57,21 @@ function execute(args, i) {
 
 	child.spawnSync("git", ["commit", "-a", "-m", msg, (rewrite ? "--amend" : "--")], { stdio: "inherit" })
 
-	msg = "API Changes:\n\nNew Features:\n\nEnhancements:\n\nBreaking Changes:\n"
-	msg += child.spawnSync("git", ["log", "--grep", "break", "-i", lastTag + "..@"], {stdio: ["ignore", "pipe", "inherit"]}).stdout.toString("utf8")
-	msg += "\n\nFixes:\n\nRemoved Features:\n\n"
-	msg += child.spawnSync("git", ["log", lastTag + "..@"]).stdout.toString("utf8")
+	child.spawnSync("git", [
+		"log", "--pretty=format:%s (%aN)", lastTag + "..@"
+	]).stdout.toString("utf8").split("\n").forEach(function(row) {
+		for (var g, i = 0; g = group[i++]; ) {
+			if (!g.re || g.re.test(row)) {
+				return g.log.push(row)
+			}
+		}
+	})
+	msg = ""
+	for (i = 0; g = group[i++]; ) {
+		if (g.log.length) {
+			msg += g.name + ":\n\n - " + g.log.join("\n - ") + "\n\n"
+		}
+	}
 
 	cli.writeFile(TAG_MSG, msg)
 
@@ -57,7 +81,9 @@ function execute(args, i) {
 		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, rewrite ? "-f" : "--"], { stdio: "inherit" })
 
 		console.log(`VERSION: ${cur.version}`)
-		console.log(`PUBLISH: npm publish${len === 3?'':' --tag next'}`)
+		if (!cur.private) {
+			console.log(`PUBLISH: npm publish${len === 3?'':' --tag next'}`)
+		}
 	})
 
 	function run(args) {
