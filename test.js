@@ -303,6 +303,7 @@
 		if (skipped) {
 			print("# " + yellow + bold + "skip  " + skipped)
 		}
+		if (describe.onend) describe.onend()
 	}
 
 	function This() {
@@ -310,6 +311,7 @@
 	}
 	function print(str) {
 		describe.output += str + "\n"
+		if (describe.onprint) describe.onprint(str)
 		if (console.log) console.log(str + reset)
 	}
 
