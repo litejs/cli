@@ -285,6 +285,7 @@
 			if (conf.status) _process.exitCode = describe.failed
 			for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
 				nums[failed] = testCase.num
+				// TODO:2020-03-31:lauri:Add test number
 				stack[failed] = testCase.name + "\n" + testCase.errors.join("\n")
 			}
 			print(("---\n" + stack.join("\n---\n") + "\n...").replace(/^/gm, "  "))

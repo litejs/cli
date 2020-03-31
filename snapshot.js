@@ -1,13 +1,18 @@
 
 var cli = require("../lib/cli")
+, child = require("child_process")
+, path = require("path")
 , describe = require("./").describe
+, relPathRe = /[^(]+(?=:\d+:\d+\))/gm
+, relPathFn = path.relative.bind(path, process.cwd())
 
 describe.assert.matchSnapshot = function(file, transform) {
 	var expected
 	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform
 
+	actual = actual.replace(relPathRe, relPathFn)
 	try {
-		expected = cli.readFile(file + ".snap")
+		expected = cli.readFile(file + ".snap").replace(relPathRe, relPathFn)
 	} catch(e) {
 		expected = ""
 	}
