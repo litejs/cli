@@ -6,23 +6,44 @@ var cli = require("../lib/cli")
 , relPathRe = /[^(]+(?=:\d+:\d+\))/gm
 , relPathFn = path.relative.bind(path, process.cwd())
 
+describe.assert.cmdSnapshot = function(cmd, file) {
+	var actual
+	try {
+		actual = child.execSync(cmd).toString("utf8").replace(relPathRe, relPathFn)
+	} catch(e) {
+		return this.ok(null, "Snapshot command failed: " + cmd + "\n---\n" + e.stdout.toString("utf8"))
+	}
+	return this.matchSnapshot(file, actual)
+}
+
 describe.assert.matchSnapshot = function(file, transform) {
-	var expected
+	var expected, diff
 	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform
 
-	actual = actual.replace(relPathRe, relPathFn)
 	try {
 		expected = cli.readFile(file + ".snap").replace(relPathRe, relPathFn)
 	} catch(e) {
-		expected = ""
+		return this.ok(null, "Snapshot read failed: " + file + ".snap\n---\n" + e)
 	}
-
-	if (actual !== expected && describe.conf.ok) {
+	if (actual === expected) {
+		this.ok(1)
+	} else if (describe.conf.ok) {
 		console.error("# Update snapshot %s", file)
 		cli.writeFile(file + ".snap", actual)
 		this.ok(1)
 	} else {
-		this.equal(actual, expected, "Snapshot " + file + "\n---\n" + actual + "\n---\n" + expected)
+		try {
+			child.execSync("git diff --no-index --color -- " + file + ".snap -", {
+				input: actual,
+				encoding: "utf8"
+			})
+		} catch(e) {
+			return this.ok(null, e.stdout ?
+				"Snapshot " + file + "\n---\n" + e.stdout :
+				"Snapshot diff failed\n---\n" + e.stderr
+			)
+		}
+		this.fail("No diff output")
 	}
 
 	return this
