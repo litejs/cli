@@ -125,7 +125,6 @@
 	exports.it = def.bind(exports, 3)
 
 	function def(_, name, fn, opts) {
-		tests.splice(++splicePos, 0, arguments)
 		arguments.skip =
 			_ > 1 && type(fn) != "function" && "pending" ||
 			name.charAt(0) === "#" && "by name" ||
@@ -134,7 +133,9 @@
 			started = new Date()
 			print("TAP version 13")
 			timerType = type(_setTimeout(nextCase, 1))
+			if (splicePos === 0 && _ !== 1) def(1, "Unnamed TestSuite")
 		}
+		tests.splice(++splicePos, 0, arguments)
 		return exports
 	}
 
@@ -208,7 +209,7 @@
 				},
 				end: endCase
 			}, assert)
-			if (args.skip || testSuite && testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
+			if (args.skip || testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
 				skipped++
 				if (!argv.length) {
 					print("ok " + testCase.name.replace(/#\s*/, "") + " # skip - " + (args.skip || "by suite"))
