@@ -65,10 +65,6 @@
 				message || [actual, "!==", expected]
 			)
 		},
-		skip: function() {
-			skipped++
-			return this
-		},
 		throws: function(fn, message) {
 			var actual = false
 			try {
