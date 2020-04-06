@@ -99,13 +99,9 @@
 	, reset = "\x1b[0m"
 
 	for (; argi--; ) {
-		tmp = argv[argi].split(/[-=]/)
-		if (tmp[0] + tmp[1] == "") {
-			if (tmp[2] == "no") {
-				conf[tmp[3]] = false
-			} else {
-				conf[tmp[2]] = tmp[3] || true
-			}
+		tmp = argv[argi].split(/=|--(no-)?/)
+		if (tmp[0] == "") {
+			conf[tmp[2]] = tmp[4] || !tmp[1]
 			argv.splice(argi, 1)
 		}
 	}
