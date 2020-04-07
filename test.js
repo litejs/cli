@@ -110,11 +110,12 @@
 		conf.bold = conf.red = conf.green = conf.yellow = conf.reset = ""
 	}
 
+	describe.describe = describe
+	describe.test = def.bind(describe, 2)
+	describe.it = def.bind(describe, 3)
+	describe.print = print
 	describe.output = ""
 	describe.failed = 0
-
-	exports.test = def.bind(exports, 2)
-	exports.it = def.bind(exports, 3)
 
 	function def(_, name, fn, opts) {
 		arguments.skip =
@@ -128,7 +129,7 @@
 			if (splicePos === 0 && _ !== 1) def(1, "Unnamed TestSuite")
 		}
 		tests.splice(++splicePos, 0, arguments)
-		return exports
+		return describe
 	}
 
 	function nextCase() {
@@ -262,7 +263,7 @@
 	function nextSuite(testSuite) {
 		if (!argv.length) print("# " + testSuite[1])
 		if (type(testSuite[2]) === "function") {
-			testSuite[2].call(exports)
+			testSuite[2].call(describe)
 		} else if (type(testSuite[2]) === "object") {
 			for (var name in testSuite[2]) if (hasOwn.call(testSuite[2], name)) {
 				def(2, name, testSuite[2][name])
