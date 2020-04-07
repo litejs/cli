@@ -2,13 +2,14 @@
 
 
 !function(exports) {
-	var started, testSuite, timerType
+	var started, testSuite, timerType, inSuite
 	, _global = exports.window || global
 	, _process = _global.process || { exit: This }
 	, _setTimeout = setTimeout
 	, _clearTimeout = clearTimeout
 	, _Date = Date
 	, _isArray = Array.isArray
+	, lineRe = /{(\w+)}/g
 	, tests = []
 	, totalCases = 0
 	, failedCases = []
@@ -83,6 +84,15 @@
 		}
 	}
 	, conf = describe.conf = {
+		head: "",
+		indent: "  ",
+		suite: "{1}", //➜
+		ok: "  {green}✔{reset} {name} #{num} [{passed}/{total}]",
+		nok: "  {red}✖{reset} {name} #{num} [{passed}/{total}]",
+		skip: "  {yellow}⊙{reset} {name} #{num}",
+		sum: "1..{total}\n#{passGreen} pass  {pass}/{total} [{passAsserts}/{totalAsserts}] {timeStr}",
+		failSum: "#{red}{bold} FAIL  tests {failNums}",
+		skipSum: "#{yellow}{bold} skip  {skip}",
 		bold: "\x1b[1m",
 		red: "\x1b[31m",
 		green: "\x1b[32m",
@@ -105,10 +115,6 @@
 	describe.failed = 0
 
 	function def(_, name, fn, opts) {
-		arguments.skip =
-			_ > 1 && type(fn) != "function" && "pending" ||
-			name.charAt(0) === "#" && "by name" ||
-			opts && opts.skip
 		if (!started) {
 			started = new Date()
 			for (var arg, argi = argv.length; argi--; ) {
@@ -123,11 +129,29 @@
 				conf.bold = conf.red = conf.green = conf.yellow = conf.reset = ""
 			}
 
-			print("TAP version 13")
+			if (conf.tap) {
+				conf.head = "TAP version 13"
+				conf.suite = "# {1}"
+				conf.ok = conf.skip = "ok {num} - {name} [{passed}/{total}]"
+				conf.nok = "not " + conf.ok
+				conf.indent = ""
+			}
+
+			line("head")
 			timerType = type(_setTimeout(nextCase, 1))
 			if (splicePos === 0 && _ !== 1) def(1, "Unnamed TestSuite")
 		}
-		tests.splice(++splicePos, 0, arguments)
+		tests.splice(++splicePos, 0, {
+			parent: inSuite,
+			indent: inSuite ? inSuite.indent + conf.indent : "",
+			skip:
+				_ > 1 && type(fn) != "function" && "pending" ||
+				name.charAt(0) === "#" && "by name" ||
+				opts && opts.skip,
+			0: _,
+			1: name,
+			2: fn
+		})
 		return describe
 	}
 
@@ -139,7 +163,7 @@
 		else {
 			testCase = Object.assign({
 				num: ++totalCases,
-				name: totalCases + (args[0] === 3 ? " - it " : " - ") + args[1],
+				name: (args[0] === 3 ? "it " : "") + args[1],
 				total: 0,
 				passed: 0,
 				errors: [],
@@ -204,7 +228,7 @@
 			if (args.skip || testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
 				skipped++
 				if (!argv.length) {
-					print("ok " + testCase.name.replace(/#\s*/, "") + " # skip - " + (args.skip || "by suite"))
+					line("skip", testCase)
 				}
 				return nextCase()
 			}
@@ -215,6 +239,7 @@
 					args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock))
 				}
 			} catch (e) {
+				console.log(e)
 				fail(e, e.stack)
 				endCase()
 			}
@@ -251,51 +276,52 @@
 			totalAsserts += testCase.total
 			passedAsserts += testCase.passed
 
-			print(
-				(testCase.errors.length ? "not ok " : "ok ") +
-				testCase.name + " [" + testCase.passed + "/" + testCase.total + "]"
-			)
+			line(testCase.errors.length ? "nok" : "ok", testCase)
 			if (runPos % 1000) nextCase()
 			else _setTimeout(nextCase, 1)
 		}
 	}
-	function nextSuite(testSuite) {
-		if (!argv.length) print("# " + testSuite[1])
+	function nextSuite(newSuite) {
+		if (!argv.length) line("suite", newSuite)
+		newSuite.parent = inSuite
+		inSuite = testSuite = newSuite
 		if (type(testSuite[2]) === "function") {
 			testSuite[2].call(describe)
 		} else if (type(testSuite[2]) === "object") {
 			for (var name in testSuite[2]) if (hasOwn.call(testSuite[2], name)) {
-				def(2, name, testSuite[2][name])
+				def(type(testSuite[2][name]) === "object" ? 1 : 2, name, testSuite[2][name])
 			}
 		}
+		inSuite = newSuite.parent
 		nextCase()
 	}
 	function printResult() {
-		print("1.." + totalCases)
 		var failed = failedCases.length
+		conf.total = totalCases
+		conf.fail = describe.failed += failed
+		conf.pass = totalCases - conf.fail
+		conf.skip = skipped
+		conf.passAsserts = passedAsserts
+		conf.totalAsserts = totalAsserts
+		conf.passGreen = conf.fail ? "" : conf.green + conf.bold
+		conf.failRed = conf.fail ? conf.red : ""
+		conf.timeStr = conf.time ? " in " + (_Date.now() - started) + " ms at " + started.toTimeString().slice(0, 8) : ""
+		if (conf.status) _process.exitCode = conf.fail
 		if (failed) {
-			describe.failed += failed
-			if (conf.status) _process.exitCode = describe.failed
 			for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
 				nums[failed] = testCase.num
-				// TODO:2020-03-31:lauri:Add test number
-				stack[failed] = testCase.name + "\n" + testCase.errors.join("\n")
+				print("---")
+				line("nok", testCase)
+				print(testCase.errors.join("\n"))
 			}
-			print(("---\n" + stack.join("\n---\n") + "\n...").replace(/^/gm, "  "))
-			print("#" + conf.red + conf.bold + " FAIL  tests " + nums.join(", "))
+			conf.failNums = nums.join(", ")
+			print("...")
+			line("failSum", conf)
 			failedCases.length = 0
 		}
-		print(
-			describe.result = "#" + (failed ? "" : conf.green + conf.bold) + " pass  " + (totalCases - describe.failed) + "/" + totalCases
-			+ " [" + passedAsserts + "/" + totalAsserts + "]"
-			+ (
-				conf.time ?
-				" in " + (_Date.now() - started) + " ms at " + started.toTimeString().slice(0, 8) :
-				""
-			)
-		)
+		describe.result = line("sum", conf)
 		if (skipped) {
-			print("# " + conf.yellow + conf.bold + "skip  " + skipped)
+			line("skipSum", conf)
 		}
 		if (describe.onend) describe.onend()
 	}
@@ -303,10 +329,17 @@
 	function This() {
 		return this
 	}
+	function line(name, map) {
+		return print(conf[name].replace(lineRe, function(_, field) {
+			return hasOwn.call(map, field) ? map[field] : conf[field]
+		}))
+	}
 	function print(str) {
+		if (testSuite && testSuite.indent) str = testSuite.indent + str.split("\n").join("\n" + testSuite.indent)
 		describe.output += str + "\n"
 		if (describe.onprint) describe.onprint(str)
 		if (console.log) console.log(str + conf.reset)
+		return str
 	}
 
 	if (_global.setImmediate) {
