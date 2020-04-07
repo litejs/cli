@@ -8,7 +8,7 @@
 	, _setTimeout = setTimeout
 	, _clearTimeout = clearTimeout
 	, _Date = Date
-	, isArray = Array.isArray
+	, _isArray = Array.isArray
 	, tests = []
 	, totalCases = 0
 	, failedCases = []
@@ -31,12 +31,6 @@
 	}
 	/* mock time end */
 	, describe = exports.describe = def.bind(exports, 1)
-	, conf = describe.conf = {
-		color: (_process.stdout || exports).isTTY,
-		status: 1,
-		time: 1,
-		trace: 1
-	}
 	, assert = describe.assert = {
 		notOk: function(value, message) {
 			return this.ok(!value, message || stringify(value) + " is falsy")
@@ -83,20 +77,26 @@
 		},
 		anyOf: function(a, b) {
 			return this.ok(
-				isArray(b) && b.indexOf(a) != -1,
+				_isArray(b) && b.indexOf(a) != -1,
 				"should be one from " + stringify(b) + ", got " + a
 			)
 		}
 	}
-	, toStr = assert.toString
-	, hasOwn = assert.hasOwnProperty
+	, conf = describe.conf = {
+		bold: "\x1b[1m",
+		red: "\x1b[31m",
+		green: "\x1b[32m",
+		yellow: "\x1b[33m",
+		reset: "\x1b[0m",
+		color: (_process.stdout || exports).isTTY,
+		status: 1,
+		time: 1,
+		trace: 1
+	}
+	, toStr = conf.toString
+	, hasOwn = conf.hasOwnProperty
 	, argv = describe.argv = _process.argv && _process.argv.slice(2) || []
 	, argi = argv.length
-	, bold = "\x1b[1m"
-	, red = "\x1b[31m"
-	, green = "\x1b[32m"
-	, yellow = "\x1b[33m"
-	, reset = "\x1b[0m"
 
 	for (; argi--; ) {
 		tmp = argv[argi].split(/=|--(no-)?/)
@@ -107,7 +107,7 @@
 	}
 
 	if (!conf.color) {
-		bold = red = green = yellow = reset = ""
+		conf.bold = conf.red = conf.green = conf.yellow = conf.reset = ""
 	}
 
 	describe.output = ""
@@ -151,7 +151,7 @@
 					if (value) {
 						testCase.passed++
 					} else {
-						if (isArray(message)) {
+						if (_isArray(message)) {
 							message = message[1] +
 							"\nexpected: " + stringify(message[2], 160) +
 							"\nactual:   " + stringify(message[0], 160)
@@ -282,11 +282,11 @@
 				stack[failed] = testCase.name + "\n" + testCase.errors.join("\n")
 			}
 			print(("---\n" + stack.join("\n---\n") + "\n...").replace(/^/gm, "  "))
-			print("#" + red + bold + " FAIL  tests " + nums.join(", "))
+			print("#" + conf.red + conf.bold + " FAIL  tests " + nums.join(", "))
 			failedCases.length = 0
 		}
 		print(
-			describe.result = "#" + (failed ? "" : green + bold) + " pass  " + (totalCases - describe.failed) + "/" + totalCases
+			describe.result = "#" + (failed ? "" : conf.green + conf.bold) + " pass  " + (totalCases - describe.failed) + "/" + totalCases
 			+ " [" + passedAsserts + "/" + totalAsserts + "]"
 			+ (
 				conf.time ?
@@ -295,7 +295,7 @@
 			)
 		)
 		if (skipped) {
-			print("# " + yellow + bold + "skip  " + skipped)
+			print("# " + conf.yellow + conf.bold + "skip  " + skipped)
 		}
 		if (describe.onend) describe.onend()
 	}
@@ -306,7 +306,7 @@
 	function print(str) {
 		describe.output += str + "\n"
 		if (describe.onprint) describe.onprint(str)
-		if (console.log) console.log(str + reset)
+		if (console.log) console.log(str + conf.reset)
 	}
 
 	if (_global.setImmediate) {
@@ -325,7 +325,7 @@
 	}
 	fakeDate.parse = _Date.parse
 	function fakeHrtime(time) {
-		var diff = isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
+		var diff = _isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
 		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3] // [seconds, nanoseconds]
 	}
 
@@ -388,7 +388,7 @@
 					} catch(e) {
 						err = e
 					}
-				} else if (isArray(origin)) {
+				} else if (_isArray(origin)) {
 					result = origin[spy.called % origin.length]
 				} else if (origin && origin.constructor === Object) {
 					key = JSON.stringify(args).slice(1, -1)
