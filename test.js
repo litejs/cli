@@ -114,7 +114,7 @@
 	describe.output = ""
 	describe.failed = 0
 
-	function def(_, name, fn, opts) {
+	function def(_, name, fn) {
 		if (!started) {
 			started = new Date()
 			for (var arg, argi = argv.length; argi--; ) {
@@ -146,8 +146,7 @@
 			indent: inSuite ? inSuite.indent + conf.indent : "",
 			skip:
 				_ > 1 && type(fn) != "function" && "pending" ||
-				name.charAt(0) === "#" && "by name" ||
-				opts && opts.skip,
+				name.charAt(0) === "_" && (name = name.slice(1)) && "by name",
 			0: _,
 			1: name,
 			2: fn
@@ -234,7 +233,7 @@
 			}
 
 			try {
-				testCase.setTimeout(args[3] && args[3].timeout || 999)
+				testCase.setTimeout(999)
 				if (type(args[2]) === "function") {
 					args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock))
 				}
