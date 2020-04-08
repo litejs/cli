@@ -2,7 +2,7 @@
 
 
 !function(exports) {
-	var tmp, started, testSuite, timerType
+	var started, testSuite, timerType
 	, _global = exports.window || global
 	, _process = _global.process || { exit: This }
 	, _setTimeout = setTimeout
@@ -96,19 +96,6 @@
 	, toStr = conf.toString
 	, hasOwn = conf.hasOwnProperty
 	, argv = describe.argv = _process.argv && _process.argv.slice(2) || []
-	, argi = argv.length
-
-	for (; argi--; ) {
-		tmp = argv[argi].split(/=|--(no-)?/)
-		if (tmp[0] == "") {
-			conf[tmp[2]] = tmp[4] || !tmp[1]
-			argv.splice(argi, 1)
-		}
-	}
-
-	if (!conf.color) {
-		conf.bold = conf.red = conf.green = conf.yellow = conf.reset = ""
-	}
 
 	describe.describe = describe
 	describe.test = def.bind(describe, 2)
@@ -124,6 +111,18 @@
 			opts && opts.skip
 		if (!started) {
 			started = new Date()
+			for (var arg, argi = argv.length; argi--; ) {
+				arg = argv[argi].split(/=|--(no-)?/)
+				if (arg[0] == "") {
+					conf[arg[2]] = arg[4] || !arg[1]
+					argv.splice(argi, 1)
+				}
+			}
+
+			if (!conf.color) {
+				conf.bold = conf.red = conf.green = conf.yellow = conf.reset = ""
+			}
+
 			print("TAP version 13")
 			timerType = type(_setTimeout(nextCase, 1))
 			if (splicePos === 0 && _ !== 1) def(1, "Unnamed TestSuite")
