@@ -106,6 +106,15 @@
 	, toStr = conf.toString
 	, hasOwn = conf.hasOwnProperty
 	, argv = describe.argv = _process.argv && _process.argv.slice(2) || []
+	, arg, argi = argv.length
+
+	for (; argi--; ) {
+		arg = argv[argi].split(/=|--(no-)?/)
+		if (arg[0] == "") {
+			conf[arg[2]] = arg[4] || !arg[1]
+			argv.splice(argi, 1)
+		}
+	}
 
 	describe.describe = describe
 	describe.test = def.bind(describe, 2)
@@ -117,13 +126,6 @@
 	function def(_, name, fn) {
 		if (!started) {
 			started = new Date()
-			for (var arg, argi = argv.length; argi--; ) {
-				arg = argv[argi].split(/=|--(no-)?/)
-				if (arg[0] == "") {
-					conf[arg[2]] = arg[4] || !arg[1]
-					argv.splice(argi, 1)
-				}
-			}
 
 			if (!conf.color) {
 				conf.bold = conf.red = conf.green = conf.yellow = conf.reset = ""
