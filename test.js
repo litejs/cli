@@ -84,12 +84,13 @@
 		}
 	}
 	, conf = describe.conf = {
+		// process.platform === 'win32' -> √×.
 		head: "",
 		indent: "  ",
-		suite: "{1}", //➜
+		suite: "{1}", //➜✺✽❖❣❢•※⁕∅
 		ok: "  {green}✔{reset} {name} #{num} [{passed}/{total}]",
-		nok: "  {red}✖{reset} {name} #{num} [{passed}/{total}]",
-		skip: "  {yellow}⊙{reset} {name} #{num}",
+		nok: "  {red}✘{reset} {name} #{num} [{passed}/{total}]",
+		skip: "  {yellow}∅{reset} {name} #{num}",
 		sum: "1..{total}\n#{passGreen} pass  {pass}/{total} [{passAsserts}/{totalAsserts}] {timeStr}",
 		failSum: "#{red}{bold} FAIL  tests {failNums}",
 		skipSum: "#{yellow}{bold} skip  {skip}",
@@ -101,7 +102,7 @@
 		color: (_process.stdout || exports).isTTY,
 		status: 1,
 		time: 1,
-		trace: 1
+		trace: 3
 	}
 	, toStr = conf.toString
 	, hasOwn = conf.hasOwnProperty

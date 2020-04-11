@@ -1,12 +1,19 @@
 var v8 = {
 	statusTexts: [
-		"Unknown",
-		"Function is optimized",
-		"Function is not optimized",
-		"Function is always optimized",
-		"Function is never optimized",
-		"Function is maybe deoptimized",
-		"Function is optimized by TurboFan"
+		"IsFunction",
+		"NeverOptimize",
+		"AlwaysOptimize",
+		"MaybeDeopted",
+		"Optimized",
+		"TurboFanned",
+		"Interpreted",
+		"MarkedForOptimization",
+		"MarkedForConcurrentOptimization",
+		"OptimizingConcurrently",
+		"IsExecuting",
+		"TopmostFrameIsTurboFanned",
+		"LiteMode",
+		"MarkedForDeoptimization"
 	]
 }
 
@@ -43,26 +50,13 @@ assert.isOptimized = !v8.GetOptimizationStatus ? assert.skip : function isOptimi
 	v8.OptimizeFunctionOnNextCall(fn)
 	fn.apply(scope, args)
 	var status = v8.GetOptimizationStatus(fn)
-	/*
-	0 0 0 0 0 1 0 0 0 0 0 1
-	┬ ┬ ┬ ┬ ┬ ┬ ┬ ┬ ┬ ┬ ┬ ┬
-	│ │ │ │ │ │ │ │ │ │ │ └─╸ is function
-	│ │ │ │ │ │ │ │ │ │ └───╸ is never optimized
-	│ │ │ │ │ │ │ │ │ └─────╸ is always optimized
-	│ │ │ │ │ │ │ │ └───────╸ is maybe deoptimized
-	│ │ │ │ │ │ │ └─────────╸ is optimized
-	│ │ │ │ │ │ └───────────╸ is optimized by TurboFan
-	│ │ │ │ │ └─────────────╸ is interpreted
-	│ │ │ │ └───────────────╸ is marked for optimization
-	│ │ │ └─────────────────╸ is marked for concurrent optimization
-	│ │ └───────────────────╸ is optimizing concurrently
-	│ └─────────────────────╸ is executing
-	└───────────────────────╸ topmost frame is turbo fanned */
+	, statusText = v8.statusTexts.filter(function(val, i) {
+		return status & (1<<i)
+	}).join(", ")
 
 	return this.ok(
-		status == 1 || (status & 16 || status & 32),
-		v8.statusTexts[status],
-		_stackStart || isOptimized
+		(status & 16 || status & 32),
+		"Status " + status + " = " + statusText
 	)
 }
 
