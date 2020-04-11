@@ -27,7 +27,7 @@ describe.assert.matchSnapshot = function(file, transform) {
 	}
 	if (actual === expected) {
 		this.ok(1)
-	} else if (describe.conf.ok) {
+	} else if (describe.conf.up) {
 		console.error("# Update snapshot %s", file)
 		cli.writeFile(file + ".snap", actual)
 		this.ok(1)
@@ -40,7 +40,7 @@ describe.assert.matchSnapshot = function(file, transform) {
 		} catch(e) {
 			return this.ok(null, e.stdout ?
 				"Snapshot " + file + "\n---\n" + e.stdout :
-				"Snapshot diff failed\n---\n" + e.stderr
+				"Snapshot diff failed, add --up to update snapshot\n---\n" + e.stderr
 			)
 		}
 		this.fail("No diff output")

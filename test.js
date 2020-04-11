@@ -48,6 +48,7 @@
 				message || [actual, "notEqual", expected]
 			)
 		},
+		skip: This,
 		strictEqual: function(actual, expected, message) {
 			return this.ok(
 				arguments.length > 1 && actual === expected,
