@@ -57,7 +57,8 @@ adapters.view = adapters.tpl
 
 try {
 	conf = require(path.resolve("package.json"))
-	console.log("# Build %s@%s with %s@%s", conf.name, conf.version, PAC.name, PAC.version)
+	console.log("# Build %s@%s\n%s %s", conf.name, conf.version, PAC.name, PAC.version)
+	child.spawnSync("uglifyjs", ["--version"], {stdio: "inherit"})
 } catch(e) {
 	console.error(e)
 	conf = {}
@@ -488,7 +489,7 @@ function jsMin(map, opts, next) {
 	}
 	var name
 	, result = ""
-	, child = spawn("uglifyjs", [
+	, ps = spawn("uglifyjs", [
 		"--warn",
 		"--ie8",
 		"--compress", "evaluate=false,properties=false",
@@ -497,14 +498,14 @@ function jsMin(map, opts, next) {
 		"--beautify", "beautify=false,semicolons=false,keep_quoted_props=true"
 	])
 
-	child.stderr.on("data", function onError(data) {
+	ps.stderr.on("data", function onError(data) {
 		data = data.toString().trim()
 		if (data !== "") opts.warnings.push(data)
 	})
-	child.stdout.on("data", function(data) {
+	ps.stdout.on("data", function(data) {
 		result += data.toString()
 	})
-	child.on("close", function(code) {
+	ps.on("close", function(code) {
 		if (code !== 0) {
 			console.error(opts.warnings)
 			throw Error("uglifyjs exited with " + code)
@@ -515,9 +516,9 @@ function jsMin(map, opts, next) {
 		next(null, result)
 	})
 	for (name in map) if (hasOwn.call(map, name)) {
-		child.stdin.write(map[name])
+		ps.stdin.write(map[name])
 	}
-	child.stdin.end()
+	ps.stdin.end()
 }
 
 function tplMin(map, opts, next) {
