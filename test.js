@@ -457,10 +457,9 @@
 		replace: function(obj, name, fn) {
 			var mock = this
 			, existing = obj[name]
-			if (type(existing) === "function") {
-				mock.replaced.push(obj, name, hasOwn.call(obj, name) && existing)
-				obj[name] = fn
-			}
+			mock.replaced.push(obj, name, hasOwn.call(obj, name) && existing)
+			obj[name] = fn
+			if (fn === fn && obj[name] !== fn) throw Error("Unable to mock " + name)
 			return existing
 		},
 		spy: function(obj, name, stub) {
