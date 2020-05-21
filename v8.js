@@ -17,16 +17,17 @@ var v8 = {
 	]
 }
 
+var describe = require("./").describe
+, assert = describe.assert
+
 try {
 	// chrome --js-flags="--allow-natives-syntax" test.html
 	// node --allow-natives-syntax test.js
 	[ "GetOptimizationStatus", "HasFastProperties", "OptimizeFunctionOnNextCall"].map(function(name) {
-		v8[name] = Function("fn", "return %" + name+ "(fn)")
+		v8[name] = describe.conf.v8 !== false && Function("fn", "return %" + name+ "(fn)")
 	})
 	v8.isNative = true
 } catch(e) {}
-
-var assert = require("./").describe.assert
 
 assert.isFast = !v8.HasFastProperties ? assert.skip : function isFast(obj, a, b, _stackStart) {
 	return this.ok(
