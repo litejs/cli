@@ -580,18 +580,50 @@ function _tplSplit(str, opts, next) {
 }
 
 function tplToJs(input) {
-	var i = input.length
+	var line
+	, arr = input.split("\n")
+	, i = 0
+	, l = arr.length
+	, map = {
+		"%js": "",
+		"%css": ""
+	}
 	, singles = 0
 	, doubles = 0
-	for (; i--; ) {
+	, last = -1
+
+	for (; i < l; ) {
+		line = arr[i++]
+		if (line === "") {
+			if (last > -1) {
+				map[arr[last]] += arr.splice(last, i - last).slice(1).join("\n")
+				i -= i - last
+				last = -1
+			}
+		} else if (map.hasOwnProperty(line)) last = i - 1
+	}
+
+	if (map["%js"]) {
+		 map["%js"] = ";!function(){" + map["%js"] + "}()"
+	}
+	if (map["%css"]) {
+		cssMin({a: map["%css"]}, {}, function(err, str) {
+			map["%css"] = ";xhr.css('" + str.replace(/\n/g, "").replace(/'/g, "\\'") + "')"
+		})
+	}
+
+	tplMin({a: arr.join("\n")}, null, function(err, str) {
+		input = str.replace(/\n+/g, "\\n")
+	})
+
+	for (i = input.length; i--; ) {
 		if (input.charCodeAt(i) === 34) doubles++
 		else if (input.charCodeAt(i) === 39) singles++
 	}
-	input = input.replace(/\n+/g, "\\n")
-	return(
+	return map["%js"] + map["%css"] + (
 		singles > doubles ?
-		'El.tpl("' + input.replace(/"/g, '\\"') + '")' :
-		"El.tpl('" + input.replace(/'/g, "\\'") + "')"
+		';El.tpl("' + input.replace(/"/g, '\\"') + '")' :
+		";El.tpl('" + input.replace(/'/g, "\\'") + "')"
 	)
 }
 
