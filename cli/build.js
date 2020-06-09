@@ -740,7 +740,7 @@ function replacePath(_p, opts) {
 }
 
 function format(str) {
-	return str.replace(/([\s\*\/]*@(version|date|author|stability)\s+).*/g, function(all, match, tag) {
+	return str.replace(/([\s\*\/]*@(version|date|author|stability)\s+).*/, function(all, match, tag) {
 		tag = translate[tag] ? translate[tag][conf[tag]] || translate[tag] : conf[tag]
 		return tag ? match + tag : all
 	})
