@@ -541,8 +541,8 @@ function tplMin(map, opts, next) {
 }
 
 function _tplSplit(str, opts, next) {
-	var templateRe = /^([ \t]*)(%?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]=])*)[ \t]*(([\])}]?).*?([[({]?))$/gm
-	, out = [""]
+	var out = [""]
+	, templateRe = /^([ \t]*)(%?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))$/gm
 	, parent = 0
 	, stack = [-1]
 	, resume = Fn.wait(function() {
@@ -553,7 +553,7 @@ function _tplSplit(str, opts, next) {
 
 	resume()
 
-	function work(all, indent, plugin, name, q, text, mapEnd, mapStart, offset) {
+	function work(all, indent, plugin, name, q, op, text, mapEnd, mapStart, offset) {
 		if (offset && all === indent) return
 
 		for (q = indent.length; q <= stack[0]; ) {
@@ -573,8 +573,8 @@ function _tplSplit(str, opts, next) {
 			) - 1
 			stack.unshift(q)
 		} else {
-			if (text && text.charAt(0) === "/") return
-			out[parent] += all + "\n"
+			if (op === "/") return
+			out[parent] += " ".repeat(indent.length) + all.slice(indent.length) + "\n"
 		}
 	}
 }
