@@ -299,6 +299,7 @@
 		nextCase()
 	}
 	function printResult() {
+		testSuite = null
 		var failed = failedCases.length
 		conf.total = totalCases
 		conf.fail = describe.failed += failed
