@@ -22,6 +22,7 @@ var fs = require("fs")
 		"test-trace": "node --allow-natives-syntax --trace_opt --trace_deopt test/index.js"
 	},
 	"litejs": {
+		"template": "default",
 		"build": [
 			"-i ui/dev.html -o ui/index.html"
 		]

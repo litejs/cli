@@ -13,6 +13,8 @@
 //-    litejs build -r README.md -i ui/dev.html -o ui/index.html
 //-
 
+require("../patch-node.js")
+
 var fs = require("fs")
 , child = require("child_process")
 , path = require("path")
@@ -80,10 +82,11 @@ if (!module.parent) {
 		break;
 	case "init-app":
 	case "init-ui":
-		child.spawnSync("cp", ["-rv",
-			process.argv[2].replace("init-", "./node_modules/litejs/lib/template/default/"),
-			process.cwd() + (opts.file ? "/" + opts.file : "")
-		], { stdio: "inherit" })
+		var sub = process.argv[2].slice(5)
+		cp(
+			"./node_modules/litejs/lib/template/" + (conf.template || "default") + "/" + sub,
+			"./" + (opts[sub] || sub)
+		)
 		break;
 	case "test":
 		var arr = [ "-r", "litejs" ].concat(
@@ -116,10 +119,14 @@ function command(name) {
 }
 
 function cp(src, dest) {
-	if (fs.copyFileSync) {
-		fs.copyFileSync(src, dest)
+	if (fs.statSync(src).isDirectory()) {
+		mkdirp(dest)
+		fs.readdirSync(src).forEach(function(file) {
+			cp(path.join(src, file), path.join(dest, file))
+		})
 	} else {
-		fs.writeFileSync(dest, fs.readFileSync(src))
+		console.error("cp", src, dest)
+		fs.copyFileSync(src, dest)
 	}
 }
 
