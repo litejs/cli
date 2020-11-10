@@ -1,7 +1,7 @@
 
 var cli = require("../lib/cli")
 , child = require("child_process")
-, path = require("path")
+, path = require("../lib/path")
 , describe = require("./").describe
 , relPathRe = /[^(]+(?=:\d+:\d+\))/gm
 , relPathFn = path.relative.bind(path, process.cwd())

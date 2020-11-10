@@ -1,5 +1,5 @@
 
-var path = require("path")
+var path = require("../lib/path")
 , child = require("child_process")
 , fs = require("fs")
 , describe = require("./").describe
