@@ -249,7 +249,8 @@
 		}
 		function fail(message, stack) {
 			if (stack) {
-				for (var row, start, i = 0, arr = (stack || "").split("\n"); row = arr[++i]; ) {
+				// iotjs returns stack as Array
+				for (var row, start, i = 0, arr = _isArray(stack) ? stack : (stack || "").split("\n"); row = arr[++i]; ) {
 					if (row.indexOf("/litejs/test/index.js:") < 0) {
 						if (!start) start = i
 					}
