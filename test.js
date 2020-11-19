@@ -21,6 +21,7 @@
 	, splicePos = 0
 	/*** mockTime */
 	, fakeNow
+	, tmpDate = new _Date
 	, timers = []
 	, timerId = 0
 	, fakeTimers = {
@@ -361,7 +362,14 @@
 	fakeDate.now = function() {
 		return Math.floor(fakeNow)
 	}
-	fakeDate.parse = _Date.parse
+	fakeDate.parse = function(str) {
+		var ts = _Date.parse(str)
+		if (type(fakeDate._z) == "number" && !/(UTC|GMT|Z)$/.test(str)) {
+			tmpDate.setTime(ts)
+			ts -= (60 * fakeDate._z + tmpDate.getTimezoneOffset()) * 60000
+		}
+		return ts
+	}
 	function fakeHrtime(time) {
 		var diff = _isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
 		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3] // [seconds, nanoseconds]
@@ -468,11 +476,11 @@
 			var mock = this
 			mock.replace(obj, name, mock.fn(stub || obj[name]))
 		},
-		time: function(newTime) {
+		time: function(newTime, newZone) {
 			var key
 			, mock = this
-			if (!mock.timeFreeze) {
-				mock.timeFreeze = fakeNow = _Date.now()
+			if (!mock._time) {
+				mock._time = fakeNow = _Date.now()
 				for (key in fakeTimers) {
 					mock.replace(_global, key, fakeTimers[key])
 				}
@@ -485,6 +493,7 @@
 				fakeNow = type(newTime) === "string" ? _Date.parse(newTime) : newTime
 				mock.tick(0)
 			}
+			fakeDate._z = newZone
 		},
 		tick: function(amount, noRepeat) {
 			if (type(amount) === "number") {
