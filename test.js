@@ -32,7 +32,7 @@
 		Date: fakeDate
 	}
 	/* mock time end */
-	, describe = exports.describe = def.bind(exports, 1)
+	, describe = exports.describe = _global.describe = def.bind(exports, 1)
 	, assert = describe.assert = {
 		notOk: function(value, message) {
 			return this.ok(!value, message || stringify(value) + " is falsy")
@@ -102,8 +102,10 @@
 		yellow: "\x1b[33m",
 		reset: "\x1b[0m",
 		color: (_process.stdout || exports).isTTY,
+		seed: 0,
 		status: 1,
 		time: 1,
+		timeout: 999,
 		trace: 3
 	}
 	, toStr = conf.toString
@@ -238,7 +240,7 @@
 			}
 
 			try {
-				testCase.setTimeout(999)
+				testCase.setTimeout(conf.timeout)
 				if (type(args[2]) === "function") {
 					args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock))
 				}
@@ -275,6 +277,7 @@
 				fail("Error: planned " + testCase.planned + " actual " + testCase.total)
 			}
 			if (testCase.mock) {
+				testCase.name += testCase.mock.txt
 				testCase.mock.restore()
 			}
 
@@ -419,6 +422,7 @@
 	function Mock() {
 		var mock = this
 		mock.replaced = []
+		mock.txt = ""
 	}
 	Mock.prototype = {
 		fn: function(origin) {
@@ -463,6 +467,12 @@
 			if (obj.prototype) {
 				mock.map(obj.prototype, stubs)
 			}
+		},
+		rand: function(seed_) {
+			var mock = this
+			, seed = seed_ || conf.seed || (Math.random() * 1e5)
+			mock.txt += " #seed:" + seed
+			mock.replace(Math, "random", xorshift128(seed, seed*2e3, seed*3e4, seed*4e5))
 		},
 		replace: function(obj, name, fn) {
 			var mock = this
@@ -532,7 +542,17 @@
 		}
 	}
 
-
+	function xorshift128(a, b, c, d) {
+		return function() {
+			var z, t = d
+			t ^= t << 11; t ^= t >>> 8
+			d = c; c = b
+			z = b = a
+			t ^= z; t ^= z >>> 19
+			a = t
+			return (t >>> 0) / 4294967295
+		}
+	}
 
 	function _deepEqual(actual, expected, circ) {
 		if (
