@@ -124,6 +124,7 @@
 	describe.describe = describe
 	describe.test = def.bind(describe, 2)
 	describe.it = def.bind(describe, 3)
+	describe.should = def.bind(describe, 4)
 	describe.print = print
 	describe.output = ""
 	describe.failed = 0
@@ -169,7 +170,7 @@
 		else {
 			testCase = Object.assign({
 				num: ++totalCases,
-				name: (args[0] === 3 ? "it " : "") + args[1],
+				name: (args[0] === 4 ? "it should " : args[0] === 3 ? "it " : "") + args[1],
 				total: 0,
 				passed: 0,
 				errors: [],
