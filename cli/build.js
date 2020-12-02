@@ -14,15 +14,14 @@
 
 
 var undef, conf
-, PAC = require("../../package.json")
 , fs = require("fs")
 , child = require("child_process")
+, PAC = require("../package.json")
 , spawn = child.spawn
 , now = new Date()
-, path = require("../path")
-, events = require("../events")
-, cli = require("./")
-, Fn = require("../fn.js").Fn
+, path = require("path")
+, events = require("../../litejs/event")
+, cli = require("../")
 , files = {}
 , fileHashes = {}
 , hasOwn = files.hasOwnProperty
@@ -125,7 +124,7 @@ function File(_name, _opts) {
 }
 
 File.prototype = {
-	wait: Fn.hold,
+	wait: cli.hold,
 	syncMethods: ["on", "toString"],
 	depends: function(child) {
 		var file = this
@@ -145,7 +144,7 @@ File.prototype = {
 		, opts = file.opts
 		, resume = file.wait()
 		, adapter = adapters[file.ext] || {}
-		, buildResume = Fn.wait(min)
+		, buildResume = cli.wait(min)
 
 		if (opts.input) {
 			file.content = opts.input.map(function(fileName, i, arr) {
@@ -545,7 +544,7 @@ function _tplSplit(str, opts, next) {
 	, templateRe = /^([ \t]*)(%?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))$/gm
 	, parent = 0
 	, stack = [-1]
-	, resume = Fn.wait(function() {
+	, resume = cli.wait(function() {
 		next(null, out.join("\n"))
 	})
 

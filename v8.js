@@ -17,8 +17,7 @@ var v8 = {
 	]
 }
 
-var describe = require("./").describe
-, assert = describe.assert
+var assert = describe.assert
 
 try {
 	// chrome --js-flags="--allow-natives-syntax" test.html

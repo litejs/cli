@@ -2,7 +2,7 @@
 var TAG_MSG = ".git/TAG_MSG"
 , child = require("child_process")
 , path = require("path")
-, cli = require("./")
+, cli = require("../")
 
 
 
@@ -20,7 +20,7 @@ function execute(args, i) {
 	, junks = com.version.split(".")
 	, len = junks.length
 	, rewrite = args[i] === "-f"
-	, lastTag = child.execSync("git describe --tags --abbrev=0 @^").toString("utf8").trim()
+	, lastTag = child.execSync("git describe --tags --abbrev=0 @^||git rev-list --max-parents=0 HEAD").toString("utf8").trim()
 	, group = [
 		{ name: "New Features",      re: /add\b/i, log: [] },
 		{ name: "Removed Features",  re: /remove\b/i, log: [] },
@@ -58,7 +58,7 @@ function execute(args, i) {
 	child.spawnSync("git", ["commit", "-a", "-m", msg, (rewrite ? "--amend" : "--")], { stdio: "inherit" })
 
 	child.spawnSync("git", [
-		"log", "--pretty=format:%s (%aN)", lastTag + "..@"
+		"log", "--pretty=format:%s (%aN)", lastTag + "..HEAD~1"
 	]).stdout.toString("utf8").split("\n").forEach(function(row) {
 		for (var g, i = 0; g = group[i++]; ) {
 			if (!g.re || g.re.test(row)) {
@@ -80,7 +80,7 @@ function execute(args, i) {
 
 		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, rewrite ? "-f" : "--"], { stdio: "inherit" })
 
-		console.log(`VERSION: ${cur.version}`)
+		console.log(`\nVERSION: ${cur.version}`)
 		if (!cur.private) {
 			console.log(`PUBLISH: npm publish${len === 3?'':' --tag next'}`)
 		}

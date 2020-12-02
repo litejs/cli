@@ -13,26 +13,31 @@
 //-    litejs build -r README.md -i ui/dev.html -o ui/index.html
 //-
 
-require("../patch-node.js")
+require("./cli/patch-node.js")
 
 var fs = require("fs")
 , child = require("child_process")
 , path = require("path")
 , conf = {}
 , opts = {}
+, hasOwn = opts.hasOwnProperty
 
 try {
-	conf = require(path.resolve("package.json")).litejs || {}
+	conf = require(path.resolve("./package.json")).litejs || {}
 } catch(e) {}
-
-global.Fn = require("../fn").Fn
 
 exports.command = command
 exports.cp = cp
+exports.hold = hold
 exports.mkdirp = mkdirp
 exports.readFile = readFile
 exports.rmrf = rmrf
+exports.wait = wait
 exports.writeFile = writeFile
+
+Array.prototype.pushUniq = function(item) {
+	return this.indexOf(item) < 0 && this.push(item)
+}
 
 function getopts(args, i, opts) {
 	for (var arg; arg = args[i++]; ) {
@@ -58,7 +63,7 @@ function getopts(args, i, opts) {
 
 
 if (!module.parent) {
-	var helpFile = __filename
+	var helpFile = module.filename
 	, shortcut = {
 		b: "build",
 		r: "release",
@@ -74,11 +79,11 @@ if (!module.parent) {
 	case "bench":
 	case "build":
 	case "release":
-		require("./" + cmd).execute(process.argv, 3)
+		require("./cli/" + cmd).execute(process.argv, 3)
 		break;
 	case "init":
 		getopts(process.argv.slice(0), 2, opts)
-		require("./" + process.argv[2])(opts)
+		require("./cli/" + process.argv[2])(opts)
 		break;
 	case "init-app":
 	case "init-ui":
@@ -89,7 +94,7 @@ if (!module.parent) {
 		)
 		break;
 	case "test":
-		var arr = [ "-r", "litejs" ].concat(
+		var arr = [ "-r", path.join(module.path, "test.js") ].concat(
 			conf.test || "test",
 			process.argv.slice(3)
 		)
@@ -102,7 +107,7 @@ if (!module.parent) {
 		break;
 	case "help":
 		if (subHelp.indexOf(process.argv[3]) > -1) {
-			helpFile = path.join(path.dirname(__filename), process.argv[3] + ".js")
+			helpFile = path.join(path.dirname(module.filename), process.argv[3] + ".js")
 		}
 	default:
 		console.log(readFile(helpFile).match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
@@ -171,4 +176,53 @@ function writeFile(fileName, content) {
 }
 
 
+function wait(fn) {
+	var pending = 1
+	function resume() {
+		if (!--pending && fn) fn.call(this)
+	}
+	resume.wait = function() {
+		pending++
+		return resume
+	}
+	return resume
+}
+
+function hold(ignore) {
+	var k
+	, obj = this
+	, hooks = []
+	, hooked = []
+	, _resume = wait(resume)
+	ignore = ignore || obj.syncMethods || []
+
+	for (k in obj) if (typeof obj[k] == "function" && ignore.indexOf(k) < 0) !function(k) {
+		hooked.push(k, hasOwn.call(obj, k) && obj[k])
+		obj[k] = function() {
+			hooks.push(k, arguments)
+			return obj
+		}
+	}(k)
+
+	/**
+	 * `wait` is already in hooked array,
+	 * so override hooked method
+	 * that will be cleared on resume.
+	 */
+	obj.wait = _resume.wait
+
+	return _resume
+
+	function resume() {
+		for (var v, scope = obj, i = hooked.length; i--; i--) {
+			if (hooked[i]) obj[hooked[i-1]] = hooked[i]
+			else delete obj[hooked[i-1]]
+		}
+		// i == -1 from previous loop
+		for (; v = hooks[++i]; ) {
+			scope = scope[v].apply(scope, hooks[++i]) || scope
+		}
+		hooks = hooked = null
+	}
+}
 

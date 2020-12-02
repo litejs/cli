@@ -3,14 +3,14 @@
 //-    litejs bench [FILES..]
 //-
 //-  Examples
-//-    litejs bench test/bench/date.js
+//-    litejs bench test/bench/date-vs-native-date.js
 //-
 
 var tmp
 , child = require("child_process")
 , fs = require("fs")
 , path = require("path")
-, bench = require("../../test/bench")
+, bench = require("./test/bench")
 
 exports.execute = execute
 global.requireGit = requireGit

@@ -1,0 +1,56 @@
+{
+  "name": "@litejs/cli",
+  "version": "21.0.0-rc.1",
+  "description": "Command line tools for LiteJS full-stack framework",
+  "license": "MIT",
+  "author": "Lauri Rooden <lauri@rooden.ee>",
+  "keywords": [
+    "litejs",
+    "framework",
+    "test",
+    "cli",
+    "bench"
+  ],
+  "homepage": "https://litejs.com",
+  "repository": "github:litejs/cli",
+  "bugs": "https://github.com/litejs/cli/issues",
+  "main": "index.js",
+  "files": [
+    "*.js",
+    "cli"
+  ],
+  "bin": {
+    "lj-doc": "./cli/doc",
+    "lj-stat": "./cli/stat",
+    "lj": "./index.js"
+  },
+  "scripts": {
+    "test": "node --allow-natives-syntax -- test/_all.js",
+    "test-trace": "node --allow-natives-syntax --trace_opt --trace_deopt -- test/_all.js"
+  },
+  "litejs": {
+    "test": [
+      "-r",
+      "./test.js",
+      "--allow-natives-syntax",
+      "test/index.js"
+    ]
+  },
+  "jshintConfig": {
+    "asi": true,
+    "laxcomma": true,
+    "maxdepth": 6,
+    "quotmark": "double"
+  },
+  "nyc": {
+    "exclude": [
+      "coverage/**",
+      "test/**"
+    ],
+    "reporter": [
+      "lcov",
+      "text",
+      "html"
+    ]
+  }
+}
