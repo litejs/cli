@@ -88,6 +88,8 @@ function execute(args, i) {
 	for (i = 0; g = group[i++]; ) {
 		if (g.log.length) {
 			msg += g.name + ":\n\n - " + g.log.join("\n - ") + "\n\n"
+		} else {
+			msg += "# " + g.name + ":\n"
 		}
 	}
 
