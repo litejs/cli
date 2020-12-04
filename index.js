@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 //-
 //-  Usage
-//-    litejs [init|bench|build|help|test]
+//-    lj [init|bench|build|help|test]
 //-
 //-  build options
-//-    --banner, -b    Add commented banner to output
-//-    --input, -i     Input file
+//-    --banner, -b    Add comment banner to output
+//-    --input,  -i    Input file
 //-    --output, -o    Output file
 //-    --readme, -r    Replase readme tags in file
 //-
 //-  Examples
-//-    litejs build -r README.md -i ui/dev.html -o ui/index.html
+//-    lj b -r README.md -i ui/dev.html -o ui/index.html
+//-    lj r
 //-
 
 require("./cli/patch-node.js")
@@ -63,15 +64,18 @@ function getopts(args, i, opts) {
 
 
 if (!module.parent) {
-	var helpFile = module.filename
+	var sub
+	, helpFile = module.filename
 	, shortcut = {
 		b: "build",
+		h: "help",
 		r: "release",
 		t: "test"
 	}
 	, subHelp = [
 		"bench",
-		"build"
+		"build",
+		"release"
 	]
 	, cmd = shortcut[process.argv[2]] || process.argv[2]
 
@@ -87,18 +91,18 @@ if (!module.parent) {
 		break;
 	case "init-app":
 	case "init-ui":
-		var sub = process.argv[2].slice(5)
+		sub = process.argv[2].slice(5)
 		cp(
 			"./node_modules/litejs/lib/template/" + (conf.template || "default") + "/" + sub,
 			"./" + (opts[sub] || sub)
 		)
 		break;
 	case "test":
-		var arr = [ "-r", path.join(module.path, "test.js") ].concat(
+		sub = [ "-r", path.join(module.path, "test.js") ].concat(
 			conf.test || "test",
 			process.argv.slice(3)
 		)
-		child.spawn(process.argv[0], arr, {
+		child.spawn(process.argv[0], sub, {
 			env: {
 				NODE_PATH: process.argv[1].replace(/bin\/\w+$/, "lib/node_modules/")
 			},
@@ -106,9 +110,11 @@ if (!module.parent) {
 		})
 		break;
 	case "help":
-		if (subHelp.indexOf(process.argv[3]) > -1) {
-			helpFile = path.join(path.dirname(module.filename), process.argv[3] + ".js")
+		sub = shortcut[process.argv[3]] || process.argv[3]
+		if (subHelp.indexOf(sub) > -1) {
+			helpFile = path.join(path.dirname(module.filename), "cli", sub + ".js")
 		}
+		/* falls through */
 	default:
 		console.log(readFile(helpFile).match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
 	}

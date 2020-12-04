@@ -1,6 +1,6 @@
 //-
 //-  Usage
-//-    litejs build
+//-    lj build
 //-
 //-  build options
 //-    --banner, -b    Add commented banner to output
@@ -9,7 +9,7 @@
 //-    --readme, -r    Replace readme tags in file
 //-
 //-  Examples
-//-    litejs build -r README.md -i ui/dev.html -o ui/index.html
+//-    lj b -r README.md -i ui/dev.html -o ui/index.html
 //-
 
 

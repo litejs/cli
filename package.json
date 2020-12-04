@@ -30,8 +30,6 @@
   },
   "litejs": {
     "test": [
-      "-r",
-      "./test.js",
       "--allow-natives-syntax",
       "test/index.js"
     ]
