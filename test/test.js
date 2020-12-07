@@ -44,6 +44,9 @@ describe("TestSuite 1 with scope", function() {
 	"Case 2.2": function(assert) {
 		setTimeout(assert.wait(), 60)
 		assert.ok(1).end()
+	},
+	"Case 2.3": function() {
+		this.ok(1).plan(1)
 	}
 })
 .test("it should run second test 2.3", function(assert) {

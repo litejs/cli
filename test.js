@@ -197,6 +197,9 @@
 				},
 				plan: function(planned) {
 					testCase.planned = planned
+					if (planned <= testCase.total) {
+						endCase()
+					}
 					return testCase
 				},
 				setTimeout: function(ms) {

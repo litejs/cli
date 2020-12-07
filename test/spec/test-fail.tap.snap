@@ -21,7 +21,7 @@ actual:   1
 AssertionError#3: 0
     at Object.ok (test.js:191:87)
     at Object.<anonymous> (test/test-fail.js:20:3)
-    at nextCase (test.js:246:14)
+    at nextCase (test.js:249:14)
 AssertionError#4: throws
     at Object.ok (test.js:191:87)
     at Object.throws (test.js:72:16)
