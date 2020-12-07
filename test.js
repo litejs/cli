@@ -32,7 +32,7 @@
 		Date: fakeDate
 	}
 	/* mock time end */
-	, describe = exports.describe = _global.describe = def.bind(exports, 1)
+	, describe = _global.describe = def.bind(describe, 1)
 	, assert = describe.assert = {
 		notOk: function(value, message) {
 			return this.ok(!value, message || stringify(value) + " is falsy")
@@ -101,7 +101,7 @@
 		green: "\x1b[32m",
 		yellow: "\x1b[33m",
 		reset: "\x1b[0m",
-		color: (_process.stdout || exports).isTTY,
+		color: (_process.stdout || _process).isTTY,
 		seed: 0,
 		status: 1,
 		time: 1,
