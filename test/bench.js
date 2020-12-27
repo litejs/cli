@@ -1,9 +1,9 @@
 
-var bench = require("../bench")
 
-require("..")
-.describe("bench")
+describe("bench")
 .test("same fn", function(t) {
+	var bench = require("../bench")
+
 	function a() {
 		return Math.sin(Math.random())
 	}

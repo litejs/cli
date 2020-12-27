@@ -2,76 +2,84 @@
 var fs = require("fs")
 , child = require("child_process")
 , path = require("path")
-, cli = require("./index.js")
+, cli = require("..")
 , package = {
 	"name": "",
 	"version": "0.0.0",
 	"license": "MIT",
-	"author": "",
+	"author": process.env.USER,
 	"description": "LiteJS application",
-	"main": "app/index.js",
-	"readmeFilename": "README.md",
+	"main": "server/index.js",
 	"files": [
-		"app",
+		"server",
 		"ui"
 	],
 	"scripts": {
-		"build": "litejs build",
-		"start": "node app",
-		"test": "node --allow-natives-syntax test/index.js",
-		"test-trace": "node --allow-natives-syntax --trace_opt --trace_deopt test/index.js"
-	},
-	"litejs": {
-		"template": "default",
-		"build": [
-			"-i ui/dev.html -o ui/index.html"
-		]
+		"start": "node server"
 	},
 	"repository": "git://github.com/{project}/{name}.git",
-	"bugs": {
-		"url": "https://github.com/{project}/{name}/issues"
-	}
+	"bugs": "https://github.com/{project}/{name}/issues"
 }
 
 module.exports = function(opts) {
-	var dir = path.join(process.cwd(), opts.file || "")
+	var tmp, undef
+	, dir = path.join(process.cwd(), opts.name[0] || "")
+	, stdio = {stdio: "inherit"}
 
 	cli.mkdirp(dir)
 	process.chdir(dir)
 
 	try {
-		require(path.join(dir, "package.json"))
+		package = require(path.join(dir, "package.json"))
+		opts = Object.assign(package.litejs || {}, opts)
 	} catch(e) {
 		console.log("Create package.json")
-		makePackage(dir)
-		cli.cp(path.resolve(__dirname, "../template/README.md"), "README.md")
+		var tree = dir.split(path.sep)
+		, scope = {
+			name: tree.pop(),
+			project: tree.pop()
+		}
+		package.name = scope.name
+		package.repository = format(package.repository, scope)
+		package.bugs = format(package.bugs, scope)
 	}
+
+	package.litejs = Object.assign({}, opts, { cmd:undef, name:undef, link:undef })
+	cli.writeFile("package.json", JSON.stringify(package, null, "  "))
 
 	try {
 		fs.statSync(".gitignore")
 	} catch(e) {
-		console.log("Create .gitignore")
-		cli.cp(path.resolve(__dirname, "../../.gitignore"), ".gitignore")
+		cli.cp(path.resolve(module.filename, "../../.gitignore"), ".gitignore")
 	}
 
-	child.spawnSync("npm", ["install", "--save-prod", "litejs"], {stdio: "inherit"})
-	//child.spawnSync("npm", ["link", "litejs"], {stdio: "inherit"})
-	child.spawnSync("./node_modules/.bin/litejs", ["init-app", "app"], {stdio: "inherit"})
-	child.spawnSync("./node_modules/.bin/litejs", ["init-ui", "ui"], {stdio: "inherit"})
-	child.spawnSync("git", ["init"], {stdio: "inherit"})
-	child.spawnSync("npm", ["run", "build"], {stdio: "inherit"})
+	child.spawnSync("git", ["init"], stdio)
+	add("litejs", "prod")
+	add("@litejs/ui", "dev")
+	if (opts.template) {
+		add(tmp = "@litejs/template-" + opts.template, "dev")
+		if (opts.ui !== false) {
+			cli.cp(path.join("node_modules", tmp + "/ui"), (opts.ui || "ui"))
+		}
+		if (opts.server !== false) {
+			cli.cp(path.join("node_modules", tmp + "/server"), (opts.server || "server"))
+		}
+	}
+
+	child.spawnSync("lj", ["build"], stdio)
+
+	function add(name, dep) {
+		if (opts.link) {
+			child.spawnSync("npm", ["link", name], stdio)
+		} else {
+			child.spawnSync("npm", ["install", "--save-exact", "--save-" + dep, name], stdio)
+		}
+	}
 }
 
-function makePackage(dir) {
-	var tree = dir.split(path.sep)
-	, scope = {
-		name: tree.pop(),
-		project: tree.pop()
-	}
-	package.author = process.env.USER
-	package.name = scope.name
-	package.repository = package.repository.format(scope)
-	package.bugs.url = package.bugs.url.format(scope)
-	cli.writeFile("package.json", JSON.stringify(package, null, "  "))
+function format(str, map) {
+	return str.replace(/\{(\w+)\}/g, function(_, w){
+		return map[w]
+	})
 }
 

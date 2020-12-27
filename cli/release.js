@@ -30,7 +30,7 @@ function execute(args, i) {
 	, junks = com.version.split(".")
 	, len = junks.length
 	, rewrite = args[i] === "-f"
-	, lastTag = child.execSync("git describe --tags --abbrev=0||git rev-list --max-parents=0 HEAD").toString("utf8").trim()
+	, lastTag = child.execSync("git describe --tags --abbrev=0 2>/dev/null||git rev-list --max-parents=0 HEAD").toString("utf8").trim()
 	, group = [
 		{ name: "New Features",      re: /add\b/i, log: [] },
 		{ name: "Removed Features",  re: /remove\b/i, log: [] },

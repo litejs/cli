@@ -19,12 +19,22 @@ require("./cli/patch-node.js")
 var fs = require("fs")
 , child = require("child_process")
 , path = require("path")
-, conf = {}
-, opts = {}
+, opts = {
+	"template": "default",
+	"build": [
+		"-i ui/dev.html -o ui/index.html"
+	]
+}
+, shortcut = {
+	b: "build",
+	h: "help",
+	r: "release",
+	t: "test"
+}
 , hasOwn = opts.hasOwnProperty
 
 try {
-	conf = require(path.resolve("./package.json")).litejs || {}
+	opts = require(path.resolve("./package.json")).litejs || {}
 } catch(e) {}
 
 exports.command = command
@@ -35,49 +45,38 @@ exports.readFile = readFile
 exports.rmrf = rmrf
 exports.wait = wait
 exports.writeFile = writeFile
+exports.execute = execute
 
 Array.prototype.pushUniq = function(item) {
 	return this.indexOf(item) < 0 && this.push(item)
 }
 
-function getopts(args, i, opts) {
-	for (var arg; arg = args[i++]; ) {
-		switch (arg) {
-		case "-b":
-		case "--banner":
-			opts.banner = args[i++]
-			break;
-		default:
-			if (arg.charAt(0) == "-") {
-				args.splice.apply(
-					args,
-					[i, 0].concat(arg.replace(/\w(?!$)/g,"$& " + args[i] + " -").split(" "))
-				)
-			} else if (!opts.cmd) {
-				opts.cmd = arg
-			} else {
-				opts.file = arg
-			}
+function getopts(argv, opts) {
+	for (var arg, i = argv.length; i--; ) {
+		arg = argv[i].split(/^--(no-)?|=/)
+		if (arg[0] === "") {
+			opts[arg[2]] = arg[4] || !arg[1]
+			argv.splice(i, 1)
 		}
 	}
+	arg = argv.shift()
+	opts.cmd = shortcut[arg] || arg
+	opts.name = argv
 }
 
-
 if (!module.parent) {
+	getopts(process.argv.slice(2), opts)
+	execute(opts.cmd, opts)
+}
+
+function execute(cmd, opts) {
 	var sub
 	, helpFile = module.filename
-	, shortcut = {
-		b: "build",
-		h: "help",
-		r: "release",
-		t: "test"
-	}
 	, subHelp = [
 		"bench",
 		"build",
 		"release"
 	]
-	, cmd = shortcut[process.argv[2]] || process.argv[2]
 
 	switch (cmd) {
 	case "bench":
@@ -86,20 +85,11 @@ if (!module.parent) {
 		require("./cli/" + cmd).execute(process.argv, 3)
 		break;
 	case "init":
-		getopts(process.argv.slice(0), 2, opts)
-		require("./cli/" + process.argv[2])(opts)
-		break;
-	case "init-app":
-	case "init-ui":
-		sub = process.argv[2].slice(5)
-		cp(
-			"./node_modules/litejs/lib/template/" + (conf.template || "default") + "/" + sub,
-			"./" + (opts[sub] || sub)
-		)
+		require("./cli/" + cmd)(opts)
 		break;
 	case "test":
-		sub = [ "-r", path.join(module.path, "test.js") ].concat(
-			conf.test || "test",
+		sub = [ "-r", path.resolve(module.filename, "../test.js") ].concat(
+			opts.test || "test",
 			process.argv.slice(3)
 		)
 		child.spawn(process.argv[0], sub, {

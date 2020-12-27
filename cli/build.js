@@ -20,7 +20,7 @@ var undef, conf
 , spawn = child.spawn
 , now = new Date()
 , path = require("path")
-, events = require("../../litejs/event")
+, EventEmitter = require("events").EventEmitter
 , cli = require("../")
 , files = {}
 , fileHashes = {}
@@ -73,6 +73,8 @@ function File(_name, _opts) {
 	var file = this
 	, name = _name === "-" ? _name : path.resolve(_name.split("?")[0])
 
+	EventEmitter.call(file)
+
 	if (_name && files[name]) {
 		return files[name]
 	}
@@ -124,6 +126,8 @@ function File(_name, _opts) {
 }
 
 File.prototype = {
+	on: EventEmitter.prototype.on,
+	off: EventEmitter.prototype.removeListener,
 	wait: cli.hold,
 	syncMethods: ["on", "toString"],
 	depends: function(child) {
@@ -264,8 +268,6 @@ File.prototype = {
 		return out
 	}
 }
-
-events.asEmitter(File.prototype)
 
 function defMap(str) {
 	var chr = str.charAt(0)

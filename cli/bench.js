@@ -10,7 +10,8 @@ var tmp
 , child = require("child_process")
 , fs = require("fs")
 , path = require("path")
-, bench = require("./test/bench")
+, bench = require("../bench.js")
+
 
 exports.execute = execute
 global.requireGit = requireGit
