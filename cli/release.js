@@ -45,6 +45,19 @@ function execute(args, i) {
 		{ name: "Enhancements",      re: null, log: [] }
 	]
 
+	if (args.indexOf("--no-upstream") < 0) try {
+		child.execSync("git fetch")
+		child.execSync("git merge-base --is-ancestor @{upstream} HEAD", { stdio: "inherit" })
+	} catch(e) { return console.error("fatal: fast-forward with upstream is not possible. Ignore with --no-upstream option.") }
+	child.execSync("rm -rf node_modules")
+	child.execSync("npm install", { stdio: "inherit" })
+
+	if (args.indexOf("--no-update") < 0) try {
+		child.execSync("npm outdated", { stdio: "inherit" })
+	} catch (e) {
+		return console.log("\nfatal: there are outdated packages! Ignore with --no-update option.")
+	}
+
 	if (!rewrite && com.version === cur.version) {
 		if (len > 3 || !(now[0] > junks[0] || now[1] > junks[1])) {
 			junks[len - 1] = parseInt(junks[len - 1], 10) + 1
@@ -56,13 +69,6 @@ function execute(args, i) {
 	}
 
 	msg = "Release " + cur.version + "\n\n"
-
-	child.execSync("git fetch")
-	try {
-		child.execSync("git merge-base --is-ancestor @{upstream} HEAD", { stdio: "inherit" })
-	} catch(e) { return console.error("fatal: fast-forward with upstream is not possible") }
-	child.execSync("rm -rf node_modules")
-	child.execSync("npm install", { stdio: "inherit" })
 
 	run(["build"])
 	run(["test"])
