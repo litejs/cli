@@ -46,9 +46,15 @@ function execute(args, i) {
 	]
 
 	if (args.indexOf("--no-upstream") < 0) try {
-		child.execSync("git fetch")
-		child.execSync("git merge-base --is-ancestor @{upstream} HEAD", { stdio: "inherit" })
-	} catch(e) { return console.error("fatal: fast-forward with upstream is not possible. Ignore with --no-upstream option.") }
+		child.execSync("git rev-parse @{upstream}")
+		try {
+			child.execSync("git fetch")
+			child.execSync("git merge-base --is-ancestor @{upstream} HEAD", { stdio: "inherit" })
+		} catch(e) {
+			return console.error("fatal: fast-forward with upstream is not possible. Ignore with --no-upstream option.")
+		}
+	} catch(e) {}
+
 	child.execSync("rm -rf node_modules")
 	child.execSync("npm install", { stdio: "inherit" })
 
