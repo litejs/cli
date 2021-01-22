@@ -77,7 +77,7 @@ function execute(args, i) {
 	msg = "Release " + cur.version + "\n\n"
 
 	run(["build"])
-	run(["test"])
+	run(["test", "--tap"])
 
 	// TODO:2019-12-21:lauri:Build three times till hash calculation is fixed in build
 	child.spawnSync("git", ["add", "-u"])
