@@ -102,7 +102,7 @@
 		yellow: "\x1b[33m",
 		reset: "\x1b[0m",
 		color: (_process.stdout || _process).isTTY,
-		seed: 0,
+		seed: (Math.random() * 1e5)|0,
 		status: 1,
 		time: 1,
 		timeout: 999,
@@ -474,7 +474,7 @@
 		},
 		rand: function(seed_) {
 			var mock = this
-			, seed = seed_ || conf.seed || (Math.random() * 1e5)
+			, seed = seed_ || conf.seed
 			mock.txt += " #seed:" + seed
 			mock.replace(Math, "random", xorshift128(seed, seed*2e3, seed*3e4, seed*4e5))
 		},
