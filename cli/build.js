@@ -687,6 +687,9 @@ function execute(args, i) {
 		case "--readme":
 			updateReadme(args[i++])
 			break;
+		case "--eval":
+			updateEval(args[i++], output)
+			break;
 		case "-v":
 		case "--version":
 			var opts = { warnings: [] }
@@ -754,6 +757,20 @@ function updateReadme(file) {
 	if (current != updated) {
 		console.error("# Update readme: " + file)
 		cli.writeFile(file, updated)
+	}
+}
+
+function updateEval(file, output) {
+	var current = cli.readFile(output)
+	, updated = JSON.stringify(require(path.resolve(file)), function converter(key, val) {
+		if (typeof val === "function" || val && val.constructor === RegExp) {
+			return String(val)
+		}
+		return val
+	}, 2)
+	if (current !== updated) {
+		console.error("# Update eval: " + output)
+		cli.writeFile(output, updated)
 	}
 }
 
