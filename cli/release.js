@@ -7,7 +7,9 @@
 //-    lj release
 //-
 //-  release options
-//-    --force, -f     Force to rewrite current tag
+//-    --rewrite       Rewrite current tag
+//-    --no-update     Ignore outdated packages
+//-    --no-upstream   Ignore new commits on upstream
 //-
 //-  Examples
 //-    lj r -f
@@ -29,7 +31,7 @@ function execute(args, i) {
 	, cur = require(path.resolve("package.json"))
 	, junks = com.version.split(".")
 	, len = junks.length
-	, rewrite = args[i] === "-f"
+	, rewrite = args.indexOf("--rewrite") > -1
 	, lastTag = child.execSync("git describe --tags --abbrev=0 2>/dev/null||git rev-list --max-parents=0 HEAD").toString("utf8").trim()
 	, group = [
 		{ name: "New Features",      re: /add\b/i, log: [] },
