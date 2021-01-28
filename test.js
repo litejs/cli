@@ -87,6 +87,7 @@
 	}
 	, conf = describe.conf = {
 		// process.platform === 'win32' -> √×.
+		file: (Error().stack + " /cli/test.js:").match(/\S+?:/)[0],
 		head: "",
 		indent: "  ",
 		suite: "{1}", //➜✺✽❖❣❢•※⁕∅
@@ -259,7 +260,7 @@
 			if (stack) {
 				// iotjs returns stack as Array
 				for (var row, start, i = 0, arr = _isArray(stack) ? stack : (stack || "").split("\n"); (row = arr[++i]); ) {
-					if (row.indexOf("/litejs/test/index.js:") < 0) {
+					if (row.indexOf(conf.file) < 0) {
 						if (!start) start = i
 					}
 					if (i - start >= conf.trace) break
