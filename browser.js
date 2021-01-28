@@ -80,19 +80,21 @@
 		this.ok(function() {
 			var ev
 			, node = document.body.find(sel)
-			, attr = {
-				pointerX: 0, pointerY: 0, button: 0,
-				ctrlKey: false, altKey: false, shiftKey: false, metaKey: false,
-				bubbles: true, cancelable: true
-			}
+			, pointerX = 0
+			, pointerY = 0
+			, button = 0
+			, ctrlKey = false
+			, altKey = false
+			, shiftKey = false
+			, metaKey = false
 
 			if (node) {
 				if (node.dispatchEvent) {
 					ev = document.createEvent("MouseEvents")
-					ev.initMouseEvent("click", true, true, document.defaultView, attr.button,
-						attr.pointerX, attr.pointerY, attr.pointerX, attr.pointerY,
-						attr.ctrlKey, attr.altKey, attr.shiftKey, attr.metaKey,
-						attr.button, node)
+					ev.initMouseEvent("click", true, true, document.defaultView, button,
+						pointerX, pointerY, pointerX, pointerY,
+						ctrlKey, altKey, shiftKey, metaKey,
+						button, node)
 					node.dispatchEvent(ev)
 				} else if (node.click) {
 					node.click()
@@ -144,18 +146,19 @@
 				if (rule.styleSheet) {
 					parseStyleSheet(rule.styleSheet)
 				} else if (rule.selectorText) {
-					rule.selectorText.split(/\s*,\s*/).each(function(sel) {
-						sel = sel.replace(cleanSelectorRe, "").toLowerCase()
-						if (!sel || ignoreSelectors && ignoreSelectors.indexOf(sel) > -1) {
-							return
-						}
-						selectors[sel] = selectors[sel] || {files: [], count: 0}
-						if (selectors[sel].files.indexOf(fileName + ":" + rulesCount) == -1) {
-							selectors[sel].files.unshift(fileName + ":" + rulesCount)
-						}
-					})
+					rule.selectorText.split(/\s*,\s*/).each(selFn)
 				} else {
 					//console.log("bad rule", rule)
+				}
+			}
+			function selFn(sel) {
+				sel = sel.replace(cleanSelectorRe, "").toLowerCase()
+				if (!sel || ignoreSelectors && ignoreSelectors.indexOf(sel) > -1) {
+					return
+				}
+				selectors[sel] = selectors[sel] || {files: [], count: 0}
+				if (selectors[sel].files.indexOf(fileName + ":" + rulesCount) == -1) {
+					selectors[sel].files.unshift(fileName + ":" + rulesCount)
 				}
 			}
 		}
@@ -165,7 +168,7 @@
 			, arr = Object.keys(selectors)
 			, len = arr.length
 
-			while (sel = arr[--len]) {
+			for (; (sel = arr[--len]); ) {
 				selectors[sel].count += document.body.findAll.call(document.documentElement, sel).length
 			}
 		}
@@ -184,22 +187,18 @@
 		assert.plan(len)
 		assert.options.noStack = true
 
-		while (sel = arr[--len]) {
+		for (; (sel = arr[--len]); ) {
 			assert.ok(selectors[sel].count, "Unused rule '" + sel + "' in " + selectors[sel].files)
 		}
 		return assert
 	}
 
 	assert.collectViewsUsage = function() {
-		var viewsUsage = GLOBAL.viewsUsage = {}
+		var usage = GLOBAL.viewsUsage = {}
 
 		View.on("show", function(route) {
 			var view = View.views[route]
-
-			do {
-				viewsUsage[route] = viewsUsage[route] || 0
-				viewsUsage[route]++
-			} while (route = (view = view.parent || {}).route)
+			for(; (usage[route] = usage[route]||0), usage[route]++, (route = (view = view.parent||{}).route); );
 		})
 		return this
 	}
@@ -209,13 +208,13 @@
 		var route
 		, routes = Object.keys(View.views)
 		, len = routes.length
-		, viewsUsage = GLOBAL.viewsUsage
+		, usage = GLOBAL.viewsUsage
 
 		assert.plan(len)
 		assert.options.noStack = true
 
-		while (route = routes[--len]) {
-			assert.ok(viewsUsage[route], "Unused view " + route)
+		for (; (route = routes[--len]); ) {
+			assert.ok(usage[route], "Unused view " + route)
 		}
 		return assert
 	}
@@ -242,7 +241,7 @@
 		from = from.split("/")
 		to = to.split("/")
 
-		for (var i = common = from.length; i--; ) {
+		for (var i = from.length, common = i; i--; ) {
 			if (from[i] !== to[i]) common = i
 			from[i] = ".."
 		}
@@ -254,5 +253,6 @@
 		return this.ok(el.offsetWidth > 0 && el.offsetHeight > 0)
 	}
 
-}(describe)
+}(describe) // jshint ignore:line
+
 

@@ -281,7 +281,7 @@ function htmlQuote(val) {
 	// a valid unquoted attribute value in HTML is
 	// a not empty string that doesn’t contain spaces, tabs, line feeds, form feeds, carriage returns, "'`=<>
 	return (
-		/^[^\s'"`<>=]+$/.test(val) ? '"' + val + '"' :
+		/^[^\s'"`<>=]+$/.test(val) ? "\"" + val + "\"" :
 		val
 	)
 }
@@ -303,7 +303,7 @@ function htmlSplit(str, opts) {
 	str = str
 	.replace(/<!--(?!\[if)[^]*?-->/g, "")
 
-	for (out = [ str ]; match = re.exec(str); ) {
+	for (out = [ str ]; (match = re.exec(str)); ) {
 		file = opts.root + (match[1] || match[3])
 		ext = file.split(".").pop()
 		pos = out.length
@@ -316,7 +316,7 @@ function htmlSplit(str, opts) {
 		inline = inlineRe.test(match[0])
 		drop = dropRe.exec(match[0])
 
-		if (match2 = requireRe.exec(match[0])) {
+		if ((match2 = requireRe.exec(match[0]))) {
 			lastStr = opts.root
 			tmp = (match2[2] ? match2[3] : match2[1]).match(/[^,\s]+/g)
 			match2 = File(file, {
@@ -342,7 +342,7 @@ function htmlSplit(str, opts) {
 			drop: drop ? drop[3] || drop[1] : ""
 		}
 
-		if (match3 = minRe.exec(match[0])) {
+		if ((match3 = minRe.exec(match[0]))) {
 			lastStr = file.slice(opts.root.length)
 			file2 = (
 				match3[1] ? path.resolve(opts.root, defMap.call(opts, match3[1])) :
@@ -406,16 +406,16 @@ function htmlMin(str) {
 	.replace(/\t/g, " ")
 	.replace(/\s+(?=<|\/?>|$)/g, "")
 	.replace(/\b(href|src)="(?!data:)(.+?)"/gi, function(_, tag, file) {
-		return tag + '="' + replacePath(file, opts) + '"'
+		return tag + "=\"" + replacePath(file, opts) + "\""
 	})
 }
 
 function jsToHtml(str) {
-	return '<script>' + str + '</script>'
+	return "<script>" + str + "</script>"
 
 }
 function cssToHtml(str) {
-	return '<style>' + str + '</style>'
+	return "<style>" + str + "</style>"
 }
 
 function cssSplit(str, opts) {
@@ -426,12 +426,12 @@ function cssSplit(str, opts) {
 	if (opts.root !== opts.name.replace(/[^\/]*$/, "")) {
 		str = str.replace(/\/\*(?!!)[^]*?\*\/|url\((['"]?)(?!data:)(.+?)\1\)/ig, function(_, q, name) {
 			return name ?
-			'url("' + replacePath(path.relative(opts.root, path.resolve(opts.name.replace(/[^\/]*$/, name))), opts) + '")' :
+			"url(\"" + replacePath(path.relative(opts.root, path.resolve(opts.name.replace(/[^\/]*$/, name))), opts) + "\")" :
 			_
 		})
 	}
 
-	for (out = [ str ]; match = re.exec(str); ) {
+	for (out = [ str ]; (match = re.exec(str)); ) {
 		out.splice(-1, 1,
 			str.slice(lastIndex, match.index),
 			File(path.resolve(opts.root, match[2]), opts),
@@ -449,28 +449,10 @@ function cssMin(map, opts, next) {
 		.replace(/\/\*(?!!)[^]*?\*\//g, "")
 		.replace(/[\r\n]+/g, "\n")
 
-		.replace(/(.*)\/\*!\s*([\w-]+)\s*([\w-.]*)\s*\*\//g, function(_, line, cmd, param) {
-			switch (cmd) {
-			case "data-uri":
-				line = line.replace(/url\((['"]?)(.+?)\1\)/g, function(_, quote, fileName) {
-					var str = fs.readFileSync(path.resolve(opts.root + fileName), "base64")
-					return 'url("data:image/' + fileName.split(".").pop() + ";base64," + str + '")'
-				})
-				break;
-			}
-			return line
-		})
+		.replace(/(.*)\/\*!\s*([\w-]+)\s*([\w-.]*)\s*\*\//g, cmdFn)
 
 		// Remove optional spaces and put each rule to separated line
-		.replace(/(["'])((?:\\?.)*?)\1|[^"']+/g, function(_, q, str) {
-			if (q) return q == "'" && str.indexOf('"') == -1 ? '"' + str + '"' : _
-			return _.replace(/[\t\n]/g, " ")
-			.replace(/ *([,;{}>~+]) */g, "$1")
-			.replace(/^ +|;(?=})/g, "")
-			.replace(/: +/g, ":")
-			.replace(/ and\(/g, " and (")
-			.replace(/}(?!})/g, "}\n")
-		})
+		.replace(/(["'])((?:\\?.)*?)\1|[^"']+/g, clearFn)
 
 		// Use CSS shorthands
 		//.replace(/([^0-9])-?0(px|em|%|in|cm|mm|pc|pt|ex)/g, "$10")
@@ -479,6 +461,27 @@ function cssMin(map, opts, next) {
 		.replace(/([ :,])0\.([0-9]+)/g, "$1.$2")
 	}
 	next(null, out)
+
+	function cmdFn(_, line, cmd, param) {
+		switch (cmd) {
+		case "data-uri":
+			line = line.replace(/url\((['"]?)(.+?)\1\)/g, function(_, quote, fileName) {
+				var str = fs.readFileSync(path.resolve(opts.root + fileName), "base64")
+				return "url(\"data:image/" + fileName.split(".").pop() + ";base64," + str + "\")"
+			})
+			break;
+		}
+		return line
+	}
+	function clearFn(_, q, str) {
+		if (q) return q == "'" && str.indexOf("\"") == -1 ? "\"" + str + "\"" : _
+		return _.replace(/[\t\n]/g, " ")
+		.replace(/ *([,;{}>~+]) */g, "$1")
+		.replace(/^ +|;(?=})/g, "")
+		.replace(/: +/g, ":")
+		.replace(/ and\(/g, " and (")
+		.replace(/}(?!})/g, "}\n")
+	}
 }
 
 var npmChild
@@ -493,6 +496,7 @@ function jsMin(map, opts, next) {
 	, ps = spawn("uglifyjs", [
 		"--warn",
 		"--ie8",
+		// drop_console=true,pure_funcs="debug",unsafe=true
 		"--compress", "evaluate=false,properties=false",
 		"--mangle", "eval",
 		"--comments", "/^[@!]/",
@@ -623,8 +627,8 @@ function tplToJs(input) {
 	}
 	return map["%js"] + map["%css"] + (
 		singles > doubles ?
-		';El.tpl("' + input.replace(/"/g, '\\"') + '")' :
-		";El.tpl('" + input.replace(/'/g, "\\'") + "')"
+		";El.tpl(\"" + input.replace(/"/g, "\\$&") + "\")" :
+		";El.tpl('" + input.replace(/'/g, "\\$&") + "')"
 	)
 }
 
@@ -663,7 +667,7 @@ function readFileHashes(next) {
 function execute(args, i) {
 	var arg, banner, input, output
 
-	for (; arg = args[i++]; ) {
+	for (; (arg = args[i++]); ) {
 		switch (arg) {
 		case "-b":
 		case "--banner":
@@ -692,7 +696,6 @@ function execute(args, i) {
 			break;
 		case "-v":
 		case "--version":
-			var opts = { warnings: [] }
 			updateVersion(args[i++])
 			break;
 		default:

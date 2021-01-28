@@ -5,7 +5,7 @@ module.exports = bench
 bench.cpuSpeed = cpuSpeed
 
 function bench(tests, next) {
-	var i, tmp
+	var i
 	, keys = Object.keys(tests).reverse()
 	, len = keys.length
 	, times = []
@@ -40,7 +40,7 @@ function bench(tests, next) {
 				fastest = t.ops
 			}
 		}
-		for (i = len; t = result[keys[--i]]; ) {
+		for (i = len; (t = result[keys[--i]]); ) {
 			diff = Math.round((fastest - t.ops) / fastest * 100)
 			t.rel = diff ? diff + "% slower" : "fastest"
 		}
@@ -51,7 +51,7 @@ function bench(tests, next) {
 }
 
 function measure(fn, time, next) {
-	var now, i
+	var i
 	, calls = 0
 	, end = Date.now() + time
 	, hr = process.hrtime()

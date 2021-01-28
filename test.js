@@ -21,7 +21,7 @@
 	, splicePos = 0
 	/*** mockTime */
 	, fakeNow
-	, tmpDate = new _Date
+	, tmpDate = new _Date()
 	, timers = []
 	, timerId = 0
 	, fakeTimers = {
@@ -115,7 +115,7 @@
 
 	for (; argi--; ) {
 		arg = argv[argi].split(/=|--(no-)?/)
-		if (arg[0] == "") {
+		if (arg[0] === "") {
 			conf[arg[2]] = arg[4] || !arg[1]
 			argv.splice(argi, 1)
 		}
@@ -165,7 +165,7 @@
 	function nextCase() {
 		var testCase, tick
 		, args = tests[splicePos = runPos++]
-		if (args == null) printResult()
+		if (!args) printResult()
 		else if (args[0] === 1) nextSuite(testSuite = args)
 		else {
 			testCase = Object.assign({
@@ -213,13 +213,14 @@
 					, hooks = []
 					, hooked = []
 
-					for (k in obj) if (type(obj[k]) == "function") !function(k) {
+					for (k in obj) if (type(obj[k]) == "function") swap(k)
+					function swap(k) {
 						hooked.push(k, obj[k])
 						obj[k] = function() {
 							hooks.push(k, arguments)
 							return obj
 						}
-					}(k)
+					}
 
 					return function() {
 						if (!hooks) return
@@ -227,7 +228,7 @@
 							obj[hooked[i-1]] = hooked[i]
 						}
 						// i == -1 from previous loop
-						for (; v = hooks[++i]; ) {
+						for (; (v = hooks[++i]); ) {
 							scope = scope[v].apply(scope, hooks[++i]) || scope
 						}
 						hooks = hooked = null
@@ -246,7 +247,7 @@
 			try {
 				testCase.setTimeout(conf.timeout)
 				if (type(args[2]) === "function") {
-					args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock))
+					args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
 				}
 			} catch (e) {
 				console.log(e)
@@ -257,7 +258,7 @@
 		function fail(message, stack) {
 			if (stack) {
 				// iotjs returns stack as Array
-				for (var row, start, i = 0, arr = _isArray(stack) ? stack : (stack || "").split("\n"); row = arr[++i]; ) {
+				for (var row, start, i = 0, arr = _isArray(stack) ? stack : (stack || "").split("\n"); (row = arr[++i]); ) {
 					if (row.indexOf("/litejs/test/index.js:") < 0) {
 						if (!start) start = i
 					}
@@ -321,7 +322,7 @@
 		conf.timeStr = conf.time ? " in " + (_Date.now() - started) + " ms at " + started.toTimeString().slice(0, 8) : ""
 		if (conf.status) _process.exitCode = conf.fail
 		if (failed) {
-			for (var nums = [], stack = []; testCase = failedCases[--failed]; ) {
+			for (var nums = []; (testCase = failedCases[--failed]); ) {
 				nums[failed] = testCase.num
 				print("---")
 				line("nok", testCase)
@@ -393,9 +394,7 @@
 				ms: ms
 			}
 		}
-		for (var i = timers.length; i--; ) {
-			if (timers[i].at <= repeat.at) break
-		}
+		for (var i = timers.length; i-- && !(timers[i].at <= repeat.at);); // jshint ignore:line
 		timers.splice(i + 1, 0, repeat)
 		return timerType == "number" ? repeat.id : {
 			id: repeat.id,
@@ -413,7 +412,7 @@
 	}
 
 	function fakeClear(id) {
-		if (id != null) for (var i = timers.length; i--; ) {
+		if (id) for (var i = timers.length; i--; ) {
 			if (timers[i].id === id || timers[i].id === id.id) {
 				timers.splice(i, 1)
 				break
@@ -444,7 +443,7 @@
 					}
 				} else if (_isArray(origin)) {
 					result = origin[spy.called % origin.length]
-				} else if (origin && origin.constructor === Object) {
+				} else if (type(origin) === "object") {
 					key = JSON.stringify(args).slice(1, -1)
 					result = hasOwn.call(origin, key) ? origin[key] : origin["*"]
 				}
@@ -516,17 +515,13 @@
 				fakeNow = timers[0].at
 			}
 
-			for (var t; t = timers[0]; ) {
-				if (t.at <= fakeNow) {
-					timers.shift()
-					if (type(t.fn) === "string") t.fn = Function(t.fn)
-					if (type(t.fn) === "function") t.fn.apply(null, t.args)
-					if (!noRepeat && t.repeat) {
-						t.at += t.ms
-						fakeTimeout(t)
-					}
-				} else {
-					break
+			for (var t; (t = timers[0]) && t.at <= fakeNow; ) {
+				timers.shift()
+				if (type(t.fn) === "string") t.fn = Function(t.fn)
+				if (type(t.fn) === "function") t.fn.apply(null, t.args)
+				if (!noRepeat && t.repeat) {
+					t.at += t.ms
+					fakeTimeout(t)
 				}
 			}
 		},
@@ -575,7 +570,7 @@
 
 		if (
 			aType !== "object" ||
-			actual == null ||
+			actual == null || // jshint ignore:line
 			aType !== typeof expected ||
 			(aType = type(actual)) != type(expected) ||
 			actual.constructor !== expected.constructor ||
@@ -655,6 +650,6 @@
 
 		return str
 	}
-}(this)
+}(this) // jshint ignore:line
 
 

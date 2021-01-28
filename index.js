@@ -199,13 +199,14 @@ function hold(ignore) {
 	, _resume = wait(resume)
 	ignore = ignore || obj.syncMethods || []
 
-	for (k in obj) if (typeof obj[k] == "function" && ignore.indexOf(k) < 0) !function(k) {
+	for (k in obj) if (typeof obj[k] == "function" && ignore.indexOf(k) < 0) swap(k)
+	function swap(k) {
 		hooked.push(k, hasOwn.call(obj, k) && obj[k])
 		obj[k] = function() {
 			hooks.push(k, arguments)
 			return obj
 		}
-	}(k)
+	}
 
 	/**
 	 * `wait` is already in hooked array,
@@ -222,7 +223,7 @@ function hold(ignore) {
 			else delete obj[hooked[i-1]]
 		}
 		// i == -1 from previous loop
-		for (; v = hooks[++i]; ) {
+		for (; (v = hooks[++i]); ) {
 			scope = scope[v].apply(scope, hooks[++i]) || scope
 		}
 		hooks = hooked = null

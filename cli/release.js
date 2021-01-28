@@ -91,14 +91,14 @@ module.exports = function(opts) {
 	child.spawnSync("git", [
 		"log", "--pretty=format:%s (%aN)", lastTag + "..HEAD~1"
 	]).stdout.toString("utf8").split("\n").forEach(function(row) {
-		for (var g, i = 0; g = group[i++]; ) {
+		for (var g, i = 0; (g = group[i++]); ) {
 			if (!g.re || g.re.test(row)) {
 				return g.log.push(row)
 			}
 		}
 	})
 	msg = ""
-	for (i = 0; g = group[i++]; ) {
+	for (i = 0; (g = group[i++]); ) {
 		if (g.log.length) {
 			msg += g.name + ":\n\n - " + g.log.join("\n - ") + "\n\n"
 		} else {
@@ -113,16 +113,16 @@ module.exports = function(opts) {
 
 		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, opts.rewrite ? "-f" : "--"], { stdio: "inherit" })
 
-		console.log(`\nVERSION: ${cur.version}`)
+		console.log("\nVERSION: %s", cur.version)
 		if (!cur.private) {
-			console.log(`PUBLISH: npm publish${len === 3?'':' --tag next'}`)
+			console.log("PUBLISH: npm publish%s", len === 3 ? "" : " --tag next")
 		}
 	})
 
 	function run(args) {
 		var sub = child.spawnSync("lj", args)
 		if (sub.status) {
-			console.error(`EXIT: ${sub.status}`, args)
+			console.error("EXIT:", sub.status, args)
 			process.stderr.write(sub.stderr)
 			process.exit(1)
 		}
