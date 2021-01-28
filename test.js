@@ -476,7 +476,7 @@
 			var mock = this
 			, seed = seed_ || conf.seed
 			mock.txt += " #seed:" + seed
-			mock.replace(Math, "random", xorshift128(seed, seed*2e3, seed*3e4, seed*4e5))
+			mock.replace(Math, "random", xorshift128(seed))
 		},
 		replace: function(obj, name, fn) {
 			var mock = this
@@ -546,7 +546,10 @@
 		}
 	}
 
-	function xorshift128(a, b, c, d) {
+	function xorshift128(a) {
+		var b = a * 2e3
+		, c = a * 3e4
+		, d = a * 4e5
 		return function() {
 			var z, t = d
 			t ^= t << 11; t ^= t >>> 8
