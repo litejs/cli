@@ -7,12 +7,13 @@
 //-    lj release
 //-
 //-  release options
-//-    --rewrite       Rewrite current tag
+//-    --no-lint       Ignore jshint errors
 //-    --no-update     Ignore outdated packages
 //-    --no-upstream   Ignore new commits on upstream
+//-    --rewrite       Rewrite current tag
 //-
 //-  Examples
-//-    lj r -f
+//-    lj r --no-upstream
 //-
 
 var TAG_MSG = ".git/TAG_MSG"
@@ -21,17 +22,13 @@ var TAG_MSG = ".git/TAG_MSG"
 , cli = require("../")
 
 
-exports.execute = execute
-
-
-function execute(args, i) {
+module.exports = function(opts) {
 	var g, msg, tmp
 	, now = (new Date().toISOString().slice(2, 8) + "00").split(/-0?/)
 	, com = JSON.parse(child.execSync("git show HEAD:package.json").toString("utf8"))
 	, cur = require(path.resolve("package.json"))
 	, junks = com.version.split(".")
 	, len = junks.length
-	, rewrite = args.indexOf("--rewrite") > -1
 	, lastTag = child.execSync("git describe --tags --abbrev=0 2>/dev/null||git rev-list --max-parents=0 HEAD").toString("utf8").trim()
 	, group = [
 		{ name: "New Features",      re: /add\b/i, log: [] },
@@ -47,7 +44,7 @@ function execute(args, i) {
 		{ name: "Enhancements",      re: null, log: [] }
 	]
 
-	if (args.indexOf("--no-upstream") < 0) try {
+	if (opts.upstream !== false) try {
 		child.execSync("git rev-parse @{upstream}")
 		try {
 			child.execSync("git fetch")
@@ -60,13 +57,15 @@ function execute(args, i) {
 	child.execSync("rm -rf node_modules")
 	child.execSync("npm install", { stdio: "inherit" })
 
-	if (args.indexOf("--no-update") < 0) try {
+	if (opts.update !== false) try {
 		child.execSync("npm outdated", { stdio: "inherit" })
 	} catch (e) {
 		return console.log("\nfatal: there are outdated packages! Ignore with --no-update option.")
 	}
 
-	if (!rewrite && com.version === cur.version) {
+	cli.execute("lint", opts)
+
+	if (!opts.rewrite && com.version === cur.version) {
 		if (len > 3 || !(now[0] > junks[0] || now[1] > junks[1])) {
 			junks[len - 1] = parseInt(junks[len - 1], 10) + 1
 		} else {
@@ -87,7 +86,7 @@ function execute(args, i) {
 	child.spawnSync("git", ["add", "-u"])
 	child.spawnSync("lj", ["build"])
 
-	child.spawnSync("git", ["commit", "-a", "-m", msg, (rewrite ? "--amend" : "--")], { stdio: "inherit" })
+	child.spawnSync("git", ["commit", "-a", "-m", msg, (opts.rewrite ? "--amend" : "--")], { stdio: "inherit" })
 
 	child.spawnSync("git", [
 		"log", "--pretty=format:%s (%aN)", lastTag + "..HEAD~1"
@@ -112,7 +111,7 @@ function execute(args, i) {
 	child.spawn(process.env.EDITOR || "vim", [TAG_MSG], { stdio: "inherit" })
 	.on("exit", function (e, code) {
 
-		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, rewrite ? "-f" : "--"], { stdio: "inherit" })
+		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, opts.rewrite ? "-f" : "--"], { stdio: "inherit" })
 
 		console.log(`\nVERSION: ${cur.version}`)
 		if (!cur.private) {

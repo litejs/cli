@@ -81,10 +81,17 @@ function execute(cmd, opts) {
 	switch (cmd) {
 	case "bench":
 	case "build":
-	case "release":
 		require("./cli/" + cmd).execute(process.argv, 3)
 		break;
+	case "lint":
+		if (opts.lint) try {
+			child.execSync(opts.lint, { stdio: "inherit" })
+		} catch (e) {
+			return console.log("\nfatal: code does not comply to rules! Ignore with --no-lint option.")
+		}
+		break;
 	case "init":
+	case "release":
 		require("./cli/" + cmd)(opts)
 		break;
 	case "test":
