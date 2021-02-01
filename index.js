@@ -19,6 +19,17 @@ require("./cli/patch-node.js")
 var fs = require("fs")
 , child = require("child_process")
 , path = require("path")
+, cli = Object.assign(exports, require("./package.json"), {
+	command: command,
+	cp: cp,
+	execute: execute,
+	hold: hold,
+	mkdirp: mkdirp,
+	readFile: readFile,
+	rmrf: rmrf,
+	wait: wait,
+	writeFile: writeFile
+})
 , opts = {
 	"template": "default",
 	"build": [
@@ -37,15 +48,6 @@ try {
 	opts = require(path.resolve("./package.json")).litejs || {}
 } catch(e) {}
 
-exports.command = command
-exports.cp = cp
-exports.hold = hold
-exports.mkdirp = mkdirp
-exports.readFile = readFile
-exports.rmrf = rmrf
-exports.wait = wait
-exports.writeFile = writeFile
-exports.execute = execute
 
 Array.prototype.pushUniq = function(item) {
 	return this.indexOf(item) < 0 && this.push(item)
@@ -66,6 +68,7 @@ function getopts(argv, opts) {
 
 if (!module.parent) {
 	getopts(process.argv.slice(2), opts)
+	if (opts.version) console.log("%s v%s", cli.name, cli.version)
 	execute(opts.cmd, opts)
 }
 
@@ -78,7 +81,7 @@ function execute(cmd, opts) {
 		"release"
 	]
 
-	switch (cmd) {
+	if (!opts.version || cmd) switch (cmd) {
 	case "bench":
 	case "build":
 		require("./cli/" + cmd).execute(process.argv, 3)

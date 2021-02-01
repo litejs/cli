@@ -16,7 +16,6 @@
 var undef, conf
 , fs = require("fs")
 , child = require("child_process")
-, PAC = require("../package.json")
 , spawn = child.spawn
 , now = new Date()
 , path = require("path")
@@ -56,7 +55,7 @@ adapters.view = adapters.tpl
 
 try {
 	conf = require(path.resolve("package.json"))
-	console.log("# Build %s@%s\n%s %s", conf.name, conf.version, PAC.name, PAC.version)
+	console.log("# Build %s@%s\n%s %s", conf.name, conf.version, cli.name, cli.version)
 	child.spawnSync("uglifyjs", ["--version"], {stdio: "inherit"})
 } catch(e) {
 	console.error(e)
