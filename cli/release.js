@@ -77,14 +77,16 @@ module.exports = function(opts) {
 
 	msg = "Release " + cur.version + "\n\n"
 
-	run(["build"])
-	run(["test", "--tap"])
+	if (opts.build !== false) {
+		run(["build"])
+		// TODO:2019-12-21:lauri:Build three times till hash calculation is fixed in build
+		child.spawnSync("git", ["add", "-u"])
+		child.spawnSync("lj", ["build"])
+		child.spawnSync("git", ["add", "-u"])
+		child.spawnSync("lj", ["build"])
+	}
 
-	// TODO:2019-12-21:lauri:Build three times till hash calculation is fixed in build
-	child.spawnSync("git", ["add", "-u"])
-	child.spawnSync("lj", ["build"])
-	child.spawnSync("git", ["add", "-u"])
-	child.spawnSync("lj", ["build"])
+	if (opts.test !== false) run(["test", "--tap"])
 
 	child.spawnSync("git", ["commit", "-a", "-m", msg, (opts.rewrite ? "--amend" : "--")], { stdio: "inherit" })
 
