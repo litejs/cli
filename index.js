@@ -28,7 +28,8 @@ var fs = require("fs")
 	readFile: readFile,
 	rmrf: rmrf,
 	wait: wait,
-	writeFile: writeFile
+	writeFile: writeFile,
+	writePackage: writePackage
 })
 , opts = {
 	"template": "default",
@@ -45,7 +46,7 @@ var fs = require("fs")
 , hasOwn = opts.hasOwnProperty
 
 try {
-	opts = require(path.resolve("./package.json")).litejs || {}
+	Object.assign(opts, require(path.resolve("./package.json")).litejs)
 } catch(e) {}
 
 
@@ -179,6 +180,12 @@ function writeFile(fileName, content) {
 	var name = path.resolve(fileName.split("?")[0])
 	mkdirp(path.dirname(name))
 	fs.writeFileSync(name, content, "utf8")
+}
+
+function writePackage(obj) {
+	var undef
+	obj.litejs = Object.assign(obj.litejs || {}, { cmd:undef, name:undef })
+	writeFile("package.json", JSON.stringify(obj, null, "  ") + "\n")
 }
 
 

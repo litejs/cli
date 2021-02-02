@@ -44,9 +44,6 @@ module.exports = function(opts) {
 		package.bugs = format(package.bugs, scope)
 	}
 
-	package.litejs = Object.assign({}, opts, { cmd:undef, name:undef, link:undef })
-	cli.writeFile("package.json", JSON.stringify(package, null, "  "))
-
 	try {
 		fs.statSync(".gitignore")
 	} catch(e) {
@@ -65,6 +62,9 @@ module.exports = function(opts) {
 			cli.cp(path.join("node_modules", tmp + "/server"), (opts.server || "server"))
 		}
 	}
+
+	package.litejs = opts
+	cli.writePackage(package)
 
 	child.spawnSync("lj", ["build"], stdio)
 

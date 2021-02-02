@@ -72,7 +72,7 @@ module.exports = function(opts) {
 			junks = now
 		}
 		cur.version = junks.join(".")
-		cli.writeFile("package.json", JSON.stringify(cur, null, "  ") + "\n")
+		cli.writePackage(cur)
 	}
 
 	msg = "Release " + cur.version + "\n\n"
