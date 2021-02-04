@@ -239,7 +239,7 @@ File.prototype = {
 			}
 		}
 		if (file.opts.warnings.length) {
-			console.error("WARNINGS:\n - " + file.opts.warnings.join("\n - "))
+			console.log("WARNINGS:\n - " + file.opts.warnings.join("\n - "))
 		}
 	},
 	then: function(next, scope) {
@@ -757,7 +757,7 @@ function updateReadme(file) {
 	, updated = format(current)
 
 	if (current != updated) {
-		console.error("# Update readme: " + file)
+		console.log("# Update readme: " + file)
 		cli.writeFile(file, updated)
 	}
 }
@@ -771,7 +771,7 @@ function updateEval(file, output) {
 		return val
 	}, 2)
 	if (current !== updated) {
-		console.error("# Update eval: " + output)
+		console.log("# Update eval: " + output)
 		cli.writeFile(output, updated)
 	}
 }
@@ -783,7 +783,7 @@ function updateVersion(file) {
 		return a + q + now.toISOString() + q
 	})
 	if (current !== updated) {
-		console.error("# Update version: " + file)
+		console.log("# Update version: " + file)
 		cli.writeFile(file, updated)
 	}
 }
@@ -813,7 +813,7 @@ function updateWorker(file, opts, hashes) {
 	})
 
 	if (current != updated) {
-		console.error("# Update worker: " + file)
+		console.log("# Update worker: " + file)
 		cli.writeFile(file, updated)
 	}
 }
