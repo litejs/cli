@@ -7,26 +7,30 @@
 //-    lj release
 //-
 //-  release options
-//-    --no-lint       Ignore jshint errors
-//-    --no-update     Ignore outdated packages
+//-    --no-build      Do not run build
+//-    --no-global     Ignore outdated global packages
+//-    --no-install    Do not remove node_modules and install again
+//-    --no-lint       Ignore linter errors
+//-    --no-test       Do not execute tests
+//-    --no-update     Ignore outdated dependencies
 //-    --no-upstream   Ignore new commits on upstream
 //-    --rewrite       Rewrite current tag
 //-
 //-  Examples
-//-    lj r --no-upstream
+//-    lj r --no-install
 //-
-
-var TAG_MSG = ".git/TAG_MSG"
-, child = require("child_process")
-, path = require("path")
-, cli = require("../")
 
 
 module.exports = function(opts) {
-	var g, msg, tmp
+	var g
+	, TAG_MSG = ".git/TAG_MSG"
+	, child = require("child_process")
+	, path = require("path")
+	, cli = require("../")
+	, cur = require(path.resolve("package.json"))
+	, msg = ""
 	, now = (new Date().toISOString().slice(2, 8) + "00").split(/-0?/)
 	, com = JSON.parse(child.execSync("git show HEAD:package.json").toString("utf8"))
-	, cur = require(path.resolve("package.json"))
 	, junks = com.version.split(".")
 	, len = junks.length
 	, lastTag = child.execSync("git describe --tags --abbrev=0 2>/dev/null||git rev-list --max-parents=0 HEAD").toString("utf8").trim()
@@ -44,26 +48,15 @@ module.exports = function(opts) {
 		{ name: "Enhancements",      re: null, log: [] }
 	]
 
-	if (opts.upstream !== false) try {
+	try {
 		child.execSync("git rev-parse @{upstream}")
-		try {
-			child.execSync("git fetch")
-			child.execSync("git merge-base --is-ancestor @{upstream} HEAD", { stdio: "inherit" })
-		} catch(e) {
-			return console.error("fatal: fast-forward with upstream is not possible. Ignore with --no-upstream option.")
-		}
+		run("upstream", "git fetch;git merge-base --is-ancestor @{upstream} HEAD", "fast-forward with upstream is not possible")
 	} catch(e) {}
 
-	child.execSync("rm -rf node_modules")
-	child.execSync("npm install", { stdio: "inherit" })
-
-	if (opts.update !== false) try {
-		child.execSync("npm outdated", { stdio: "inherit" })
-	} catch (e) {
-		return console.log("\nfatal: there are outdated packages! Ignore with --no-update option.")
-	}
-
-	cli.execute("lint", opts)
+	run("lint", opts.lint, "code does not comply to rules")
+	run("install", "rm -rf node_modules;npm install", "dependencies can not be installed")
+	run("update", "npm outdated", "there are outdated dependencies")
+	run("global", "npm outdated -g @litejs/cli " + (opts.global || "uglify-js jshint"), "there are outdated global packages")
 
 	if (!opts.rewrite && com.version === cur.version) {
 		if (len > 3 || !(now[0] > junks[0] || now[1] > junks[1])) {
@@ -75,20 +68,17 @@ module.exports = function(opts) {
 		cli.writePackage(cur)
 	}
 
-	msg = "Release " + cur.version + "\n\n"
-
 	if (opts.build !== false) {
-		run(["build"])
+		run("build", "lj build", "build failed")
 		// TODO:2019-12-21:lauri:Build three times till hash calculation is fixed in build
-		child.spawnSync("git", ["add", "-u"])
-		child.spawnSync("lj", ["build"])
-		child.spawnSync("git", ["add", "-u"])
-		child.spawnSync("lj", ["build"])
+		child.execSync("git add -u;lj b;git add -u;lj b", { stdio: "ignore" })
 	}
 
-	if (opts.test !== false) run(["test", "--tap"])
+	run("test", "lj test --tap", "tests failed")
 
-	child.spawnSync("git", ["commit", "-a", "-m", msg, (opts.rewrite ? "--amend" : "--")], { stdio: "inherit" })
+	child.spawnSync("git", [
+		"commit", "-a", "-m", "Release " + cur.version + "\n" + msg,
+		(opts.rewrite ? "--amend" : "--")], { stdio: "inherit" })
 
 	child.spawnSync("git", [
 		"log", "--pretty=format:%s (%aN)", lastTag + "..HEAD~1"
@@ -111,8 +101,7 @@ module.exports = function(opts) {
 	cli.writeFile(TAG_MSG, msg)
 
 	child.spawn(process.env.EDITOR || "vim", [TAG_MSG], { stdio: "inherit" })
-	.on("exit", function (e, code) {
-
+	.on("exit", function(e, code) {
 		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, opts.rewrite ? "-f" : "--"], { stdio: "inherit" })
 
 		console.log("\nVERSION: %s", cur.version)
@@ -121,14 +110,24 @@ module.exports = function(opts) {
 		}
 	})
 
-	function run(args) {
-		var sub = child.spawnSync("lj", args)
-		if (sub.status) {
-			console.error("EXIT:", sub.status, args)
-			process.stderr.write(sub.stderr)
+	function run(opt, cmd, err) {
+		if (cmd && opts[opt] !== false) try {
+			log("\n-- " + cmd)
+			log(child.execSync(cmd))
+		} catch (e) {
+			log(e.stdout)
+			log(e.stderr)
+			console.error("\nfatal: %s! Ignore with --no-%s option.", err, opt)
 			process.exit(1)
 		}
-		msg += sub.stdout.toString("utf8")
+	}
+
+	function log(str) {
+		if (str.length > 0) {
+			if (typeof str !== "string") str = str.toString("utf8").trim()
+			msg += str + "\n"
+			console.log(str)
+		}
 	}
 }
 
