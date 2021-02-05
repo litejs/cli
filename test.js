@@ -94,7 +94,7 @@
 		ok: "  {green}✔{reset} {name} #{num} [{passed}/{total}]",
 		nok: "  {red}✘{reset} {name} #{num} [{passed}/{total}]",
 		skip: "  {yellow}∅{reset} {name} #{num}",
-		sum: "1..{total}\n#{passGreen} pass  {pass}/{total} [{passAsserts}/{totalAsserts}] {timeStr}",
+		sum: "1..{total}\n#{passGreen} pass  {pass}/{total} [{passAsserts}/{totalAsserts}]{timeStr}",
 		failSum: "#{red}{bold} FAIL  tests {failNums}",
 		skipSum: "#{yellow}{bold} skip  {skip}",
 		bold: "\x1b[1m",
@@ -144,6 +144,10 @@
 				conf.ok = conf.skip = "ok {num} - {name} [{passed}/{total}]"
 				conf.nok = "not " + conf.ok
 				conf.indent = ""
+			} else if (conf.brief) {
+				conf.suite = conf.ok = conf.indent = ""
+				conf.skip = "{yellow}skip {num} - {name}"
+				conf.sum = conf.sum.slice(11)
 			}
 
 			line("head")
@@ -350,6 +354,7 @@
 		}))
 	}
 	function print(str) {
+		if (!str) return
 		if (testSuite && testSuite.indent) str = testSuite.indent + str.split("\n").join("\n" + testSuite.indent)
 		describe.output += str + "\n"
 		if (describe.onprint) describe.onprint(str)

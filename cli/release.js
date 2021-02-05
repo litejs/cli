@@ -74,7 +74,7 @@ module.exports = function(opts) {
 		child.execSync("git add -u;lj b;git add -u;lj b", { stdio: "ignore" })
 	}
 
-	run("test", "lj test --tap", "tests failed")
+	run("test", "lj test --brief", "tests failed")
 
 	child.spawnSync("git", [
 		"commit", "-a", "-m", "Release " + cur.version + "\n" + msg,

@@ -10,40 +10,40 @@ AssertionError#1: equal
 expected: undefined
 actual:   undefined
     at Object.<anonymous> (test/test-fail.js:15:7)
-    at nextCase (test.js:251:14)
-    at Object.endCase [as end] (test.js:294:23)
+    at nextCase (test.js:255:14)
+    at Object.endCase [as end] (test.js:298:23)
 AssertionError#2: equal
 expected: 2
 actual:   1
     at Object.<anonymous> (test/test-fail.js:19:3)
-    at nextCase (test.js:251:14)
-    at Object.endCase [as end] (test.js:294:23)
+    at nextCase (test.js:255:14)
+    at Object.endCase [as end] (test.js:298:23)
 AssertionError#3: 0
     at Object.<anonymous> (test/test-fail.js:20:3)
-    at nextCase (test.js:251:14)
-    at Object.endCase [as end] (test.js:294:23)
+    at nextCase (test.js:255:14)
+    at Object.endCase [as end] (test.js:298:23)
 AssertionError#4: throws
     at Object.<anonymous> (test/test-fail.js:21:3)
-    at nextCase (test.js:251:14)
-    at Object.endCase [as end] (test.js:294:23)
+    at nextCase (test.js:255:14)
+    at Object.endCase [as end] (test.js:298:23)
 ---
 not ok 1 - it should fail on timeout [0/0]
 TIMEOUT: 5ms
 ...
 # FAIL  tests 1, 4
 1..4
-# pass  2/4 [0/4] 
+# pass  2/4 [0/4]
 ---
 not ok 3 - it should fail on assertion after end [0/1]
 Error: assertion after end
 ...
 # FAIL  tests 3
 1..4
-# pass  1/4 [0/4] 
+# pass  1/4 [0/4]
 ---
 not ok 2 - it should fail on multiple ends [0/0]
 Error: ended multiple times
 ...
 # FAIL  tests 2
 1..4
-# pass  0/4 [0/4] 
+# pass  0/4 [0/4]
