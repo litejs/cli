@@ -439,7 +439,7 @@
 			spy.calls = []
 			return spy
 			function spy() {
-				var err, key, result
+				var err, key, result = origin
 				, args = timers.slice.call(arguments)
 				if (type(origin) === "function") {
 					try {
