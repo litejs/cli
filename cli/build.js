@@ -110,8 +110,7 @@ function File(_name, _opts) {
 			opts.replace = []
 		}
 		opts.replace.push(
-			[ new RegExp("\\/\\/(?=\\*\\*\\s+(?:" + opts.drop.replace(/[\s,]+/g, "|") + "))", "g"), "/"],
-			[ new RegExp("\\/(\\*{2,})\\s+(?:" + opts.drop.replace(/[^\w]+/g, "|") + ")\\s+\\1\\/", "g"), "$&/*"]
+			[ RegExp("\\/(\\*\\*+)\\s*(" + opts.drop.replace(/[^\w.:]+/g, "|") + ")\\s*\\1\\/", "g"), "/$1 $2 $1"]
 		)
 	}
 
