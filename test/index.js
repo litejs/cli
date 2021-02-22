@@ -7,7 +7,7 @@ describe("cli", function() {
 
 	this.should("pass", function(assert, mock) {
 		var errLog = mock.fn()
-		mock.replace(console, "error", errLog)
+		mock.swap(console, "error", errLog)
 
 		assert.ok(cli.command("node"))
 		assert.notOk(cli.command("nnnn" + Math.random().toString(32).slice(2)))

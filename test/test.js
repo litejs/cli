@@ -120,21 +120,21 @@ describe("TestSuite 1 with scope", function() {
 	assert.equal(dog.sit, Dog$sit)
 	assert.end()
 })
-.test("it should mock map 2.8", function(assert, mock) {
+.test("it should mock swap 2.8", function(assert, mock) {
 	var count = 0
-	mock.map(Dog, {
-		woof: [1, 2, 3],
-		bark: {
+	mock.swap(Dog.prototype, {
+		woof: mock.fn([1, 2, 3]),
+		bark: mock.fn({
 			"1": 11,
 			"2": 12,
 			'"2"': 22,
 			'*': 32
-		}
+		})
 	})
 
 	assert.notEqual(dog.bark, Dog$bark)
 	assert.notEqual(dog.woof, Dog$woof)
-	assert.notEqual(dog.sit, Dog$sit)
+	assert.equal(dog.sit, Dog$sit)
 
 	assert.equal(dog.bark(1), 11)
 	assert.equal(dog.bark(2), 12)

@@ -15,23 +15,9 @@
 	, failedCases = []
 	, totalAsserts = 0
 	, passedAsserts = 0
-
 	, skipped = 0
 	, runPos = 0
 	, splicePos = 0
-	/*** mockTime */
-	, fakeNow
-	, tmpDate = new _Date()
-	, timers = []
-	, timerId = 0
-	, fakeTimers = {
-		setTimeout: fakeTimeout.bind(null, false),
-		setInterval: fakeTimeout.bind(null, true),
-		clearTimeout: fakeClear,
-		clearInterval: fakeClear,
-		Date: fakeDate
-	}
-	/* mock time end */
 	, describe = _global.describe = def.bind(describe, 1)
 	, assert = describe.assert = {
 		notOk: function(value, message) {
@@ -80,7 +66,7 @@
 		},
 		anyOf: function(a, b) {
 			return this.ok(
-				_isArray(b) && b.indexOf(a) != -1,
+				_isArray(b) && b.indexOf(a) > -1,
 				"should be one from " + stringify(b) + ", got " + a
 			)
 		}
@@ -113,6 +99,77 @@
 	, hasOwn = conf.hasOwnProperty
 	, argv = describe.argv = _process.argv && _process.argv.slice(2) || []
 	, arg, argi = argv.length
+	/*** mockTime ***/
+	, fakeNow
+	, tmpDate = new _Date()
+	, timers = []
+	, timerId = 0
+	, fakeTimers = {
+		setTimeout: fakeTimeout.bind(null, false),
+		setInterval: fakeTimeout.bind(null, true),
+		clearTimeout: fakeClear,
+		clearInterval: fakeClear,
+		setImmediate: fakeNextTick,
+		clearImmediate: fakeClear,
+		Date: fakeDate
+	}
+	function fakeDate(year, month, date, hr, min, sec, ms) {
+		return (
+			arguments.length > 1 ?
+			new _Date(year|0, month|0, date||1, hr|0, min|0, sec|0, ms|0) :
+			new _Date(year || Math.floor(fakeNow))
+		)
+	}
+	fakeDate.now = function() {
+		return Math.floor(fakeNow)
+	}
+	fakeDate.parse = function(str) {
+		var ts = _Date.parse(str)
+		if (type(fakeDate._z) == "number" && !/(UTC|GMT|Z)$/.test(str)) {
+			tmpDate.setTime(ts)
+			ts -= (60 * fakeDate._z + tmpDate.getTimezoneOffset()) * 60000
+		}
+		return ts
+	}
+	function fakeHrtime(time) {
+		var diff = _isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
+		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3] // [seconds, nanoseconds]
+	}
+	function fakeTimeout(repeat, fn, ms) {
+		if (type(repeat) !== "object") {
+			repeat = {
+				id: ++timerId,
+				repeat: repeat,
+				fn: fn,
+				args: timers.slice.call(arguments, 3),
+				at: fakeNow + ms,
+				ms: ms
+			}
+		}
+		for (var i = timers.length; i-- && !(timers[i].at <= repeat.at);); // jshint ignore:line
+		timers.splice(i + 1, 0, repeat)
+		return timerType == "number" ? repeat.id : {
+			id: repeat.id,
+			unref: This
+		}
+	}
+	function fakeNextTick(fn) {
+		fakeTimeout({
+			id: ++timerId,
+			fn: fn,
+			args: timers.slice.call(arguments, 1),
+			at: fakeNow - 1
+		})
+	}
+	function fakeClear(id) {
+		if (id) for (var i = timers.length; i--; ) {
+			if (timers[i].id === id || timers[i].id === id.id) {
+				timers.splice(i, 1)
+				break
+			}
+		}
+	}
+	/* mockTime end */
 
 	for (; argi--; ) {
 		arg = argv[argi].split(/=|--(no-)?/)
@@ -362,76 +419,12 @@
 		return str
 	}
 
-	if (_global.setImmediate) {
-		fakeTimers.setImmediate = fakeNextTick
-		fakeTimers.clearImmediate = fakeClear
-	}
-	function fakeDate(year, month, date, hr, min, sec, ms) {
-		return (
-			arguments.length > 1 ?
-			new _Date(year|0, month|0, date||1, hr|0, min|0, sec|0, ms|0) :
-			new _Date(year || Math.floor(fakeNow))
-		)
-	}
-	fakeDate.now = function() {
-		return Math.floor(fakeNow)
-	}
-	fakeDate.parse = function(str) {
-		var ts = _Date.parse(str)
-		if (type(fakeDate._z) == "number" && !/(UTC|GMT|Z)$/.test(str)) {
-			tmpDate.setTime(ts)
-			ts -= (60 * fakeDate._z + tmpDate.getTimezoneOffset()) * 60000
-		}
-		return ts
-	}
-	function fakeHrtime(time) {
-		var diff = _isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
-		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3] // [seconds, nanoseconds]
-	}
-
-	function fakeTimeout(repeat, fn, ms) {
-		if (type(repeat) !== "object") {
-			repeat = {
-				id: ++timerId,
-				repeat: repeat,
-				fn: fn,
-				args: timers.slice.call(arguments, 3),
-				at: fakeNow + ms,
-				ms: ms
-			}
-		}
-		for (var i = timers.length; i-- && !(timers[i].at <= repeat.at);); // jshint ignore:line
-		timers.splice(i + 1, 0, repeat)
-		return timerType == "number" ? repeat.id : {
-			id: repeat.id,
-			unref: This
-		}
-	}
-
-	function fakeNextTick(fn) {
-		fakeTimeout({
-			id: ++timerId,
-			fn: fn,
-			args: timers.slice.call(arguments, 1),
-			at: fakeNow - 1
-		})
-	}
-
-	function fakeClear(id) {
-		if (id) for (var i = timers.length; i--; ) {
-			if (timers[i].id === id || timers[i].id === id.id) {
-				timers.splice(i, 1)
-				break
-			}
-		}
-	}
 
 	//  A spy is a wrapper function to verify an invocation
 	//  A stub is a spy with replaced behavior
 	function Mock() {
-		var mock = this
-		mock.replaced = []
-		mock.txt = ""
+		this.txt = ""
+		this._r = []
 	}
 	Mock.prototype = {
 		fn: function(origin) {
@@ -466,47 +459,45 @@
 				return result
 			}
 		},
-		map: function(obj, stubs, justStubs) {
-			var key
-			, mock = this
-			, obj2 = justStubs ? stubs : obj
-			for (key in obj2) {
-				mock.spy(obj, key, stubs && stubs[key])
-			}
-			if (obj.prototype) {
-				mock.map(obj.prototype, stubs)
-			}
-		},
 		rand: function(seed_) {
-			var mock = this
-			, seed = seed_ || conf.seed
-			mock.txt += " #seed:" + seed
-			mock.replace(Math, "random", xorshift128(seed))
-		},
-		replace: function(obj, name, fn) {
-			var mock = this
-			, existing = obj[name]
-			mock.replaced.push(obj, name, hasOwn.call(obj, name) && existing)
-			obj[name] = fn
-			if (fn === fn && obj[name] !== fn) throw Error("Unable to mock " + name)
-			return existing
+			var seed = seed_ || conf.seed
+			this.txt += " #seed:" + seed
+			this.swap(Math, "random", xorshift128(seed))
 		},
 		spy: function(obj, name, stub) {
-			var mock = this
-			mock.replace(obj, name, mock.fn(stub || obj[name]))
+			this.swap(obj, name, this.fn(stub || obj[name]))
+		},
+		swap: function(obj, name, fn) {
+			if (type(name) === "object") {
+				for (fn in name) if (hasOwn.call(name, fn)) {
+					this.swap(obj, fn, name[fn])
+				}
+				return
+			}
+			var existing = obj[name]
+			this._r.push(obj, name, hasOwn.call(obj, name) && existing)
+			obj[name] = fn
+			if (fn === fn && obj[name] !== fn) throw Error("Unable to swap " + name)
+			return existing
+		},
+		restore: function() {
+			for (var arr = this._r, i = arr.length; --i > 0; i -= 2) {
+				if (arr[i]) {
+					arr[i - 2][arr[i - 1]] = arr[i]
+				} else {
+					delete arr[i - 2][arr[i - 1]]
+				}
+			}
+		/*** mockTime ***/
+			this.tick(Infinity, true)
 		},
 		time: function(newTime, newZone) {
 			var key
 			, mock = this
 			if (!mock._time) {
 				mock._time = fakeNow = _Date.now()
-				for (key in fakeTimers) {
-					mock.replace(_global, key, fakeTimers[key])
-				}
-				if (_process.nextTick) {
-					mock.replace(_process, "nextTick", fakeNextTick)
-					mock.replace(_process, "hrtime", fakeHrtime)
-				}
+				mock.swap(_global, fakeTimers)
+				mock.swap(_process, { nextTick: fakeNextTick, hrtime: fakeHrtime })
 			}
 			if (newTime) {
 				fakeNow = type(newTime) === "string" ? _Date.parse(newTime) : newTime
@@ -530,20 +521,7 @@
 					fakeTimeout(t)
 				}
 			}
-		},
-		restore: function() {
-			var arr = this.replaced
-			, i = arr.length
-			for (; --i > 0; i -= 2) {
-				if (arr[i]) {
-					arr[i - 2][arr[i - 1]] = arr[i]
-				} else {
-					delete arr[i - 2][arr[i - 1]]
-				}
-			}
-			if (timers.length) {
-				this.tick(Infinity, true)
-			}
+		/* mockTime end */
 		}
 	}
 
