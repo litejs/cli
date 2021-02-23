@@ -16,6 +16,7 @@
   "bugs": "https://github.com/litejs/cli/issues",
   "main": "index.js",
   "files": [
+    ".gitignore",
     "*.js",
     "cli"
   ],
@@ -43,6 +44,11 @@
     "quotmark": "double"
   },
   "nyc": {
+    "check-coverage": true,
+    "branches": 100,
+    "lines": 100,
+    "functions": 100,
+    "statements": 100,
     "exclude": [
       "coverage/**",
       "test/**"
