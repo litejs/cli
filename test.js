@@ -435,7 +435,9 @@
 	Mock.prototype = {
 		fn: function(origin) {
 			spy.called = 0
+			spy.errors = 0
 			spy.calls = []
+			spy.results = []
 			return spy
 			function spy() {
 				var err, key, result = origin
@@ -452,10 +454,9 @@
 					key = JSON.stringify(args).slice(1, -1)
 					result = hasOwn.call(origin, key) ? origin[key] : origin["*"]
 				}
-				// TODO:2019-09-09:lauri:
-				// var spy = assert.spy(Item, "method")
-				// assert.equal(spy.callCount, 1)
 				spy.called++
+				if (err) spy.errors++
+				spy.results.push(result)
 				spy.calls.push({
 					scope: this,
 					args: args,
