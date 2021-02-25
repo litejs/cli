@@ -73,7 +73,7 @@
 	}
 	, conf = describe.conf = {
 		// process.platform === 'win32' -> √×.
-		file: (Error().stack + " /cli/test.js:").match(/\S+?:/)[0],
+		file: (Error().stack + " /cli/test.js:").match(/\S+?:(?=[:\d)]*$)/m)[0],
 		global: "describe",
 		cut: 160,
 		head: "",
