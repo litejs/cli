@@ -18,7 +18,7 @@
 	, skipped = 0
 	, runPos = 0
 	, splicePos = 0
-	, describe = _global.describe = def.bind(describe, 1)
+	, describe = exports.describe = def.bind(describe, 1)
 	, assert = describe.assert = {
 		notOk: function(value, message) {
 			return this.ok(!value, message || stringify(value) + " is falsy")
@@ -74,6 +74,8 @@
 	, conf = describe.conf = {
 		// process.platform === 'win32' -> √×.
 		file: (Error().stack + " /cli/test.js:").match(/\S+?:/)[0],
+		global: "describe",
+		cut: 160,
 		head: "",
 		indent: "  ",
 		suite: "{1}", //➜✺✽❖❣❢•※⁕∅
@@ -187,6 +189,10 @@
 	describe.output = ""
 	describe.failed = 0
 
+	if (conf.global) conf.global.split(",").map(function(key) {
+		_global[key] = describe[key]
+	})
+
 	function def(_, name, fn) {
 		if (!started) {
 			started = new Date()
@@ -246,8 +252,8 @@
 					} else {
 						if (_isArray(message)) {
 							message = message[1] +
-							"\nexpected: " + stringify(message[2], 160) +
-							"\nactual:   " + stringify(message[0], 160)
+							"\nexpected: " + stringify(message[2]) +
+							"\nactual:   " + stringify(message[0])
 						}
 
 						fail("AssertionError#" + testCase.total + ": " + (message || stringify(value)), Error().stack)
@@ -596,7 +602,7 @@
 	}
 
 	function stringify(item, maxLen) {
-		var max = maxLen > 9 ? maxLen : 70
+		var max = conf.cut > 0 ? conf.cut : Infinity
 		, str = _stringify(item, max, [])
 		return str.length > max ? str.slice(0, max - 3) + ".." + str.slice(-1) : str
 	}
