@@ -4,7 +4,7 @@
 !function(exports) {
 	var started, testSuite, timerType, inSuite
 	, _global = exports.window || global
-	, _process = _global.process || { exit: This }
+	, _process = _global.process || /* istanbul ignore next */ { exit: This }
 	, _setTimeout = setTimeout
 	, _clearTimeout = clearTimeout
 	, _Date = Date
@@ -21,7 +21,7 @@
 	, describe = exports.describe = def.bind(describe, 1)
 	, assert = describe.assert = {
 		notOk: function(value, message) {
-			return this.ok(!value, message || stringify(value) + " is falsy")
+			return this.ok(!value, message || stringify(value) + " !== falsy")
 		},
 		equal: function(actual, expected, message) {
 			return this.ok(
@@ -65,10 +65,7 @@
 		},
 		type: function(thing, expected) {
 			var actual = type(thing)
-			return this.ok(
-				actual === expected,
-				"type should be " + expected + ", got " + actual
-			)
+			return this.ok(actual === expected, [expected, "type", actual])
 		},
 		anyOf: function(a, b) {
 			return this.ok(
@@ -96,7 +93,7 @@
 		green: "\x1b[32m",
 		yellow: "\x1b[33m",
 		reset: "\x1b[0m",
-		color: (_process.stdout || _process).isTTY,
+		color: (_process.stdout || /* istanbul ignore next */ _process).isTTY,
 		seed: (Math.random() * 1e5)|0,
 		status: 1,
 		time: 1,
@@ -105,7 +102,7 @@
 	}
 	, toStr = conf.toString
 	, hasOwn = conf.hasOwnProperty
-	, argv = describe.argv = _process.argv && _process.argv.slice(2) || []
+	, argv = describe.argv = _process.argv && _process.argv.slice(2) || /* istanbul ignore next */ []
 	, arg, argi = argv.length
 	/*** mockTime ***/
 	, fakeNow
@@ -124,8 +121,8 @@
 	function fakeDate(year, month, date, hr, min, sec, ms) {
 		return (
 			arguments.length > 1 ?
-			new _Date(year|0, month|0, date||1, hr|0, min|0, sec|0, ms|0) :
-			new _Date(year || fakeNow)
+			new _Date(num(year), num(month), num(date, 1), num(hr), num(min), num(sec), num(ms)) :
+			new _Date(num(year, fakeNow))
 		)
 	}
 	fakeDate.now = function() {
@@ -138,7 +135,7 @@
 		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3] // [seconds, nanoseconds]
 	}
 	function fakeTimeout(repeat, fn, ms) {
-		if (type(repeat) !== "object") {
+		if (!isObj(repeat)) {
 			repeat = {
 				id: ++timerId,
 				repeat: repeat,
@@ -150,7 +147,7 @@
 		}
 		for (var i = timers.length; i-- && !(timers[i].at <= repeat.at);); // jshint ignore:line
 		timers.splice(i + 1, 0, repeat)
-		return timerType == "number" ? repeat.id : {
+		return timerType == "number" ? /* istanbul ignore next */ repeat.id : {
 			id: repeat.id,
 			unref: This
 		}
@@ -185,15 +182,20 @@
 	describe.test = def.bind(describe, 2)
 	describe.it = def.bind(describe, 3)
 	describe.should = def.bind(describe, 4)
-	describe.print = print
-	describe.output = ""
 	describe.failed = 0
+	describe.output = ""
+	describe.print = print
+	describe.stringify = stringify
 
 	if (conf.global) conf.global.split(",").map(function(key) {
 		_global[key] = describe[key]
 	})
 
 	function def(_, name, fn) {
+		if (!name || isFn(name)) {
+			fn = name
+			name = "Unnamed Test" + (_ == 1 ? "Suite" : "Case")
+		}
 		if (!started) {
 			started = new Date()
 
@@ -215,13 +217,13 @@
 
 			line("head")
 			timerType = type(_setTimeout(nextCase, 1))
-			if (splicePos === 0 && _ !== 1) def(1, "Unnamed TestSuite")
+			if (splicePos === 0 && _ !== 1) def(1)
 		}
 		tests.splice(++splicePos, 0, {
 			parent: inSuite,
 			indent: inSuite ? inSuite.indent + conf.indent : "",
 			skip:
-				_ > 1 && type(fn) != "function" && "pending" ||
+				_ > 1 && !isFn(fn) && "pending" ||
 				name.charAt(0) === "_" && (name = name.slice(1)) && "by name",
 			0: _,
 			1: name,
@@ -258,10 +260,7 @@
 
 						fail("AssertionError#" + testCase.total + ": " + (message || stringify(value)), Error().stack)
 					}
-					if (testCase.planned <= testCase.total) {
-						endCase()
-					}
-					return testCase
+					return testCase.plan(testCase.planned)
 				},
 				plan: function(planned) {
 					testCase.planned = planned
@@ -281,7 +280,7 @@
 					, hooks = []
 					, hooked = []
 
-					for (k in obj) if (type(obj[k]) == "function") swap(k)
+					for (k in obj) if (isFn(obj[k])) swap(k)
 					function swap(k) {
 						hooked.push(k, obj[k])
 						obj[k] = function() {
@@ -314,9 +313,7 @@
 
 			try {
 				testCase.setTimeout(conf.timeout)
-				if (type(args[2]) === "function") {
-					args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
-				}
+				args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
 			} catch (e) {
 				console.log(e)
 				fail(e, e.stack)
@@ -326,7 +323,7 @@
 		function fail(message, stack) {
 			if (stack) {
 				// iotjs returns stack as Array
-				for (var row, start, i = 0, arr = _isArray(stack) ? stack : (stack || "").split("\n"); (row = arr[++i]); ) {
+				for (var row, start, i = 0, arr = _isArray(stack) ? /* istanbul ignore next */ stack : (stack + "").split("\n"); (row = arr[++i]); ) {
 					if (row.indexOf(conf.file) < 0) {
 						if (!start) start = i
 					}
@@ -366,11 +363,11 @@
 		if (!argv.length) line("suite", newSuite)
 		newSuite.parent = inSuite
 		inSuite = testSuite = newSuite
-		if (type(testSuite[2]) === "function") {
+		if (isFn(testSuite[2])) {
 			testSuite[2].call(describe)
-		} else if (type(testSuite[2]) === "object") {
+		} else if (isObj(testSuite[2])) {
 			for (var name in testSuite[2]) if (hasOwn.call(testSuite[2], name)) {
-				def(type(testSuite[2][name]) === "object" ? 1 : 2, name, testSuite[2][name])
+				def(isObj(testSuite[2][name]) ? 1 : 2, name, testSuite[2][name])
 			}
 		}
 		inSuite = newSuite.parent
@@ -442,7 +439,7 @@
 			function spy() {
 				var err, key, result = origin
 				, args = timers.slice.call(arguments)
-				if (type(origin) === "function") {
+				if (isFn(origin)) {
 					try {
 						result = origin.apply(this, arguments)
 					} catch(e) {
@@ -450,7 +447,7 @@
 					}
 				} else if (_isArray(origin)) {
 					result = origin[spy.called % origin.length]
-				} else if (type(origin) === "object") {
+				} else if (isObj(origin)) {
 					key = JSON.stringify(args).slice(1, -1)
 					result = hasOwn.call(origin, key) ? origin[key] : origin["*"]
 				}
@@ -475,7 +472,7 @@
 			this.swap(obj, name, this.fn(stub || obj[name]))
 		},
 		swap: function(obj, name, fn) {
-			if (type(name) === "object") {
+			if (isObj(name)) {
 				for (fn in name) if (hasOwn.call(name, fn)) {
 					this.swap(obj, fn, name[fn])
 				}
@@ -522,7 +519,7 @@
 			for (var t; (t = timers[0]) && t.at <= fakeNow; ) {
 				timers.shift()
 				if (type(t.fn) === "string") t.fn = Function(t.fn)
-				if (type(t.fn) === "function") t.fn.apply(null, t.args)
+				if (isFn(t.fn)) t.fn.apply(null, t.args)
 				if (!noRepeat && t.repeat) {
 					t.at += t.ms
 					fakeTimeout(t)
@@ -566,7 +563,7 @@
 			(aType = type(actual)) != type(expected) ||
 			actual.constructor !== expected.constructor ||
 			(aType == "date" && actual.getTime() !== expected.getTime()) ||
-			(aType == "regexp" && ""+actual !== ""+expected)
+			(aType == "regexp" && "" + actual !== "" + expected)
 		) {
 			return false
 		}
@@ -601,6 +598,12 @@
 		// but this is not useful for testing.
 		return obj !== obj ? "nan" : toStr.call(obj).slice(8, -1).toLowerCase()
 	}
+	function num(a, b) {
+		return type(a -= 0) === "number" ? a : b
+	}
+	function isFn(obj) {
+		return type(obj) === "function"
+	}
 	function isObj(obj) {
 		return type(obj) === "object"
 	}
@@ -613,7 +616,7 @@
 					!hasOwn.call(a, k) ||
 					(isObj(b[k]) ? !own(a[k], b[k]) : a[k] !== b[k])
 				) {
-					own.lastMsg = k + " does not match"
+					own.lastMsg = k + " " + stringify(a[k]) + " != " + stringify(b[k])
 					return false
 				}
 			}
@@ -633,17 +636,17 @@
 		, t = type(item)
 		, str =
 			t === "string" ? JSON.stringify(item) :
-			t === "function" ? ("" + item).split(/n | *\{/)[1] :
+			t === "function" ? ("" + item).replace(/^\w+|\s+|{[^]*/g, "") :
 			(!item || t === "number" || t === "regexp" || item === true) ? "" + item :
 			item.toJSON ? item.toJSON() :
 			item
 
 		if (typeof str == "object") {
-			if (circ.indexOf(str) > -1) return "[Circular]"
+			if (circ.indexOf(str) > -1) return "Circular"
 			circ.push(str)
 			tmp = []
 			for (i in str) if (hasOwn.call(str, i)) {
-				i = (t === "object" ? i + ":" : "") + _stringify(str[i], left, circ)
+				i = (t === "object" ? _stringify(i, left) + ":" : "") + _stringify(str[i], left, circ)
 				tmp.push(i)
 				left -= i.length
 				if (left < 0) break
@@ -654,7 +657,7 @@
 			"{" + tmp + "}"
 
 			if (t === "object" && item.constructor !== Object) {
-				str = item.constructor.name + str
+				str = (item.constructor && item.constructor.name || "Null") + str
 			}
 		}
 

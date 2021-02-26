@@ -29,6 +29,10 @@ require("../v8")
 require("../snapshot.js")
 
 describe("TestSuite 1 with scope", function() {
+	Object.prototype.foo = 1
+	describe.onend = function() {
+		delete Object.prototype.foo
+	}
 	this
 	.test("it should run first test 1.1", function(assert) {
 		assert.ok(true)
@@ -41,28 +45,41 @@ describe("TestSuite 1 with scope", function() {
 	"Case 2.1": function() {
 		this.plan(1).ok(1)
 	},
-	"Case 2.2": function(assert) {
-		setTimeout(assert.wait(), 60)
-		assert.ok(1).end()
+	"Case 2.2": function(assert, mock) {
+		var resume = assert.wait()
+		setTimeout(resume, 1)
+		setTimeout(resume, 1)
+		assert.ok(1)
+		assert.end()
 	},
-	"Case 2.3": function() {
-		this.ok(1).plan(1)
+	"Nested Suite": {
+		"Case 2.2b": function() {
+			this.ok(1).plan(1)
+		}
 	}
 })
 .test("it should run second test 2.3", function(assert) {
 
 	assert.cmdSnapshot(
-		"node -r ./test.js test/test-fail.js --no-status --no-time",
-		"./test/spec/test-fail.test"
+		"node -r ./test.js test/test-fail.js --no-status --no-color --no-time --no-cut",
+		"./test/spec/test-fail"
 	)
 	assert.cmdSnapshot(
-		"node -r ./test.js test/test-fail.js --no-status --tap --no-time",
-		"./test/spec/test-fail.tap"
+		"node -r ./test.js test/test.js --no-status --color --no-time --no-cut 1",
+		"./test/spec/test-first"
+	)
+	assert.cmdSnapshot(
+		"node -r ./test.js test/test-global.js --no-status --global=describe,test,it,should --brief --no-time",
+		"./test/spec/test-global"
+	)
+	assert.cmdSnapshot(
+		"node -r ./test.js test/test--no-global.js --no-status --no-global --tap --no-time",
+		"./test/spec/test-no-global"
 	)
 	try {
 		require("child_process").execSync("node -r ./test.js test/test-fail.js")
 	} catch(e) {
-		assert.equal(e.status, 4)
+		assert.equal(e.status, 8)
 	}
 	assert.end()
 })
@@ -80,16 +97,22 @@ describe("TestSuite 1 with scope", function() {
 		'"1"': "C",
 		'1,"1"': "D"
 	})
+	, spy5 = mock.fn(function() {
+		SOME_UNDEFINED_VALIABLE
+	})
 
 	spy1()
+	spy5()
 	assert.equal(spy2(), 0)
 	assert.equal(spy2(), 1)
 
-	assert.equal(spy1.called, 1)
+	assert.own(spy1, {called: 1, errors: 0})
+	assert.own(spy5, {called: 1, errors: 1})
 	assert.equal(spy2.called, 2)
 	assert.equal(count, 2)
 
 	assert.equal([spy3(), spy3(), spy3(), spy3()], ["a", "b", "c", "a"])
+	assert.equal(spy3.results, ["a", "b", "c", "a"])
 
 	assert.equal([spy4(), spy4(1), spy4(1), spy4("1"), spy4(1, "1")], ["A", "B", "B", "C", "D"])
 
@@ -121,6 +144,7 @@ describe("TestSuite 1 with scope", function() {
 	assert.end()
 })
 .test("it should mock swap 2.8", function(assert, mock) {
+	mock.swap(Object.prototype, "foo", function(){})
 	var count = 0
 	mock.swap(Dog.prototype, {
 		woof: mock.fn([1, 2, 3]),
@@ -161,6 +185,30 @@ describe("TestSuite 1 with scope", function() {
 
 	assert.end()
 })
+.test("it should mock current time 2.9", function(assert, mock) {
+	var now = Date.now()
+
+	// ensure to mock time in beginning of ms
+	for(; now === Date.now();); now = Date.now()
+
+	mock.time()
+
+	mock.tick() // noop without timers and ms
+	assert.equal(Date.now(), now)
+
+	setTimeout(null, 1)
+	setTimeout("", 1)
+	mock.tick() // tick till next timer
+	assert.equal(Date.now(), now + 1)
+
+	mock.tick()
+	assert.equal(Date.now(), now + 1)
+
+	mock.tick(1)
+	assert.equal(Date.now(), now + 2)
+
+	assert.end()
+})
 .test("it should mock time 2.9", function(test, mock) {
 	var nativeDate = Date
 	, seq = 0
@@ -180,13 +228,15 @@ describe("TestSuite 1 with scope", function() {
 	setTimeout(cb2, 5)
 	setTimeout(cb3, 2)
 	var int4 = setInterval(cb4, 2)
-	setTimeout(cb5, 20)
+	setTimeout(cb5, 20).unref()
 	clearTimeout()
 
 	test.equal(Date.parse("2018-01-02T13:45:51.001Z"), 1514900751001)
 	test.equal(new Date(1514900751002).toJSON(), "2018-01-02T13:45:51.002Z")
 	test.equal(new Date(2018,0,2,13,45,51,2).toJSON(), "2018-01-02T11:45:51.002Z")
 	test.equal(new Date(Date.UTC(2018,0,2,13,45,51,2)).toJSON(), "2018-01-02T13:45:51.002Z")
+	test.equal(new Date(Date.UTC(2018,0)).toJSON(), "2018-01-01T00:00:00.000Z")
+	test.equal(new Date(Date.UTC(2018)).toJSON(), "2018-01-01T00:00:00.000Z")
 
 	test.equal(new Date().getTime(), 1514900751001)
 	test.equal(cb1.called, 0)
@@ -319,6 +369,14 @@ describe("TestSuite 1 with scope", function() {
 	assert.equal(Math.random(), 0.21872897521097423)
 	assert.equal(Math.random(), 0.9517854940965272)
 	assert.equal(Math.random(), 0.9459277032748628)
+
+	assert.end()
+})
+.test("it should mock Math.random() 2.11", function(assert, mock) {
+	describe.conf.seed = 12345
+	mock.rand()
+
+	assert.equal(Math.random(), 0.7260542734819591)
 
 	assert.end()
 })

@@ -53,6 +53,9 @@
       "coverage/**",
       "test/**"
     ],
+    "include": [
+      "test.js"
+    ],
     "reporter": [
       "lcov",
       "text",

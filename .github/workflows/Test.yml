@@ -16,5 +16,12 @@ jobs:
       - uses: actions/setup-node@v1
       - name: Install and run
         run: |
-          node -r ./test.js test/index.js --tap
+          export TZ="Europe/Tallinn"
+          npm install -g nyc
+          node --allow-natives-syntax -r ./test.js test/index.js --tap
+          nyc node --allow-natives-syntax -r ./test.js test/index.js --no-status
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 

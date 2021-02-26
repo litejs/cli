@@ -16,14 +16,12 @@ describe.assert.cmdSnapshot = function(cmd, file) {
 }
 
 describe.assert.matchSnapshot = function(file, transform) {
-	var expected
+	var expected = ""
 	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform
 
 	try {
 		expected = cli.readFile(file + ".snap").replace(relPathRe, relPathFn)
-	} catch(e) {
-		return this.ok(null, "Snapshot read failed: " + file + ".snap\n---\n" + e)
-	}
+	} catch(e) {}
 	if (actual === expected) {
 		this.ok(1)
 	} else if (describe.conf.up) {

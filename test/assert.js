@@ -1,6 +1,7 @@
 
 
-describe.it("should test types", function(assert) {
+describe.it("should test types", function(assert, mock) {
+	mock.swap(Object.prototype, "foo", "bar")
 	var undef, tmp, len, i, j
 	, count = 0
 	, args = (function(){return arguments})(1, "2")
@@ -11,7 +12,7 @@ describe.it("should test types", function(assert) {
 	, obj2 = {a:"B"}
 	, obj3 = {b:"A"}
 	, circ1 = {a:"D"}
-	, circ2 = {a:"D", circ: obj1}
+	, circ2 = {a:"D"}
 	, types = [
 		"string",    '"0"',                             "0",
 		"string",    '"null"',                          "null",
@@ -31,10 +32,10 @@ describe.it("should test types", function(assert) {
 		"null",      'null',                            null,
 		"nan",       'NaN',                             +"a",
 		"object",    '{}',                              {},
-		"object",    '{a:1}',                           {a:1},
-		"object",    'User{name:"test1"}',              new User("test1"),
-		"object",    'Item{id:1}',                      new Item(1),
-		"object",    'Model{id:2}',                     new Model(2),
+		"object",    '{"a":1}',                         {a:1},
+		"object",    'User{"name":"test1"}',            new User("test1"),
+		"object",    'Item{"id":1}',                    new Item(1),
+		"object",    'Model{"id":2}',                   new Model(2),
 		"array",     '[]',                              [],
 		"array",     '[1]',                             [1],
 		"array",     '[1,"2"]',                         [1,"2"],
@@ -42,11 +43,11 @@ describe.it("should test types", function(assert) {
 		"undefined", 'undefined',                       undef,
 		"undefined", 'undefined',                       undefined,
 		"arguments", 'arguments[1,"2"]',                args,
-		"object",    '{a:"D",circ:[Circular]}',         circ1,
-		//"function",  'stringify(item, maxLen)',         assert,
+		"object",    '{"a":"D","circ":Circular}',       circ1,
+		//"function",  'stringify(item, maxLen)',       assert,
 		"function",  '()',                              function(){},
 		"function",  '()',                              function  ()  {  },
-		"function",  'kala()',                          function kala ()  {  },
+		"function",  'kala(a,b)',                       function   kala( a , b )  {  },
 		"string",    '""',                              ""
 	]
 	, equals = [
@@ -57,7 +58,7 @@ describe.it("should test types", function(assert) {
 		NaN, NaN,
 		undefined, undefined,
 		[], [],
-		[1, circ1], [1, circ1],
+		[1, circ1, circ1], [1, circ1, circ2],
 		{}, {},
 		{a:1}, {a:1},
 		date0, new Date(0),
@@ -106,12 +107,13 @@ describe.it("should test types", function(assert) {
 		obj1,      testSet.slice(17),
 		obj2,      testSet.slice(18),
 		obj3,      testSet.slice(19),
-		circ1,     testSet.slice(20),
+		circ1,     testSet.slice(21), // circ1 is equal to circ2
 		circ2,     testSet.slice(21),
 		"a", "b"
 	]
 
 	circ1.circ = circ1
+	circ2.circ = circ2
 
 	function User(name) {
 		this.name = name
@@ -135,8 +137,8 @@ describe.it("should test types", function(assert) {
 
 	for (len = types.length, i = 0; i < len; i+=3) {
 		assert.type(types[i+2], types[i], "Type test #" + (i/3))
-		//equal(typeof describe.stringify(types[i+2]), "string", "Stringify type #" + (i/3))
-		//equal(describe.stringify(types[i+2]), types[i+1], "Stringify test #" + (i/3))
+		//assert.equal(typeof describe.stringify(types[i+2]), "string", "Stringify type #" + (i/3))
+		assert.equal(describe.stringify(types[i+2]), types[i+1])
 	}
 
 	//equal(describe.stringify([date0], 10), "[1970-0..]")
@@ -159,8 +161,12 @@ describe.it("should test types", function(assert) {
 	assert.own(obj1, {c:{e:4}})
 	assert.notOwn(obj1, obj1)
 	assert.notOwn(obj1, {a:2})
+	assert.notOwn(obj1, {b:{c:2}})
 	assert.notOwn(obj1, {c:1})
+	assert.notOwn(obj1, {d:3})
 	assert.equal(JSON.stringify(obj1), tmp, "Does not mutate obj")
+
+	assert.anyOf(1, [0, 1, 2])
 
 	assert.end()
 })

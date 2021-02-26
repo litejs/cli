@@ -1,49 +1,53 @@
 TAP version 13
 # Unnamed TestSuite
 not ok 1 - it should fail on timeout [0/0]
-ok 2 - it should fail on multiple ends [0/0]
-ok 3 - it should fail on assertion after end [0/0]
-not ok 4 - it should fail on invalid assertions [0/4]
+ok 2 - it should skip by name [0/0]
+ok 3 - it should fail on multiple ends [0/0]
+ok 4 - it should fail on assertion after end [0/0]
+not ok 5 - it should fail on invalid assertions [0/4]
 ---
-not ok 4 - it should fail on invalid assertions [0/4]
+not ok 5 - it should fail on invalid assertions [0/4]
 AssertionError#1: equal
 expected: undefined
 actual:   undefined
-    at Object.<anonymous> (test/test-fail.js:15:7)
-    at nextCase (test.js:324:14)
-    at Object.endCase [as end] (test.js:367:23)
+    at Object.<anonymous> (test/test-fail.js:18:7)
+    at nextCase (test.js:7:939)
+    at Object.endCase [as end] (test.js:8:2371)
 AssertionError#2: equal
 expected: 2
 actual:   1
-    at Object.<anonymous> (test/test-fail.js:19:3)
-    at nextCase (test.js:324:14)
-    at Object.endCase [as end] (test.js:367:23)
+    at Object.<anonymous> (test/test-fail.js:22:3)
+    at nextCase (test.js:7:939)
+    at Object.endCase [as end] (test.js:8:2371)
 AssertionError#3: 0
-    at Object.<anonymous> (test/test-fail.js:20:3)
-    at nextCase (test.js:324:14)
-    at Object.endCase [as end] (test.js:367:23)
+    at Object.<anonymous> (test/test-fail.js:23:3)
+    at nextCase (test.js:7:939)
+    at Object.endCase [as end] (test.js:8:2371)
 AssertionError#4: throws
-    at Object.<anonymous> (test/test-fail.js:21:3)
-    at nextCase (test.js:324:14)
-    at Object.endCase [as end] (test.js:367:23)
+    at Object.<anonymous> (test/test-fail.js:24:3)
+    at nextCase (test.js:7:939)
+    at Object.endCase [as end] (test.js:8:2371)
 ---
 not ok 1 - it should fail on timeout [0/0]
 TIMEOUT: 5ms
 ...
-# FAIL  tests 1, 4
-1..4
-# pass  2/4 [0/4]
+# FAIL  tests 1, 5
+1..5
+# pass  3/5 [0/4]
+# skip  1
 ---
-not ok 3 - it should fail on assertion after end [0/1]
+not ok 4 - it should fail on assertion after end [0/1]
 Error: assertion after end
 ...
-# FAIL  tests 3
-1..4
-# pass  1/4 [0/4]
+# FAIL  tests 4
+1..5
+# pass  2/5 [0/4]
+# skip  1
 ---
-not ok 2 - it should fail on multiple ends [0/0]
+not ok 3 - it should fail on multiple ends [0/0]
 Error: ended multiple times
 ...
-# FAIL  tests 2
-1..4
-# pass  0/4 [0/4]
+# FAIL  tests 3
+1..5
+# pass  1/5 [0/4]
+# skip  1
