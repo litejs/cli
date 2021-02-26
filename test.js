@@ -48,6 +48,12 @@
 				message || [actual, "!==", expected]
 			)
 		},
+		own: function(actual, expected, message) {
+			return this.ok(own(actual, expected), message || own.lastMsg)
+		},
+		notOwn: function(actual, expected, message) {
+			return this.ok(!own(actual, expected), message || own.lastMsg)
+		},
 		throws: function(fn, message) {
 			var actual = false
 			try {
@@ -600,6 +606,25 @@
 		// Standard clearly states that NaN is a number
 		// but this is not useful for testing.
 		return obj !== obj ? "nan" : toStr.call(obj).slice(8, -1).toLowerCase()
+	}
+	function isObj(obj) {
+		return type(obj) === "object"
+	}
+	function own(a, b) {
+		if (a === b) {
+			own.lastMsg = "Can not be strictEqual"
+		} else {
+			for (var k in b) if (hasOwn.call(b, k)) {
+				if (
+					!hasOwn.call(a, k) ||
+					(isObj(b[k]) ? !own(a[k], b[k]) : a[k] !== b[k])
+				) {
+					own.lastMsg = k + " does not match"
+					return false
+				}
+			}
+			return true
+		}
 	}
 
 	function stringify(item, maxLen) {

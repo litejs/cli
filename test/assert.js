@@ -152,6 +152,16 @@ describe.it("should test types", function(assert) {
 		}
 	}
 
+	obj1 = {a:1,b:2,c:{d:3,e:4}}
+	tmp = JSON.stringify(obj1)
+
+	assert.own(obj1, {a:1})
+	assert.own(obj1, {c:{e:4}})
+	assert.notOwn(obj1, obj1)
+	assert.notOwn(obj1, {a:2})
+	assert.notOwn(obj1, {c:1})
+	assert.equal(JSON.stringify(obj1), tmp, "Does not mutate obj")
+
 	assert.end()
 })
 
