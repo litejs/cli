@@ -181,6 +181,12 @@ describe("TestSuite 1 with scope", function() {
 	setTimeout(cb3, 2)
 	var int4 = setInterval(cb4, 2)
 	setTimeout(cb5, 20)
+	clearTimeout()
+
+	test.equal(Date.parse("2018-01-02T13:45:51.001Z"), 1514900751001)
+	test.equal(new Date(1514900751002).toJSON(), "2018-01-02T13:45:51.002Z")
+	test.equal(new Date(2018,0,2,13,45,51,2).toJSON(), "2018-01-02T11:45:51.002Z")
+	test.equal(new Date(Date.UTC(2018,0,2,13,45,51,2)).toJSON(), "2018-01-02T13:45:51.002Z")
 
 	test.equal(new Date().getTime(), 1514900751001)
 	test.equal(cb1.called, 0)

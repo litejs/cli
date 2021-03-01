@@ -125,20 +125,14 @@
 		return (
 			arguments.length > 1 ?
 			new _Date(year|0, month|0, date||1, hr|0, min|0, sec|0, ms|0) :
-			new _Date(year || Math.floor(fakeNow))
+			new _Date(year || fakeNow)
 		)
 	}
 	fakeDate.now = function() {
-		return Math.floor(fakeNow)
+		return fakeNow
 	}
-	fakeDate.parse = function(str) {
-		var ts = _Date.parse(str)
-		if (type(fakeDate._z) == "number" && !/(UTC|GMT|Z)$/.test(str)) {
-			tmpDate.setTime(ts)
-			ts -= (60 * fakeDate._z + tmpDate.getTimezoneOffset()) * 60000
-		}
-		return ts
-	}
+	fakeDate.parse = _Date.parse
+	fakeDate.UTC = _Date.UTC
 	function fakeHrtime(time) {
 		var diff = _isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
 		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3] // [seconds, nanoseconds]
