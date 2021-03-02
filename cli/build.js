@@ -516,6 +516,7 @@ function jsMin(map, opts, next) {
 		result = result
 		.replace(/\/\*!cc_on\*\//g, "/*@cc_on")
 		.replace(/\/\*!cc_off\*\//g, "@*/")
+		.replace(/\\x0B/ig, "\\v")
 		next(null, result)
 	})
 	for (name in map) if (hasOwn.call(map, name)) {
