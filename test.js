@@ -95,6 +95,7 @@
 		reset: "\x1b[0m",
 		color: (_process.stdout || /* istanbul ignore next */ _process).isTTY,
 		seed: (Math.random() * 1e5)|0,
+		delay: 1,
 		status: 1,
 		time: 1,
 		timeout: 999,
@@ -197,7 +198,7 @@
 			name = "Unnamed Test" + (_ == 1 ? "Suite" : "Case")
 		}
 		if (!started) {
-			started = new Date()
+			started = new _Date()
 
 			if (!conf.color) {
 				conf.bold = conf.red = conf.green = conf.yellow = conf.reset = ""
@@ -216,7 +217,7 @@
 			}
 
 			line("head")
-			timerType = type(_setTimeout(nextCase, 1))
+			timerType = type(_setTimeout(nextCase, conf.delay|0))
 			if (splicePos === 0 && _ !== 1) def(1)
 		}
 		tests.splice(++splicePos, 0, {
@@ -341,7 +342,7 @@
 			_clearTimeout(tick)
 			if (err) fail(err)
 			if (testCase.ended) return fail("Error: ended multiple times")
-			testCase.ended = Date.now()
+			testCase.ended = _Date.now()
 
 			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
 				fail("Error: planned " + testCase.planned + " actual " + testCase.total)
@@ -636,7 +637,7 @@
 		, t = type(item)
 		, str =
 			t === "string" ? JSON.stringify(item) :
-			t === "function" ? ("" + item).replace(/^\w+|\s+|{[^]*/g, "") :
+			t === "function" ? ("" + item).replace(/^\w+|\s+|{[\s\S]*/g, "") :
 			(!item || t === "number" || t === "regexp" || item === true) ? "" + item :
 			item.toJSON ? item.toJSON() :
 			item
