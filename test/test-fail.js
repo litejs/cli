@@ -42,7 +42,7 @@ describe
 	.throws(function(){})
 	.end()
 })
-.it("should fail on invalid assertions", function(assert, mock) {
+.it("should fail on read-only swap", function(assert, mock) {
 	var a = {}
 	Object.defineProperty(a, "prop", { value: "test", writable: false })
 	mock.swap(a, "prop", 1)

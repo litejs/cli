@@ -8,6 +8,7 @@
 	, _setTimeout = setTimeout
 	, _clearTimeout = clearTimeout
 	, _Date = Date
+	, _Error = Error
 	, _isArray = Array.isArray
 	, lineRe = /{(\w+)}/g
 	, tests = []
@@ -76,7 +77,7 @@
 	}
 	, conf = describe.conf = {
 		// process.platform === 'win32' -> √×.
-		file: (Error().stack + " /cli/test.js:").match(/\S+?:(?=[:\d)]*$)/m)[0],
+		file: (_Error().stack + " /cli/test.js:").match(/\S+?:(?=[:\d)]*$)/m)[0],
 		global: "describe",
 		cut: 160,
 		head: "",
@@ -99,7 +100,7 @@
 		status: 1,
 		time: 1,
 		timeout: 999,
-		trace: 3
+		trace: 4
 	}
 	, toStr = conf.toString
 	, hasOwn = conf.hasOwnProperty
@@ -248,7 +249,7 @@
 				ok: function(value, message) {
 					testCase.total++
 					if (testCase.ended) {
-						fail("Error: assertion after end")
+						fail(_Error("assertion after end"))
 					}
 					if (value) {
 						testCase.passed++
@@ -259,7 +260,7 @@
 							"\nactual:   " + stringify(message[0])
 						}
 
-						fail("AssertionError#" + testCase.total + ": " + (message || stringify(value)), Error().stack)
+						fail(_Error("Assertion:" + testCase.total + ": " + (message || stringify(value))))
 					}
 					return testCase.plan(testCase.planned)
 				},
@@ -275,6 +276,7 @@
 					tick = _setTimeout(endCase, ms, "TIMEOUT: " + ms + "ms")
 					return testCase
 				},
+				fail: fail,
 				end: endCase
 			}, assert)
 			if (args.skip || testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
@@ -290,23 +292,25 @@
 				args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
 			} catch (e) {
 				console.log(e)
-				fail(e, e.stack)
+				fail(e)
 				endCase()
 			}
 		}
-		function fail(message, stack) {
+		function fail(err) {
+			if (!err) err = "UnnamedError"
+			var row, start, i = 0, stack = err.stack
 			if (stack) {
 				// iotjs returns stack as Array
-				for (var row, start, i = 0, arr = _isArray(stack) ? /* istanbul ignore next */ stack : (stack + "").split("\n"); (row = arr[++i]); ) {
+				for (stack = _isArray(stack) ? /* istanbul ignore next */ stack : (stack + "").replace(err, "").split("\n"); (row = stack[++i]); ) {
 					if (row.indexOf(conf.file) < 0) {
 						if (!start) start = i
 					}
 					if (i - start >= conf.trace) break
 				}
-				message = [ message ].concat(arr.slice(start, i)).join("\n")
+				err = [ err ].concat(stack.slice(start, i)).join("\n")
 			}
 
-			if (testCase.errors.push(message) == 1) {
+			if (testCase.errors.push(err) == 1) {
 				failedCases.push(testCase)
 			}
 			if (describe.result) printResult()
@@ -314,11 +318,11 @@
 		function endCase(err) {
 			_clearTimeout(tick)
 			if (err) fail(err)
-			if (testCase.ended) return fail("Error: ended multiple times")
+			if (testCase.ended) return fail(_Error("ended multiple times"))
 			testCase.ended = _Date.now()
 
 			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
-				fail("Error: planned " + testCase.planned + " actual " + testCase.total)
+				fail(_Error("planned " + testCase.planned + " actual " + testCase.total))
 			}
 			if (testCase.mock) {
 				testCase.name += testCase.mock.txt
@@ -455,7 +459,7 @@
 			var existing = obj[name]
 			this._r.push(obj, name, hasOwn.call(obj, name) && existing)
 			obj[name] = fn
-			if (fn === fn && obj[name] !== fn) throw Error("Unable to swap " + name)
+			if (fn === fn && obj[name] !== fn) throw _Error("Unable to swap " + stringify(name))
 			return existing
 		},
 		restore: function() {
