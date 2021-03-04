@@ -238,7 +238,7 @@ File.prototype = {
 			}
 		}
 		if (file.opts.warnings.length) {
-			console.log("WARNINGS:\n - " + file.opts.warnings.join("\n - "))
+			console.log("WARNINGS: " + file.name + "\n - " + file.opts.warnings.join("\n - "))
 		}
 	},
 	then: function(next, scope) {
