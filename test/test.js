@@ -1,12 +1,4 @@
 
-function a(a, b) {
-	return {
-        get prop() {
-            return a;
-        }
-    }
-}
-
 function Dog() {
 	this.woofed = this.barked = 0
 }
@@ -46,19 +38,24 @@ describe("TestSuite 1 with scope", function() {
 		this.plan(1).ok(1)
 	},
 	"Case 2.2": function(assert, mock) {
-		var resume = assert.wait()
-		setTimeout(resume, 1)
-		setTimeout(resume, 1)
-		assert.ok(1)
-		assert.end()
+		this.ok(1).plan(1)
 	},
-	"Nested Suite": {
-		"Case 2.2b": function() {
-			this.ok(1).plan(1)
-		}
-	}
+	"Nested Suite 2.3": {
+		"Case 2.3.1": null,
+		"Case 2.3.2": null
+	},
+	"Nested Suite 2.4": {
+		"Case 2.4.1": null,
+		"Case 2.4.2": null
+	},
+	"Case 2.5": null
 })
-.test("it should run second test 2.3", function(assert) {
+.it("supports a pending test 2.6")
+.it("_should skip test by name 2.7", function(assert) {
+	assert.fail()
+	assert.end()
+})
+.test("it should run second test 2.8", function(assert) {
 
 	assert.cmdSnapshot(
 		"node -r ./test.js test/test-fail.js --no-status --no-color --no-time --no-cut",
@@ -83,8 +80,8 @@ describe("TestSuite 1 with scope", function() {
 	}
 	assert.end()
 })
-.it("supports a pending test 2.4")
-.test("it should mock fn 2.6", function(assert, mock) {
+.describe("TestSuite 3")
+.test("it should mock fn 3.1", function(assert, mock) {
 	var count = 0
 	, spy1 = mock.fn()
 	, spy2 = mock.fn(function() {
@@ -137,13 +134,13 @@ describe("TestSuite 1 with scope", function() {
 
 	assert.end()
 })
-.test("it should recover mocks 2.7", function(assert) {
+.test("it should recover mocks 3.2", function(assert) {
 	assert.equal(dog.bark, Dog$bark)
 	assert.equal(dog.woof, Dog$woof)
 	assert.equal(dog.sit, Dog$sit)
 	assert.end()
 })
-.test("it should mock swap 2.8", function(assert, mock) {
+.test("it should mock swap 3.3", function(assert, mock) {
 	mock.swap(Object.prototype, "foo", function(){})
 	var count = 0
 	mock.swap(Dog.prototype, {
@@ -185,7 +182,7 @@ describe("TestSuite 1 with scope", function() {
 
 	assert.end()
 })
-.test("it should mock current time 2.9", function(assert, mock) {
+.test("it should mock current time 3.4", function(assert, mock) {
 	var now = Date.now()
 
 	// ensure to mock time in beginning of ms
@@ -209,7 +206,7 @@ describe("TestSuite 1 with scope", function() {
 
 	assert.end()
 })
-.test("it should mock time 2.9", function(test, mock) {
+.test("it should mock time 3.5", function(test, mock) {
 	var nativeDate = Date
 	, seq = 0
 	, inc = function() { return ++seq }
@@ -355,14 +352,14 @@ describe("TestSuite 1 with scope", function() {
 
 	test.end()
 })
-.test("it should recover mocks 2.10", function(assert) {
+.test("it should recover mocks 3.6", function(assert) {
 	assert.equal(dog.bark, Dog$bark)
 	assert.equal(dog.woof, Dog$woof)
 	assert.equal(dog.sit, Dog$sit)
 	assert.notEqual(new Date().getTime(), 1514900751002)
 	assert.end()
 })
-.test("it should mock Math.random() 2.11", function(assert, mock) {
+.test("it should mock Math.random() 3.7", function(assert, mock) {
 	mock.rand(12345)
 
 	assert.equal(Math.random(), 0.7260542734819591)
@@ -372,7 +369,7 @@ describe("TestSuite 1 with scope", function() {
 
 	assert.end()
 })
-.test("it should mock Math.random() 2.11", function(assert, mock) {
+.test("it should mock Math.random() 3.8", function(assert, mock) {
 	describe.conf.seed = 12345
 	mock.rand()
 
@@ -380,14 +377,22 @@ describe("TestSuite 1 with scope", function() {
 
 	assert.end()
 })
-.test("it should recover from random mock 2.12", function(assert) {
+.test("it should recover from random mock 3.9", function(assert) {
 	assert.notEqual(Math.random(), 0.742924822201702)
 	assert.end()
 })
 
 
-describe("TestSuite 3")
-.test("it should run first test 3.1", function(assert) {
+describe("TestSuite 4")
+.test("it should run first test 4.1", function(assert) {
+	function a(a, b) {
+		return {
+		get prop() {
+		    return a;
+		}
+	    }
+	}
+
 	assert.ok(true)
 	.equal(true, true)
 	.equal(true, true)
@@ -399,7 +404,7 @@ describe("TestSuite 3")
 	//assert.end()
 	setTimeout(assert.end.bind(assert), 10)
 })
-.test("it should run second test 3.2", function(assert) {
+.test("it should run second test 4.2", function(assert) {
 	assert.plan(1)
 	assert.ok(true)
 })

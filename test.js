@@ -275,33 +275,6 @@
 					tick = _setTimeout(endCase, ms, "TIMEOUT: " + ms + "ms")
 					return testCase
 				},
-				wait: function() {
-					var k
-					, obj = this
-					, hooks = []
-					, hooked = []
-
-					for (k in obj) if (isFn(obj[k])) swap(k)
-					function swap(k) {
-						hooked.push(k, obj[k])
-						obj[k] = function() {
-							hooks.push(k, arguments)
-							return obj
-						}
-					}
-
-					return function() {
-						if (!hooks) return
-						for (var v, scope = obj, i = hooked.length; i--; i--) {
-							obj[hooked[i-1]] = hooked[i]
-						}
-						// i == -1 from previous loop
-						for (; (v = hooks[++i]); ) {
-							scope = scope[v].apply(scope, hooks[++i]) || scope
-						}
-						hooks = hooked = null
-					}
-				},
 				end: endCase
 			}, assert)
 			if (args.skip || testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
