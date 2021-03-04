@@ -7,35 +7,35 @@ Unnamed TestSuite
   ✔ it should fail on assertion after end #6 [0/0]
 ReferenceError: SOME_UNDEFINED_VALIABLE is not defined
     at Object.<anonymous> (test/test-fail.js:24:2)
-    at nextCase (test.js:293:13)
-    at Object.endCase [as end] (test.js:337:23)
+    at nextCase (test.js:291:13)
+    at Object.endCase [as end] (test.js:335:23)
     at Object.<anonymous> (test/test-fail.js:20:9)
-    at nextCase (test.js:293:13)
-    at Object.endCase [as end] (test.js:337:23)
+    at nextCase (test.js:291:13)
+    at Object.endCase [as end] (test.js:335:23)
     at Object.<anonymous> (test/test-fail.js:17:9)
-    at nextCase (test.js:293:13)
-    at endCase (test.js:337:23)
-    at Object.plan (test.js:271:7)
+    at nextCase (test.js:291:13)
+    at endCase (test.js:335:23)
+    at Object.plan (test.js:269:7)
   ✘ it should fail on invalid test #7 [0/0]
   ✘ it should fail on invalid assertions #8 [0/7]
 Error: Unable to swap "prop"
-    at Mock.swap (test.js:463:45)
+    at Mock.swap (test.js:461:45)
     at Object.<anonymous> (test/test-fail.js:48:7)
-    at nextCase (test.js:293:13)
-    at Object.endCase [as end] (test.js:337:23)
+    at nextCase (test.js:291:13)
+    at Object.endCase [as end] (test.js:335:23)
     at Object.<anonymous> (test/test-fail.js:43:3)
-    at nextCase (test.js:293:13)
-    at endCase (test.js:337:23)
-    at nextCase (test.js:297:5)
-    at Object.endCase [as end] (test.js:337:23)
+    at nextCase (test.js:291:13)
+    at endCase (test.js:335:23)
+    at nextCase (test.js:295:5)
+    at Object.endCase [as end] (test.js:335:23)
     at Object.<anonymous> (test/test-fail.js:20:9)
   ✘ it should fail on read-only swap #9 [0/0]
 ---
   ✘ it should fail on read-only swap #9 [0/0]
 Error: Unable to swap "prop"
     at Object.<anonymous> (test/test-fail.js:48:7)
-    at nextCase (test.js:293:13)
-    at Object.endCase [as end] (test.js:337:23)
+    at nextCase (test.js:291:13)
+    at Object.endCase [as end] (test.js:335:23)
     at Object.<anonymous> (test/test-fail.js:43:3)
 ---
   ✘ it should fail on invalid assertions #8 [0/7]
@@ -43,60 +43,60 @@ Error: Assertion:1: equal
 expected: undefined
 actual:   undefined
     at Object.<anonymous> (test/test-fail.js:33:7)
-    at nextCase (test.js:293:13)
-    at endCase (test.js:337:23)
-    at nextCase (test.js:297:5)
+    at nextCase (test.js:291:13)
+    at endCase (test.js:335:23)
+    at nextCase (test.js:295:5)
 Error: Assertion:2: equal
 expected: "2"
 actual:   Null{"a":Circular,"toJSON":()}
     at Object.<anonymous> (test/test-fail.js:37:3)
-    at nextCase (test.js:293:13)
-    at endCase (test.js:337:23)
-    at nextCase (test.js:297:5)
+    at nextCase (test.js:291:13)
+    at endCase (test.js:335:23)
+    at nextCase (test.js:295:5)
 Error: Assertion:3: equal
 expected: /1/m
 actual:   /1/
     at Object.<anonymous> (test/test-fail.js:38:3)
-    at nextCase (test.js:293:13)
-    at endCase (test.js:337:23)
-    at nextCase (test.js:297:5)
+    at nextCase (test.js:291:13)
+    at endCase (test.js:335:23)
+    at nextCase (test.js:295:5)
 Error: Assertion:4: equal
 expected: []
-actual:   arguments[{"num":8,"name":"it should fail on invalid assertions","total":4,"passed":0,"errors":["Error: Assertion:1: equal\nexpected: undefined\nactual:   undefined\n    at Object.<anonymous> (test/test-fail.js:33:7)\n    at nextCase (test.js:293:13)\n    at endCase (test.js:337:23)\n    at nextCase (test.js:297:5)","Error: Assertion:2: equal\nexpected: \"2\"\nactual:   Null{\"a\":Circular,\"toJSON\":()}\n    at Object.<anonymous> (test/test-fail.js:37:3)\n    at nextCase (test.js:293:13)\n    at endCase (test.js:337:23)\n    at nextCase (test.js:297:5)","Error: Assertion:3: equal\nexpected: /1/m\nactual:   /1/\n    at Object.<anonymous> (test/test-fail.js:38:3)\n    at nextCase (test.js:293:13)\n    at endCase (test.js:337:23)\n    at nextCase (test.js:297:5)"],"ok":(value,message),"plan":(planned),"setTimeout":(ms),"fail":fail(err),"end":endCase(err),"notOk":(value,message),"equal":(actual,expected,message),"notEqual":(actual,expected,message),"skip":This(),"strictEqual":(actual,expected,message),"notStrictEqual":(actual,expected,message),"own":(actual,expected,message),"notOwn":(actual,expected,message),"throws":(fn,message),"type":(thing,expected),"anyOf":(a,b),"mock":false,"planned":undefined},false]
+actual:   arguments[{"num":8,"name":"it should fail on invalid assertions","total":4,"passed":0,"errors":["Error: Assertion:1: equal\nexpected: undefined\nactual:   undefined\n    at Object.<anonymous> (test/test-fail.js:33:7)\n    at nextCase (test.js:291:13)\n    at endCase (test.js:335:23)\n    at nextCase (test.js:295:5)","Error: Assertion:2: equal\nexpected: \"2\"\nactual:   Null{\"a\":Circular,\"toJSON\":()}\n    at Object.<anonymous> (test/test-fail.js:37:3)\n    at nextCase (test.js:291:13)\n    at endCase (test.js:335:23)\n    at nextCase (test.js:295:5)","Error: Assertion:3: equal\nexpected: /1/m\nactual:   /1/\n    at Object.<anonymous> (test/test-fail.js:38:3)\n    at nextCase (test.js:291:13)\n    at endCase (test.js:335:23)\n    at nextCase (test.js:295:5)"],"ok":(value,message,actual,op,expected),"plan":(planned),"setTimeout":(ms),"fail":fail(err),"end":endCase(err),"notOk":(value,message),"equal":(actual,expected,message),"notEqual":(actual,expected,message),"skip":This(),"strictEqual":(actual,expected,message),"notStrictEqual":(actual,expected,message),"own":(actual,expected,message),"notOwn":(actual,expected,message),"throws":(fn,message),"type":(thing,expected),"anyOf":(a,b),"mock":false,"planned":undefined},false]
     at Object.<anonymous> (test/test-fail.js:39:3)
-    at nextCase (test.js:293:13)
-    at endCase (test.js:337:23)
-    at nextCase (test.js:297:5)
+    at nextCase (test.js:291:13)
+    at endCase (test.js:335:23)
+    at nextCase (test.js:295:5)
 Error: Assertion:5: equal
 expected: [/1/,B(),{"a":Circular,"toJSON":()}]
 actual:   [/1/,B{},Null{"a":Circular,"toJSON":()}]
     at Object.<anonymous> (test/test-fail.js:40:3)
-    at nextCase (test.js:293:13)
-    at endCase (test.js:337:23)
-    at nextCase (test.js:297:5)
-Error: Assertion:6: 0
+    at nextCase (test.js:291:13)
+    at endCase (test.js:335:23)
+    at nextCase (test.js:295:5)
+Error: Assertion:6: 0 is truthy
     at Object.<anonymous> (test/test-fail.js:41:3)
-    at nextCase (test.js:293:13)
-    at endCase (test.js:337:23)
-    at nextCase (test.js:297:5)
+    at nextCase (test.js:291:13)
+    at endCase (test.js:335:23)
+    at nextCase (test.js:295:5)
 Error: Assertion:7: throws
     at Object.<anonymous> (test/test-fail.js:42:3)
-    at nextCase (test.js:293:13)
-    at endCase (test.js:337:23)
-    at nextCase (test.js:297:5)
+    at nextCase (test.js:291:13)
+    at endCase (test.js:335:23)
+    at nextCase (test.js:295:5)
 ---
   ✘ it should fail on invalid test #7 [0/0]
 ReferenceError: SOME_UNDEFINED_VALIABLE is not defined
     at Object.<anonymous> (test/test-fail.js:24:2)
-    at nextCase (test.js:293:13)
-    at Object.endCase [as end] (test.js:337:23)
+    at nextCase (test.js:291:13)
+    at Object.endCase [as end] (test.js:335:23)
     at Object.<anonymous> (test/test-fail.js:20:9)
 ---
   ✘ it should fail on wrong plan 1 #3 [0/0]
 Error: planned 1 actual 0
     at Object.<anonymous> (test/test-fail.js:10:17)
-    at nextCase (test.js:293:13)
-    at Timeout.endCase (test.js:337:23)
+    at nextCase (test.js:291:13)
+    at Timeout.endCase (test.js:335:23)
     at listOnTimeout (internal/timers.js:556:17)
 ---
   ✘ it should fail on timeout #2 [0/0]
@@ -110,8 +110,8 @@ TIMEOUT: 1ms
   ✘ it should fail on assertion after end #6 [0/1]
 Error: assertion after end
     at Object.<anonymous> (test/test-fail.js:21:9)
-    at nextCase (test.js:293:13)
-    at Object.endCase [as end] (test.js:337:23)
+    at nextCase (test.js:291:13)
+    at Object.endCase [as end] (test.js:335:23)
     at Object.<anonymous> (test/test-fail.js:17:9)
 ...
 # FAIL  tests 6
@@ -122,8 +122,8 @@ Error: assertion after end
   ✘ it should fail on wrong plan 2 #4 [1/2]
 Error: assertion after end
     at Object.<anonymous> (test/test-fail.js:13:23)
-    at nextCase (test.js:293:13)
-    at Object.endCase [as end] (test.js:337:23)
+    at nextCase (test.js:291:13)
+    at Object.endCase [as end] (test.js:335:23)
     at Object.<anonymous> (test/test-fail.js:10:17)
 ...
 # FAIL  tests 4

@@ -22,31 +22,31 @@
 	, describe = exports.describe = def.bind(describe, 1)
 	, assert = describe.assert = {
 		notOk: function(value, message) {
-			return this.ok(!value, message || stringify(value) + " !== falsy")
+			return this.ok(!value, message, value, "!=", "falsy")
 		},
 		equal: function(actual, expected, message) {
 			return this.ok(
 				arguments.length > 1 && _deepEqual(actual, expected, []),
-				message || [actual, "equal", expected]
+				message, actual, "equal", expected
 			)
 		},
 		notEqual: function(actual, expected, message) {
 			return this.ok(
 				arguments.length > 1 && !_deepEqual(actual, expected, []),
-				message || [actual, "notEqual", expected]
+				message, actual, "notEqual", expected
 			)
 		},
 		skip: This,
 		strictEqual: function(actual, expected, message) {
 			return this.ok(
 				arguments.length > 1 && actual === expected,
-				message || [actual, "===", expected]
+				message, actual, "===", expected
 			)
 		},
 		notStrictEqual: function(actual, expected, message) {
 			return this.ok(
 				arguments.length > 1 && actual !== expected,
-				message || [actual, "!==", expected]
+				message, actual, "!==", expected
 			)
 		},
 		own: function(actual, expected, message) {
@@ -66,7 +66,7 @@
 		},
 		type: function(thing, expected) {
 			var actual = type(thing)
-			return this.ok(actual === expected, [expected, "type", actual])
+			return this.ok(actual === expected, 0, actual, "type", expected)
 		},
 		anyOf: function(a, b) {
 			return this.ok(
@@ -242,11 +242,11 @@
 		else {
 			testCase = Object.assign({
 				num: ++totalCases,
-				name: (args[0] === 4 ? "it should " : args[0] === 3 ? "it " : "") + args[1],
+				name: (args[0] < 3 ? "" : "it " + (args[0] < 4 ? "" : "should ")) + args[1],
 				total: 0,
 				passed: 0,
 				errors: [],
-				ok: function(value, message) {
+				ok: function(value, message, actual, op, expected) {
 					testCase.total++
 					if (testCase.ended) {
 						fail(_Error("assertion after end"))
@@ -254,13 +254,12 @@
 					if (value) {
 						testCase.passed++
 					} else {
-						if (_isArray(message)) {
-							message = message[1] +
-							"\nexpected: " + stringify(message[2]) +
-							"\nactual:   " + stringify(message[0])
-						}
-
-						fail(_Error("Assertion:" + testCase.total + ": " + (message || stringify(value))))
+						fail(_Error("Assertion:" + testCase.total + ": " + (message || (
+							op ? op +
+							"\nexpected: " + stringify(expected) +
+							"\nactual:   " + stringify(actual)
+							: stringify(value) + " is truthy"
+						))))
 					}
 					return testCase.plan(testCase.planned)
 				},
