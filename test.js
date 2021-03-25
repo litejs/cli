@@ -100,7 +100,7 @@
 		status: 1,
 		time: 1,
 		timeout: 999,
-		trace: 4
+		stack: 4
 	}
 	, toStr = conf.toString
 	, hasOwn = conf.hasOwnProperty
@@ -304,7 +304,7 @@
 					if (row.indexOf(conf.file) < 0) {
 						if (!start) start = i
 					}
-					if (i - start >= conf.trace) break
+					if (i - start >= conf.stack) break
 				}
 				err = [ err ].concat(stack.slice(start, i)).join("\n")
 			}
