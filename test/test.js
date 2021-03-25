@@ -222,8 +222,8 @@ describe("TestSuite 1 with scope", function() {
 	test.notStrictEqual(nativeDate, Date)
 
 	setTimeout(cb1, 2)
-	setTimeout(cb2, 5)
-	setTimeout(cb3, 2)
+	setTimeout(cb2, 5, "a")
+	setTimeout(cb3, 2, "a", 2)
 	var int4 = setInterval(cb4, 2)
 	setTimeout(cb5, 20).unref()
 	clearTimeout()
@@ -263,6 +263,7 @@ describe("TestSuite 1 with scope", function() {
 	test.equal(cb6.called, 1)
 	test.equal(cb1.calls[0].result, 2)
 	test.equal(cb3.calls[0].result, 3)
+	test.equal(cb3.calls[0].args, ["a", 2])
 	test.equal(cb4.calls[0].result, 4)
 	test.equal(cb6.calls[0].result, 1)
 
@@ -301,6 +302,7 @@ describe("TestSuite 1 with scope", function() {
 	test.equal(new Date().getTime(), 1514900751006)
 	test.equal(cb1.called, 1)
 	test.equal(cb2.called, 1)
+	test.equal(cb2.calls[0].args, ["a"])
 	test.equal(cb3.called, 1)
 	test.equal(cb4.called, 2)
 	test.equal(cb5.called, 0)

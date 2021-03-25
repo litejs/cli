@@ -19,7 +19,7 @@
 	, skipped = 0
 	, runPos = 0
 	, splicePos = 0
-	, describe = exports.describe = def.bind(describe, 1)
+	, describe = exports.describe = curry(def, 1)
 	, assert = describe.assert = {
 		notOk: function(value, message) {
 			return this.ok(!value, message, value, "!=", "falsy")
@@ -112,8 +112,8 @@
 	, timers = []
 	, timerId = 0
 	, fakeTimers = {
-		setTimeout: fakeTimeout.bind(null, false),
-		setInterval: fakeTimeout.bind(null, true),
+		setTimeout: curry(fakeTimeout, false),
+		setInterval: curry(fakeTimeout, true),
 		clearTimeout: fakeClear,
 		clearInterval: fakeClear,
 		setImmediate: fakeNextTick,
@@ -181,9 +181,9 @@
 	}
 
 	describe.describe = describe
-	describe.test = def.bind(describe, 2)
-	describe.it = def.bind(describe, 3)
-	describe.should = def.bind(describe, 4)
+	describe.test = curry(def, 2)
+	describe.it = curry(def, 3)
+	describe.should = curry(def, 4)
 	describe.failed = 0
 	describe.output = ""
 	describe.print = print
@@ -598,6 +598,11 @@
 				}
 			}
 			return true
+		}
+	}
+	function curry(fn, arg) {
+		return function() {
+			return fn.apply(null, [arg].concat(timers.slice.call(arguments)))
 		}
 	}
 
