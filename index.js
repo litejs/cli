@@ -24,6 +24,7 @@ var fs = require("fs")
 	cp: cp,
 	execute: execute,
 	hold: hold,
+	ls: ls,
 	mkdirp: mkdirp,
 	readFile: readFile,
 	rmrf: rmrf,
@@ -139,6 +140,55 @@ function cp(src, dest) {
 	} else {
 		console.error("cp", src, dest)
 		fs.copyFileSync(src, dest)
+	}
+}
+
+function ls() {
+	var key, dirRe, outRe, tmp, tmp2
+	, i = arguments.length
+	, out = []
+	, paths = {}
+	, reEscRe = /[*.+^=:${}()|\/\\]/g
+	for (; i > 0; ) {
+		key = arguments[--i]
+		if (typeof key !== "string") continue
+		tmp = path.resolve(tmp2 = key.replace(/[^\/]*\*.*/, ""))
+		tmp = paths[tmp] || (paths[tmp] = [])
+		if (key !== tmp2) tmp.push(key.slice(tmp2.length))
+	}
+	for (key in paths) {
+		outRe = RegExp("^" + esc(key) + (
+			paths[key][0] ? "\\/(" + paths[key].map(esc).join("|") + ")$" : "$"
+		))
+		tmp = paths[key].map(dirname).filter(Boolean)
+		dirRe = RegExp("^" + esc(key) + (
+			tmp[0] ? "(?:\\/(" + tmp.map(esc).join("|") + ")|)$" : "$"
+		))
+		scan(key)
+	}
+	return out.sort()
+	function scan(name) {
+		if (outRe.test(name)) {
+			out.push(path.relative(process.cwd(), name))
+		} else if (dirRe.test(name)) {
+			var stat = fs.statSync(name)
+			if (stat.isDirectory()) {
+				fs.readdirSync(name).forEach(function(file) {
+					scan(path.resolve(name, file))
+				})
+			}
+		}
+	}
+	function dirname(s) {
+		return s.indexOf("/") > -1 && path.dirname(s)
+	}
+	function esc(s) {
+		return (s.charAt(0) === "." ? "" : "(?!\\.)") +
+		s
+		.replace(reEscRe, "\\$&")
+		.replace(/\?/g, "[^\/]")
+		.replace(/\\\*\\\*(\\\/)?/g, "(.+$1)?")
+		.replace(/\\(?=\*)/g, "[^\/]")
 	}
 }
 
