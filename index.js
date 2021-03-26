@@ -108,7 +108,7 @@ function execute(cmd, opts) {
 				NODE_PATH: process.argv[1].replace(/bin\/\w+$/, "lib/node_modules/")
 			},
 			stdio: "inherit"
-		})
+		}).on("close", function(code) { process.exitCode = code })
 		break;
 	case "help":
 		sub = shortcut[process.argv[3]] || process.argv[3]
