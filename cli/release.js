@@ -4,7 +4,7 @@
 //-  commit and create version tag.
 //-
 //-  Usage
-//-    lj release
+//-    lj release [version]
 //-
 //-  release options
 //-    --no-build      Do not run build
@@ -58,20 +58,21 @@ module.exports = function(opts) {
 	run("update", "npm outdated", "there are outdated dependencies")
 	run("global", "npm outdated -g @litejs/cli " + (opts.global || "uglify-js jshint nyc"), "there are outdated global packages")
 
-	if (!opts.rewrite && com.version === cur.version) {
+	if (opts.name[0] || !opts.rewrite && com.version === cur.version) {
 		if (len > 3 || !(now[0] > junks[0] || now[1] > junks[1])) {
 			junks[len - 1] = parseInt(junks[len - 1], 10) + 1
 		} else {
 			junks = now
 		}
-		cur.version = junks.join(".")
+		cur.version = opts.name[0] || junks.join(".")
 		cli.writePackage(cur)
 	}
+	if (!opts.rewrite) run("tag", "! git rev-parse -q --verify v" + cur.version, "git tag exists?", "--rewrite")
 
+	run("build", "lj b;git add -u", "build failed")
 	if (opts.build !== false) {
-		run("build", "lj build", "build failed")
 		// TODO:2019-12-21:lauri:Build three times till hash calculation is fixed in build
-		child.execSync("git add -u;lj b;git add -u;lj b", { stdio: "ignore" })
+		child.execSync("lj b;git add -u;lj b", { stdio: "ignore" })
 	}
 
 	run("test", "lj test --brief", "tests failed")
@@ -102,7 +103,7 @@ module.exports = function(opts) {
 
 	child.spawn(process.env.EDITOR || "vim", [TAG_MSG], { stdio: "inherit" })
 	.on("exit", function(e, code) {
-		child.spawnSync("git", ["tag", "-a", "v" + cur.version, "-F", TAG_MSG, opts.rewrite ? "-f" : "--"], { stdio: "inherit" })
+		run("tag", "git tag -a v" + cur.version + " -F " + TAG_MSG + (opts.rewrite ? " -f" : ""), "git tag failed", "--rewrite")
 
 		console.log("\nVERSION: %s", cur.version)
 		if (!cur.private) {
@@ -110,14 +111,14 @@ module.exports = function(opts) {
 		}
 	})
 
-	function run(opt, cmd, err) {
+	function run(opt, cmd, err, flag) {
 		if (cmd && opts[opt] !== false) try {
 			log("\n-- " + cmd)
 			log(child.execSync(cmd))
 		} catch (e) {
 			log(e.stdout)
 			log(e.stderr)
-			console.error("\nfatal: %s! Ignore with --no-%s option.", err, opt)
+			console.error("\nfatal: %s! Ignore with %s option.", err, flag || "--no-" + opt)
 			process.exit(1)
 		}
 	}
