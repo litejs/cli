@@ -77,19 +77,17 @@ module.exports = function(opts) {
 
 	run("test", "lj test --brief", "tests failed")
 
+	child.execSync("git log --pretty='format:%s (%aN)' " + lastTag + "..HEAD")
+	.toString("utf8").split("\n").forEach(function(row) {
+		for (var g, i = 0; (g = group[i++]); ) {
+			if (!g.re || g.re.test(row)) return g.log.push(row)
+		}
+	})
+
 	child.spawnSync("git", [
 		"commit", "-a", "-m", "Release " + cur.version + "\n" + msg,
 		(opts.rewrite ? "--amend" : "--")], { stdio: "inherit" })
 
-	child.spawnSync("git", [
-		"log", "--pretty=format:%s (%aN)", lastTag + "..HEAD~1"
-	]).stdout.toString("utf8").split("\n").forEach(function(row) {
-		for (var g, i = 0; (g = group[i++]); ) {
-			if (!g.re || g.re.test(row)) {
-				return g.log.push(row)
-			}
-		}
-	})
 	msg = ""
 	for (i = 0; (g = group[i++]); ) {
 		if (g.log.length) {
