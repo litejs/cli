@@ -22,38 +22,38 @@
 	, describe = exports.describe = curry(def, 1)
 	, assert = describe.assert = {
 		notOk: function(value, message) {
-			return this.ok(!value, message, value, "!=", "falsy")
+			return this(!value, message, value, "!=", "falsy")
 		},
 		equal: function(actual, expected, message) {
-			return this.ok(
+			return this(
 				arguments.length > 1 && _deepEqual(actual, expected, []),
 				message, actual, "equal", expected
 			)
 		},
 		notEqual: function(actual, expected, message) {
-			return this.ok(
+			return this(
 				arguments.length > 1 && !_deepEqual(actual, expected, []),
 				message, actual, "notEqual", expected
 			)
 		},
 		skip: This,
 		strictEqual: function(actual, expected, message) {
-			return this.ok(
+			return this(
 				arguments.length > 1 && actual === expected,
 				message, actual, "===", expected
 			)
 		},
 		notStrictEqual: function(actual, expected, message) {
-			return this.ok(
+			return this(
 				arguments.length > 1 && actual !== expected,
 				message, actual, "!==", expected
 			)
 		},
 		own: function(actual, expected, message) {
-			return this.ok(own(actual, expected), message || own.lastMsg)
+			return this(own(actual, expected), message || own.lastMsg)
 		},
 		notOwn: function(actual, expected, message) {
-			return this.ok(!own(actual, expected), message || own.lastMsg)
+			return this(!own(actual, expected), message || own.lastMsg)
 		},
 		throws: function(fn, message) {
 			var actual = false
@@ -62,14 +62,14 @@
 			} catch(e) {
 				actual = true
 			}
-			return this.ok(actual, message || "throws")
+			return this(actual, message || "throws")
 		},
 		type: function(thing, expected) {
 			var actual = type(thing)
-			return this.ok(actual === expected, 0, actual, "type", expected)
+			return this(actual === expected, 0, actual, "type", expected)
 		},
 		anyOf: function(a, b) {
-			return this.ok(
+			return this(
 				_isArray(b) && b.indexOf(a) > -1,
 				"should be one from " + stringify(b) + ", got " + a
 			)
@@ -83,9 +83,9 @@
 		head: "",
 		indent: "  ",
 		suite: "{1}", //➜✺✽❖❣❢•※⁕∅
-		ok: "  {green}✔{reset} {name} #{num} [{passed}/{total}]",
-		nok: "  {red}✘{reset} {name} #{num} [{passed}/{total}]",
-		skip: "  {yellow}∅{reset} {name} #{num}",
+		ok: "  {green}✔{reset} {n} #{i} [{passed}/{total}]",
+		nok: "  {red}✘{reset} {n} #{i} [{passed}/{total}]",
+		skip: "  {yellow}∅{reset} {n} #{i}",
 		sum: "1..{total}\n#{passGreen} pass  {pass}/{total} [{passAsserts}/{totalAsserts}]{timeStr}",
 		failSum: "#{red}{bold} FAIL  tests {failNums}",
 		skipSum: "#{yellow}{bold} skip  {skip}",
@@ -208,12 +208,12 @@
 			if (conf.tap) {
 				conf.head = "TAP version 13"
 				conf.suite = "# {1}"
-				conf.ok = conf.skip = "ok {num} - {name} [{passed}/{total}]"
+				conf.ok = conf.skip = "ok {i} - {n} [{passed}/{total}]"
 				conf.nok = "not " + conf.ok
 				conf.indent = ""
 			} else if (conf.brief) {
 				conf.suite = conf.ok = conf.indent = ""
-				conf.skip = "{yellow}skip {num} - {name}"
+				conf.skip = "{yellow}skip {i} - {n}"
 				conf.sum = conf.sum.slice(11)
 			}
 
@@ -235,55 +235,33 @@
 	}
 
 	function nextCase() {
-		var testCase, tick
+		var tick
 		, args = tests[splicePos = runPos++]
 		if (!args) printResult()
 		else if (args[0] === 1) nextSuite(testSuite = args)
 		else {
-			testCase = Object.assign({
-				num: ++totalCases,
-				name: (args[0] < 3 ? "" : "it " + (args[0] < 4 ? "" : "should ")) + args[1],
-				total: 0,
-				passed: 0,
-				errors: [],
-				ok: function(value, message, actual, op, expected) {
-					testCase.total++
-					if (testCase.ended) {
-						fail(_Error("assertion after end"))
-					}
-					if (value) {
-						testCase.passed++
-					} else {
-						fail(_Error("Assertion:" + testCase.total + ": " + (message || (
-							op ? op +
-							"\nexpected: " + stringify(expected) +
-							"\nactual:   " + stringify(actual)
-							: stringify(value) + " is truthy"
-						))))
-					}
-					return testCase.plan(testCase.planned)
-				},
-				plan: function(planned) {
-					testCase.planned = planned
-					if (planned <= testCase.total) {
-						endCase()
-					}
-					return testCase
-				},
-				setTimeout: function(ms) {
-					_clearTimeout(tick)
-					tick = _setTimeout(endCase, ms, "TIMEOUT: " + ms + "ms")
-					return testCase
-				},
-				fail: fail,
-				end: endCase
-			}, assert)
+			testCase.i = ++totalCases
+			testCase.n = (args[0] < 3 ? "" : "it " + (args[0] < 4 ? "" : "should ")) + args[1]
+			testCase.errors = []
+			testCase.total = testCase.passed = 0
 			if (args.skip || testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
 				skipped++
-				if (!argv.length) {
-					line("skip", testCase)
-				}
+				if (!argv.length) line("skip", testCase)
 				return nextCase()
+			}
+			Object.assign(testCase, assert)
+			testCase.end = end
+			testCase.fail = fail
+			testCase.ok = testCase
+			testCase.plan = function(planned) {
+				testCase.planned = planned
+				if (planned <= testCase.total) end()
+				return testCase
+			}
+			testCase.setTimeout = function(ms) {
+				_clearTimeout(tick)
+				tick = _setTimeout(end, ms, "TIMEOUT: " + ms + "ms")
+				return testCase
 			}
 
 			try {
@@ -291,9 +269,25 @@
 				args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
 			} catch (e) {
 				console.log(e)
-				fail(e)
-				endCase()
+				end(e)
 			}
+		}
+		function testCase(value, message, actual, op, expected) {
+			testCase.total++
+			if (testCase.ended) {
+				fail(_Error("assertion after end"))
+			}
+			if (value) {
+				testCase.passed++
+			} else {
+				fail(_Error("Assertion:" + testCase.total + ": " + (message || (
+					op ? op +
+					"\nexpected: " + stringify(expected) +
+					"\nactual:   " + stringify(actual)
+					: stringify(value) + " is truthy"
+				))))
+			}
+			return testCase.plan(testCase.planned)
 		}
 		function fail(err) {
 			if (!err) err = "UnnamedError"
@@ -314,7 +308,7 @@
 			}
 			if (describe.result) printResult()
 		}
-		function endCase(err) {
+		function end(err) {
 			_clearTimeout(tick)
 			if (err) fail(err)
 			if (testCase.ended) return fail(_Error("ended multiple times"))
@@ -324,7 +318,7 @@
 				fail(_Error("planned " + testCase.planned + " actual " + testCase.total))
 			}
 			if (testCase.mock) {
-				testCase.name += testCase.mock.txt
+				testCase.n += testCase.mock.txt
 				testCase.mock.restore()
 			}
 
@@ -365,7 +359,7 @@
 		if (conf.status) _process.exitCode = conf.fail
 		if (failed) {
 			for (var nums = []; (testCase = failedCases[--failed]); ) {
-				nums[failed] = testCase.num
+				nums[failed] = testCase.i
 				print("---")
 				line("nok", testCase)
 				print(testCase.errors.join("\n"))
