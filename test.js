@@ -3,6 +3,7 @@
 
 !function(exports) {
 	var started, testSuite, timerType, inSuite
+	, tests = []
 	, _global = exports.window || global
 	, _process = _global.process || /* istanbul ignore next */ { exit: This }
 	, _setTimeout = setTimeout
@@ -10,8 +11,9 @@
 	, _Date = Date
 	, _Error = Error
 	, _isArray = Array.isArray
+	, _keys = Object.keys
+	, _slice = tests.slice
 	, lineRe = /{(\w+)}/g
-	, tests = []
 	, totalCases = 0
 	, failedCases = []
 	, totalAsserts = 0
@@ -79,7 +81,6 @@
 		// process.platform === 'win32' -> √×.
 		file: (_Error().stack + " /cli/test.js:").match(/\S+?:(?=[:\d)]*$)/m)[0],
 		global: "describe,it",
-		cut: 160,
 		head: "",
 		indent: "  ",
 		suite: "{1}", //➜✺✽❖❣❢•※⁕∅
@@ -95,12 +96,14 @@
 		yellow: "\x1b[33m",
 		reset: "\x1b[0m",
 		color: (_process.stdout || /* istanbul ignore next */ _process).isTTY,
-		seed: (Math.random() * 1e5)|0,
+		cut: 160,
 		delay: 1,
+		seed: (Math.random() * 1e5)|0,
+		stack: 4,
 		status: 1,
 		time: 1,
 		timeout: 999,
-		stack: 4
+		total: 0
 	}
 	, toStr = conf.toString
 	, hasOwn = conf.hasOwnProperty
@@ -108,7 +111,6 @@
 	, arg, argi = argv.length
 	/*** mockTime ***/
 	, fakeNow
-	, tmpDate = new _Date()
 	, timers = []
 	, timerId = 0
 	, fakeTimers = {
@@ -142,7 +144,7 @@
 				id: ++timerId,
 				repeat: repeat,
 				fn: fn,
-				args: timers.slice.call(arguments, 3),
+				args: _slice.call(arguments, 3),
 				at: fakeNow + ms,
 				ms: ms
 			}
@@ -158,7 +160,7 @@
 		fakeTimeout({
 			id: ++timerId,
 			fn: fn,
-			args: timers.slice.call(arguments, 1),
+			args: _slice.call(arguments, 1),
 			at: fakeNow - 1
 		})
 	}
@@ -172,14 +174,6 @@
 	}
 	/* mockTime end */
 
-	for (; argi--; ) {
-		arg = argv[argi].split(/=|--(no-)?/)
-		if (arg[0] === "") {
-			conf[arg[2]] = arg[4] || !arg[1]
-			argv.splice(argi, 1)
-		}
-	}
-
 	describe.describe = describe
 	describe.test = curry(def, 2)
 	describe.it = curry(def, 3)
@@ -188,6 +182,14 @@
 	describe.output = ""
 	describe.print = print
 	describe.stringify = stringify
+
+	for (; argi; ) {
+		arg = argv[--argi].split(/=|--(no-)?/)
+		if (arg[0] === "") {
+			conf[arg[2]] = arg[4] || !arg[1]
+			argv.splice(argi, 1)
+		}
+	}
 
 	if (conf.global) conf.global.split(",").map(function(key) {
 		_global[key] = describe[key]
@@ -346,8 +348,10 @@
 	}
 	function printResult() {
 		testSuite = null
-		var failed = failedCases.length
 		conf.total = totalCases
+		var testCase
+		, nums = []
+		, failed = failedCases.length
 		conf.fail = describe.failed += failed
 		conf.pass = totalCases - conf.fail
 		conf.skip = skipped
@@ -358,7 +362,7 @@
 		conf.timeStr = conf.time ? " in " + (_Date.now() - started) + " ms at " + started.toTimeString().slice(0, 8) : ""
 		if (conf.status) _process.exitCode = conf.fail
 		if (failed) {
-			for (var nums = []; (testCase = failedCases[--failed]); ) {
+			for (; (testCase = failedCases[--failed]); ) {
 				nums[failed] = testCase.i
 				print("---")
 				line("nok", testCase)
@@ -403,17 +407,18 @@
 	Mock.prototype = {
 		fn: function(origin) {
 			spy.called = 0
-			spy.errors = 0
 			spy.calls = []
+			spy.errors = 0
 			spy.results = []
 			return spy
 			function spy() {
 				var err, key, result = origin
-				, args = timers.slice.call(arguments)
+				, args = _slice.call(arguments)
 				if (isFn(origin)) {
 					try {
 						result = origin.apply(this, arguments)
 					} catch(e) {
+						spy.errors++
 						err = e
 					}
 				} else if (_isArray(origin)) {
@@ -423,7 +428,6 @@
 					result = hasOwn.call(origin, key) ? origin[key] : origin["*"]
 				}
 				spy.called++
-				if (err) spy.errors++
 				spy.results.push(result)
 				spy.calls.push({
 					scope: this,
@@ -467,8 +471,7 @@
 			this.tick(Infinity, true)
 		},
 		time: function(newTime, newZone) {
-			var key
-			, mock = this
+			var mock = this
 			if (!mock._time) {
 				mock._time = fakeNow = _Date.now()
 				mock.swap(_global, fakeTimers)
@@ -550,9 +553,9 @@
 				if (!_deepEqual(actual[len], expected[len], circ)) return false
 			}
 		} else {
-			aKeys = Object.keys(actual)
+			aKeys = _keys(actual)
 			len = aKeys.length
-			if (len !== Object.keys(expected).length) return false
+			if (len !== _keys(expected).length) return false
 			for (; len--; ) {
 				key = aKeys[len]
 				if (
@@ -596,7 +599,7 @@
 	}
 	function curry(fn, arg) {
 		return function() {
-			return fn.apply(null, [arg].concat(timers.slice.call(arguments)))
+			return fn.apply(null, [arg].concat(_slice.call(arguments)))
 		}
 	}
 
