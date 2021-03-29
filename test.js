@@ -570,7 +570,7 @@
 	function type(obj) {
 		// Standard clearly states that NaN is a number
 		// but this is not useful for testing.
-		return obj !== obj ? "nan" : toStr.call(obj).slice(8, -1).toLowerCase()
+		return obj !== obj ? "nan" : obj == null ? "" + obj : toStr.call(obj).slice(8, -1).toLowerCase()
 	}
 	function num(a, b) {
 		return type(a -= 0) === "number" ? a : b
@@ -616,7 +616,7 @@
 		, str =
 			t === "string" ? JSON.stringify(item) :
 			t === "function" ? ("" + item).replace(/^\w+|\s+|{[\s\S]*/g, "") :
-			(!item || t === "number" || t === "regexp" || item === true) ? "" + item :
+			(!item || item === true || t === "error" || t === "number" || t === "regexp") ? "" + item :
 			item.toJSON ? item.toJSON() :
 			item
 
@@ -633,11 +633,8 @@
 			str =
 			t === "array" ? "[" + tmp + "]" :
 			t === "arguments" ? t + "[" + tmp + "]" :
-			"{" + tmp + "}"
-
-			if (t === "object" && item.constructor !== Object) {
-				str = (item.constructor && item.constructor.name || "Null") + str
-			}
+			(t = item.constructor) === Object ? "{" + tmp + "}" :
+			(t ? t.name || /^\w+\s+([^\s(]+)|/.exec(t)[1] || "<anon>" : "<null>") + "{" + tmp + "}"
 		}
 
 		return str
