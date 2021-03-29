@@ -1,7 +1,9 @@
 
 describe
-.it("_should skip by name", function(assert) {
-	assert.ok(0)
+.it("should fail when no stack", function(assert) {
+	var a = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	assert.equal([a,a,a,a,a,a], a+a+a+a+a+a)
+	assert.end()
 })
 .it("should fail on timeout", function(assert) {
 	assert.setTimeout(1)
@@ -46,6 +48,22 @@ describe
 	var a = {}
 	Object.defineProperty(a, "prop", { value: "test", writable: false })
 	mock.swap(a, "prop", 1)
+	assert.end()
+})
+.it("should fail on fail", function(assert) {
+	assert.fail()
+	assert.end()
+})
+.it("should handle an error without a stack", function(assert) {
+	var err = Error("")
+	err.stack = null
+	assert.fail(err)
+	assert.end()
+})
+.it("should handle an array as a stack", function(assert) {
+	var err = Error("1")
+	err.stack = err.stack.split("\n")
+	assert.fail(err)
 	assert.end()
 })
 //.describe("_Invalid Suite", function() { SOME_UNDEFINED_VALIABLE })

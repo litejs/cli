@@ -58,11 +58,11 @@ describe("TestSuite 1 with scope", function() {
 .test("it should run second test 2.8", function(assert) {
 
 	assert.cmdSnapshot(
-		"node -r ./test.js test/test-fail.js --no-status --no-color --no-time --no-cut",
+		"node -r ./test.js test/test-fail.js --no-status --no-color --no-time --no-stack",
 		"./test/spec/test-fail"
 	)
 	assert.cmdSnapshot(
-		"node -r ./test.js test/test.js --no-status --color --no-time --no-cut 1",
+		"node -r ./test.js test/test-fail.js --no-status --color --no-time ---stack=0 --no-cut 1",
 		"./test/spec/test-first"
 	)
 	assert.cmdSnapshot(
@@ -76,7 +76,7 @@ describe("TestSuite 1 with scope", function() {
 	try {
 		require("child_process").execSync("node -r ./test.js test/test-fail.js")
 	} catch(e) {
-		assert.equal(e.status, 8)
+		assert.equal(e.status, 12)
 	}
 	assert.end()
 })

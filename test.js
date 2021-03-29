@@ -240,7 +240,7 @@
 		var tick
 		, args = tests[splicePos = runPos++]
 		if (!args) printResult()
-		else if (args[0] === 1) nextSuite(testSuite = args)
+		else if (args[0] === 1) nextSuite(args)
 		else {
 			testCase.i = ++totalCases
 			testCase.n = (args[0] < 3 ? "" : "it " + (args[0] < 4 ? "" : "should ")) + args[1]
@@ -277,26 +277,27 @@
 		function testCase(value, message, actual, op, expected) {
 			testCase.total++
 			if (testCase.ended) {
-				fail(_Error("assertion after end"))
+				fail("assertion after end")
 			}
 			if (value) {
 				testCase.passed++
 			} else {
-				fail(_Error("Assertion:" + testCase.total + ": " + (message || (
+				fail("Assertion:" + testCase.total + ": " + (message || (
 					op ? op +
 					"\nexpected: " + stringify(expected) +
 					"\nactual:   " + stringify(actual)
 					: stringify(value) + " is truthy"
-				))))
+				)))
 			}
 			return testCase.plan(testCase.planned)
 		}
-		function fail(err) {
-			if (!err) err = "UnnamedError"
-			var row, start, i = 0, stack = err.stack
+		function fail(_err) {
+			var row, start, i = 0
+			, err = type(_err) != "error" ? _Error(_err || "") : _err
+			, stack = err.stack
 			if (stack) {
 				// iotjs returns stack as Array
-				for (stack = _isArray(stack) ? /* istanbul ignore next */ stack : (stack + "").replace(err, "").split("\n"); (row = stack[++i]); ) {
+				for (stack = _isArray(stack) ? stack : (stack + "").replace(err, "").split("\n"); (row = stack[++i]); ) {
 					if (row.indexOf(conf.file) < 0) {
 						if (!start) start = i
 					}
@@ -313,11 +314,11 @@
 		function end(err) {
 			_clearTimeout(tick)
 			if (err) fail(err)
-			if (testCase.ended) return fail(_Error("ended multiple times"))
+			if (testCase.ended) return fail("ended multiple times")
 			testCase.ended = _Date.now()
 
 			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
-				fail(_Error("planned " + testCase.planned + " actual " + testCase.total))
+				fail("planned " + testCase.planned + " actual " + testCase.total)
 			}
 			if (testCase.mock) {
 				testCase.n += testCase.mock.txt

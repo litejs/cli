@@ -51,7 +51,7 @@ describe.it("should test types", function(assert, mock) {
 		//"function",  'stringify(item, maxLen)',       assert,
 		"function",  '()',                              function(){},
 		"function",  '()',                              function  ()  {  },
-		"function",  'kala(a,b)',                       function   kala( a , b )  {  },
+		"function",  'abc(de,f)',                       function   abc( de , f )  {  },
 		"string",    '""',                              ""
 	]
 	, equals = [

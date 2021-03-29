@@ -1,4 +1,15 @@
-  [32m✔[0m it should run first test 1.1 #1 [3/3][0m
-1..22
-#[32m[1m pass  22/22 [3/3][0m
-#[33m[1m skip  21[0m
+  [31m✘[0m it should fail when no stack #1 [0/1][0m
+---[0m
+  [31m✘[0m it should fail when no stack #1 [0/1][0m
+Error: Assertion:1: equal
+expected: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+actual:   ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
+    at Function.<anonymous> (test/test-fail.js:5:9)
+    at nextCase (test.js:271:13)
+    at nextSuite (test.js:348:3)
+    at Timeout.nextCase [as _onTimeout] (test.js:243:27)[0m
+...[0m
+#[31m[1m FAIL  tests 1[0m
+1..12
+# pass  11/12 [0/1][0m
+#[33m[1m skip  11[0m
