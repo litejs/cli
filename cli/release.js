@@ -58,13 +58,13 @@ module.exports = function(opts) {
 	run("update", "npm outdated", "there are outdated dependencies")
 	run("global", "npm outdated -g @litejs/cli " + (opts.global || "uglify-js jshint nyc"), "there are outdated global packages")
 
-	if (opts.name[0] || !opts.rewrite && com.version === cur.version) {
+	if (opts.args[0] || !opts.rewrite && com.version === cur.version) {
 		if (len > 3 || !(now[0] > junks[0] || now[1] > junks[1])) {
 			junks[len - 1] = parseInt(junks[len - 1], 10) + 1
 		} else {
 			junks = now
 		}
-		cur.version = opts.name[0] || junks.join(".")
+		cur.version = opts.args[0] || junks.join(".")
 		cli.writePackage(cur)
 	}
 	if (!opts.rewrite) run("tag", "! git rev-parse -q --verify v" + cur.version, "git tag exists?", "--rewrite")

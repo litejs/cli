@@ -23,7 +23,7 @@ var fs = require("fs")
 
 module.exports = function(opts) {
 	var tmp, undef
-	, dir = path.join(process.cwd(), opts.name[0] || "")
+	, dir = path.join(process.cwd(), opts.args[0] || "")
 	, stdio = {stdio: "inherit"}
 
 	cli.mkdirp(dir)

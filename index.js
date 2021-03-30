@@ -65,7 +65,7 @@ function getopts(argv, opts) {
 	}
 	arg = argv.shift()
 	opts.cmd = shortcut[arg] || arg
-	opts.name = argv
+	opts.args = argv
 }
 
 if (!module.parent) {
@@ -112,7 +112,7 @@ function execute(cmd, opts) {
 		}).on("close", function(code) { process.exitCode = code })
 		break;
 	case "help":
-		sub = shortcut[process.argv[3]] || process.argv[3]
+		sub = shortcut[opts.args[0]] || opts.args[0]
 		if (subHelp.indexOf(sub) > -1) {
 			helpFile = path.join(path.dirname(module.filename), "cli", sub + ".js")
 		}
@@ -123,12 +123,9 @@ function execute(cmd, opts) {
 }
 
 function command(name) {
-	var cmd = process.platform === "win32" ? "where " : "command -v "
 	try {
-		return !!child.execSync(cmd + name)
-	} catch (e) {
-		return false
-	}
+		return !!child.execSync((process.platform === "win32" ? "where " : "command -v ") + name)
+	} catch (e) {}
 }
 
 function cp(src, dest) {
