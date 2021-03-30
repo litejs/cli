@@ -1,12 +1,12 @@
-  [31m✘[0m it should fail when no stack #1 [0/1][0m
+  [31m✘[0m it should fail #1 [0/1][0m
 ---[0m
-  [31m✘[0m it should fail when no stack #1 [0/1][0m
+  [31m✘[0m it should fail #1 [0/1][0m
 Error: Assertion:1: equal
 expected: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 actual:   ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
-    at Function.<anonymous> (test/test-fail.js:5:9)
+    at Function.<anonymous> (test/test-fail.js:7:9)
     at nextCase (test.js:271:13)
-    at nextSuite (test.js:348:3)
+    at nextSuite (test.js:349:3)
     at Timeout.nextCase [as _onTimeout] (test.js:243:27)[0m
 ...[0m
 #[31m[1m FAIL  tests 1[0m

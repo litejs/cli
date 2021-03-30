@@ -16,7 +16,7 @@ describe.assert.cmdSnapshot = function(cmd, file) {
 }
 
 describe.assert.matchSnapshot = function(file, transform) {
-	var expected = ""
+	var expected
 	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform
 
 	try {
@@ -40,6 +40,7 @@ describe.assert.matchSnapshot = function(file, transform) {
 				"Snapshot diff failed, add --up to update snapshot\n---\n" + e.stderr
 			)
 		}
+		/* istanbul ignore next */
 		this.fail("No diff output")
 	}
 

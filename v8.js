@@ -16,35 +16,25 @@ var v8 = {
 		"MarkedForDeoptimization"
 	]
 }
-
-var assert = describe.assert
+, assert = describe.assert
 
 try {
 	// chrome --js-flags="--allow-natives-syntax" test.html
 	// node --allow-natives-syntax test.js
-	[ "GetOptimizationStatus", "HasFastProperties", "OptimizeFunctionOnNextCall"].map(function(name) {
-		v8[name] = describe.conf.v8 !== false && Function("fn", "return %" + name+ "(fn)")
+	describe.conf.v8 !== false && [ "GetOptimizationStatus", "HasFastProperties", "OptimizeFunctionOnNextCall"].map(function(name) {
+		v8[name] = Function("fn", "return %" + name+ "(fn)")
 	})
-	v8.isNative = true
 } catch(e) {}
 
-assert.isFast = !v8.HasFastProperties ? assert.skip : function isFast(obj, a, b, _stackStart) {
-	return this.ok(
-		v8.HasFastProperties(obj),
-		"Should have fast properties",
-		_stackStart || isFast
-	)
-}
+assert.isFast = v8.HasFastProperties ? function(obj) {
+	return this(v8.HasFastProperties(obj), "Should have fast properties")
+} : assert.skip
 
-assert.isNotFast = !v8.HasFastProperties ? assert.skip : function isNotFast(obj, a, b, _stackStart) {
-	return this.ok(
-		!v8.HasFastProperties(obj),
-		"Should not have fast properties",
-		_stackStart || isNotFast
-	)
-}
+assert.isNotFast = v8.HasFastProperties ? function(obj) {
+	return this(!v8.HasFastProperties(obj), "Should not have fast properties")
+} : assert.skip
 
-assert.isOptimized = !v8.GetOptimizationStatus ? assert.skip : function isOptimized(fn, args, scope, _stackStart) {
+assert.isOptimized = v8.GetOptimizationStatus ? function(fn, args, scope) {
 	fn.apply(scope, args)
 	fn.apply(scope, args)
 	v8.OptimizeFunctionOnNextCall(fn)
@@ -54,10 +44,9 @@ assert.isOptimized = !v8.GetOptimizationStatus ? assert.skip : function isOptimi
 		return status & (1<<i)
 	}).join(", ")
 
-	return this.ok(
-		(status & 16 || status & 32),
+	return this(
+		(status & 16 || /* istanbul ignore next */ status & 32),
 		"Status " + status + " = " + statusText
 	)
-}
-
+} : assert.skip
 

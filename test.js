@@ -310,6 +310,7 @@
 				failedCases.push(testCase)
 			}
 			if (describe.result) printResult()
+			return testCase
 		}
 		function end(err) {
 			_clearTimeout(tick)

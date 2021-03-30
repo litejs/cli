@@ -45,7 +45,8 @@ describe("cli", function() {
 })
 
 describe("Test", function() {
-	require("./assert.js")
 	require("./test.js")
+	require("./snapshot.js")
+	require("./v8.js")
 })
 
