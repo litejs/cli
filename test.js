@@ -253,7 +253,6 @@
 			}
 			Object.assign(testCase, assert)
 			testCase.end = end
-			testCase.fail = fail
 			testCase.ok = testCase
 			testCase.plan = function(planned) {
 				testCase.planned = planned

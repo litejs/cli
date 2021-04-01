@@ -10,7 +10,7 @@ describe.assert.cmdSnapshot = function(cmd, file) {
 	try {
 		actual = child.execSync(cmd).toString("utf8").replace(relPathRe, relPathFn)
 	} catch(e) {
-		return this.fail("Snapshot command failed: " + cmd + "\n---\n" + e.stdout.toString("utf8"))
+		return this(0, "Snapshot command failed: " + cmd + "\n---\n" + e.stdout.toString("utf8"))
 	}
 	return this.matchSnapshot(file, actual)
 }
@@ -35,13 +35,11 @@ describe.assert.matchSnapshot = function(file, transform) {
 				encoding: "utf8"
 			})
 		} catch(e) {
-			return this.fail(e.stdout ?
+			return this(0, e.stdout ?
 				"Snapshot " + file + "\n---\n" + e.stdout :
 				"Snapshot diff failed, add --up to update snapshot\n---\n" + e.stderr
 			)
 		}
-		/* istanbul ignore next */
-		this.fail("No diff output")
 	}
 
 	return this

@@ -68,22 +68,15 @@ it("should fail on read-only swap", function(assert, mock) {
 	assert.end()
 })
 
-it("should fail on fail", function(assert) {
-	assert.fail()
-	assert.end()
-})
-
 it("should handle an error without a stack", function(assert) {
 	var err = Error("")
 	err.stack = null
-	assert.fail(err)
-	assert.end()
+	assert.end(err)
 })
 
 it("should handle an array as a stack", function(assert) {
 	var err = Error("1")
 	err.stack = err.stack.split("\n")
-	assert.fail(err)
-	assert.end()
+	assert.end(err)
 })
 
