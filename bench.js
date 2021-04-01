@@ -4,13 +4,13 @@
 module.exports = bench
 bench.cpuSpeed = cpuSpeed
 
-function bench(tests, next) {
+function bench(tests, opts, next) {
 	var i
 	, keys = Object.keys(tests).reverse()
 	, len = keys.length
 	, times = []
-	, samples = 7
-	, warmupTime = 0|(2000/len)
+	, samples = opts.samples || /* istanbul ignore next */ 7
+	, warmupTime = 0|((opts.warmup || /* istanbul ignore next */ 2000)/len)
 
 	// warmup
 	for (i = len; i--; ) {
@@ -24,7 +24,7 @@ function bench(tests, next) {
 
 	function runSync() {
 		if (i-->0 || samples-->0 && (i = len - 1)) {
-			times[i][samples] = measure(tests[keys[i]], 500)
+			times[i][samples] = measure(tests[keys[i]], opts["sample-time"] || /* istanbul ignore next */ 500)
 			process.nextTick(runSync)
 		} else {
 			respond()

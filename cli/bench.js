@@ -11,62 +11,36 @@ var tmp
 , fs = require("fs")
 , path = require("path")
 , bench = require("../bench.js")
+, cli = require("..")
 
-
-exports.execute = execute
 global.requireGit = requireGit
 
-function execute(argv, i) {
-	var file = process.argv[i]
-	, mod = file && require(path.join(process.cwd(), file))
-
-	if (mod) {
-		run(mod, execute.bind(null, argv, i + 1))
-	}
+module.exports = function(opts) {
+	var files = cli.ls(opts.args)
+	if (!files[0]) return console.error("No files found: " + opts.args)
+	run(files, opts)
 }
 
-function run(mod, next) {
-	var i = 0
-	if (Array.isArray(mod)) {
-		loop()
-	} else {
-		var skip = []
-		, enabled = Object.keys(mod).reduce(function(map, name) {
-			if (name && name.charAt(0) !== "_") {
-				map[name] = mod[name]
-			} else {
-				skip.push(name)
-			}
-			return map
-		}, {})
-		console.log(
-			"---\nBench: %s%s\n---",
-			Object.keys(enabled).join(" vs "),
-			skip.length ? "\n Skip: " + skip.join(", ") : ""
-		)
-		bench(enabled, function(err, result) {
-			Object.keys(result).forEach(function(name) {
-				console.log(name + "\n  " + result[name].text + " ops/s, " + result[name].rel)
-			})
-			if (typeof next === "function") {
-				next()
-			}
+function run(files, opts) {
+	var file = files.shift()
+	, mod = file && require(path.join(process.cwd(), file))
+	if (!mod) return
+	console.log("---\nBench: %s\n---", file)
+	bench(mod, opts, function(err, result) {
+		Object.keys(result).forEach(function(name) {
+			console.log(name + "\n  " + result[name].text + " ops/s, " + result[name].rel)
 		})
-	}
-	function loop() {
-		var cur = mod[i++]
-		if (cur) run(cur, loop)
-		else if (typeof next === "function") next()
-	}
+		run(files, opts)
+	})
 }
 
 function requireGit(id) {
 	if (!tmp) {
-		tmp = fs.mkdtempSync(
-			path.join(require("os").tmpdir(), "bench-")
-		)
+		tmp = fs.mkdtempSync(path.join(require("os").tmpdir(), "bench-"))
 		console.log("mkdtemp", tmp)
-		process.on("exit", cleanup)
+		process.on("exit", function() {
+			cli.rmrf(tmp)
+		})
 	}
 
 	id = id.replace(/:(.*)/, function(_, file) {
@@ -80,7 +54,4 @@ function requireGit(id) {
 	return require(cleared)
 }
 
-function cleanup() {
-	module.parent.exports.rmrf(tmp)
-}
 
