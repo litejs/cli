@@ -44,6 +44,7 @@ function bench(tests, next) {
 			diff = Math.round((fastest - t.ops) / fastest * 100)
 			t.rel = diff ? diff + "% slower" : "fastest"
 		}
+		/* istanbul ignore else */
 		if (typeof next === "function") {
 			next(null, result)
 		}
@@ -51,19 +52,17 @@ function bench(tests, next) {
 }
 
 function measure(fn, time, next) {
-	var i
-	, calls = 0
-	, end = Date.now() + time
-	, hr = process.hrtime()
-
-	for (; true; ) {
+	var i, hr
+	, count = 0
+	, ms = 0
+	for (; ms < time; ) {
+		count++
+		hr = process.hrtime()
 		for (i = 1000; i--; ) fn()
-		calls++
-		if (Date.now() > end) {
-			hr = process.hrtime(hr)
-			return 1000 * calls / (hr[0] + hr[1]/1e9)
-		}
+		hr = process.hrtime(hr)
+		ms += hr[0]*1e3 + hr[1]/1e6
 	}
+	return 1e6 * count / ms
 }
 
 function stat(arr) {
