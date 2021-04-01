@@ -268,7 +268,8 @@
 
 			try {
 				testCase.setTimeout(conf.timeout)
-				args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
+				args = args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
+				if (args && args.then) args.then(curry(end, null), end)
 			} catch (e) {
 				console.log(e)
 				end(e)
@@ -293,7 +294,7 @@
 		}
 		function fail(_err) {
 			var row, start, i = 0
-			, err = type(_err) != "error" ? _Error(_err || "") : _err
+			, err = type(_err) != "error" ? _Error(_err) : _err
 			, stack = err.stack
 			if (stack) {
 				// iotjs returns stack as Array

@@ -29,6 +29,14 @@ it("should fail on assertion after end", function(assert) {
 	assert.ok(1)
 })
 
+it("should pass on promise resolve", function(assert) {
+	return Promise.resolve("Resolve").then(assert)
+})
+
+it("should fail on promise reject", function(assert) {
+	return Promise.reject(Error("Reject"))
+})
+
 it("should fail on invalid test", function(assert) {
 	SOME_UNDEFINED_VALIABLE
 	assert.end()
