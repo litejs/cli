@@ -22,7 +22,6 @@ var fs = require("fs")
 , cli = Object.assign(exports, require("./package.json"), {
 	command: command,
 	cp: cp,
-	execute: execute,
 	hold: hold,
 	ls: ls,
 	mkdirp: mkdirp,
@@ -32,11 +31,13 @@ var fs = require("fs")
 	writeFile: writeFile,
 	writePackage: writePackage
 })
-, opts = {
+, defaults = {
+	"bench": "./test/bench/*.js",
+	"build": "--out=ui/index.html ui/dev.html",
+	"launch": "node",
 	"template": "default",
-	"build": [
-		"-i ui/dev.html -o ui/index.html"
-	]
+	"test": "./test/index.js",
+	"threads": 0
 }
 , shortcut = {
 	b: "build",
@@ -44,10 +45,19 @@ var fs = require("fs")
 	r: "release",
 	t: "test"
 }
-, hasOwn = opts.hasOwnProperty
+, commands = {
+	build: 1,
+	init: 1,
+	bench: 1,
+	release: 1,
+	test: 1
+}
+, hasOwn = commands.hasOwnProperty
+, intArgs = /^(samples|sample-time|warmup)$/
+, nodeArgs = /^(allow-natives-syntax)$/
 
 try {
-	Object.assign(opts, require(path.resolve("./package.json")).litejs)
+	Object.assign(defaults, require(path.resolve("./package.json")).litejs)
 } catch(e) {}
 
 
@@ -55,65 +65,56 @@ Array.prototype.pushUniq = function(item) {
 	return this.indexOf(item) < 0 && this.push(item)
 }
 
-function getopts(argv, opts) {
-	for (var arg, i = argv.length; i--; ) {
-		arg = argv[i].split(/^--(no-)?|=/)
+function getopts(str) {
+	var argv = process.argv.slice(2)
+	, opts = Object.assign({}, defaults, {args: argv, opts: [], nodeArgs: []})
+	if (str) argv.push.apply(argv, str.split(/\s+/))
+	for (var arg, i = argv.length; i; ) {
+		arg = argv[--i].split(/^--(no-)?|=/)
 		if (arg[0] === "") {
-			opts[arg[2]] = arg[4] || !arg[1]
+			opts[nodeArgs.test(arg[2]) ? "nodeArgs" : "opts"].push(argv[i])
+			opts[arg[2]] = intArgs.test(opts[arg[2]]) ? 0|(arg[4] || !arg[1]) : arg[4] || !arg[1]
 			argv.splice(i, 1)
 		}
 	}
-	arg = argv.shift()
-	opts.cmd = shortcut[arg] || arg
-	opts.args = argv
+	opts.cmd = argv.shift()
+	return opts
 }
 
 if (!module.parent) {
-	getopts(process.argv.slice(2), opts)
-	if (opts.version) console.log("%s v%s", cli.name, cli.version)
-	execute(opts.cmd, opts)
+	execute()
 }
 
-function execute(cmd, opts) {
+function execute(str) {
 	var sub
+	, opts = getopts(str)
+	, cmd = shortcut[opts.cmd] || opts.cmd
 	, helpFile = module.filename
-	, subHelp = [
-		"bench",
-		"build",
-		"release"
-	]
+
+	if (opts.version) console.log("%s v%s", cli.name, cli.version)
 
 	if (!opts.version || cmd) switch (cmd) {
 	case "bench":
 	case "build":
-		require("./cli/" + cmd).execute(process.argv, 3)
-		break;
-	case "lint":
-		if (opts.lint) try {
-			child.execSync(opts.lint, { stdio: "inherit" })
-		} catch (e) {
-			return console.log("\nfatal: code does not comply to rules! Ignore with --no-lint option.")
+	case "test":
+		if (opts.args.length < 1 && opts[cmd] && !str) {
+			return (Array.isArray(opts[cmd]) ? opts[cmd] : [opts[cmd]]).forEach(execute)
 		}
-		break;
+		/* falls through */
 	case "init":
 	case "release":
 		require("./cli/" + cmd)(opts)
 		break;
-	case "test":
-		sub = [ "-r", path.resolve(module.filename, "../test.js") ].concat(
-			opts.test || "test",
-			process.argv.slice(3)
-		)
-		child.spawn(process.argv[0], sub, {
-			env: {
-				NODE_PATH: process.argv[1].replace(/bin\/\w+$/, "lib/node_modules/")
-			},
-			stdio: "inherit"
-		}).on("close", function(code) { process.exitCode = code })
+	case "lint":
+		if (opts[cmd]) try {
+			child.execSync(opts[cmd], { stdio: "inherit" })
+		} catch (e) {
+			return console.error("\n%s\nIgnore with --no-%s option.", e.message, cmd)
+		}
 		break;
 	case "help":
 		sub = shortcut[opts.args[0]] || opts.args[0]
-		if (subHelp.indexOf(sub) > -1) {
+		if (hasOwn.call(commands, sub)) {
 			helpFile = path.join(path.dirname(module.filename), "cli", sub + ".js")
 		}
 		/* falls through */
@@ -140,14 +141,20 @@ function cp(src, dest) {
 	}
 }
 
+function flat(arr) {
+	var out = []
+	return out.concat.apply(out, arr)
+}
+
 function ls() {
 	var key, dirRe, outRe, tmp, tmp2
-	, i = arguments.length
+	, arr = flat(arguments)
+	, i = arr.length
 	, out = []
 	, paths = {}
 	, reEscRe = /[*.+^=:${}()|\/\\]/g
 	for (; i > 0; ) {
-		key = arguments[--i]
+		key = arr[--i]
 		if (typeof key !== "string") continue
 		tmp = path.resolve(tmp2 = key.replace(/[^\/]*\*.*/, ""))
 		tmp = paths[tmp] || (paths[tmp] = [])
@@ -167,14 +174,14 @@ function ls() {
 	function scan(name) {
 		if (outRe.test(name)) {
 			out.push(path.relative(process.cwd(), name))
-		} else if (dirRe.test(name)) {
+		} else if (dirRe.test(name)) try {
 			var stat = fs.statSync(name)
 			if (stat.isDirectory()) {
 				fs.readdirSync(name).forEach(function(file) {
 					scan(path.resolve(name, file))
 				})
 			}
-		}
+		} catch(e) {}
 	}
 	function dirname(s) {
 		return s.indexOf("/") > -1 && path.dirname(s)
@@ -208,6 +215,7 @@ function readFile(fileName) {
 
 function rmrf(dir) {
 	try {
+		if (dir === "/") throw Error("can not remove root")
 		if (fs.lstatSync(dir).isDirectory()) {
 			for (var arr = fs.readdirSync(dir), i = arr.length; i--; ) {
 				rmrf(path.join(dir, arr[i]))

@@ -107,7 +107,7 @@
 	}
 	, toStr = conf.toString
 	, hasOwn = conf.hasOwnProperty
-	, argv = describe.argv = _process.argv && _process.argv.slice(2) || /* istanbul ignore next */ []
+	, argv = _process.argv && _process.argv.slice(2) || /* istanbul ignore next */ []
 	, arg, argi = argv.length
 	/*** mockTime ***/
 	, fakeNow

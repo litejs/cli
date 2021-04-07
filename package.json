@@ -31,10 +31,7 @@
   },
   "litejs": {
     "lint": "jshint *.js cli/*.js",
-    "test": [
-      "--allow-natives-syntax",
-      "test/index.js"
-    ]
+    "test": "--allow-natives-syntax test/index.js"
   },
   "jshintConfig": {
     "asi": true,

@@ -17,7 +17,7 @@ describe.assert.cmdSnapshot = function(cmd, file) {
 
 describe.assert.matchSnapshot = function(file, transform) {
 	var expected
-	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform
+	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform || cli.readFile(file)
 
 	try {
 		expected = cli.readFile(file + ".snap").replace(relPathRe, relPathFn)
