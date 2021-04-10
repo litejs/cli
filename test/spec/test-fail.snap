@@ -5,48 +5,40 @@ Unnamed TestSuite
   ✔ it should fail on wrong plan 2 #4 [1/1]
   ✔ it should fail on multiple ends #5 [0/0]
   ✔ it should fail on assertion after end #6 [0/0]
+  ✔ it should pass on promise resolve #7 [1/1]
+  ✘ it should fail on promise reject #8 [0/0]
 ReferenceError: SOME_UNDEFINED_VALIABLE is not defined
-    at Function.<anonymous> (test/test-fail.js:33:2)
-    at nextCase (test.js:271:13)
-    at Function.end (test.js:333:23)
-    at Function.<anonymous> (test/test-fail.js:28:9)
-    at nextCase (test.js:271:13)
-    at Function.end (test.js:333:23)
-    at Function.<anonymous> (test/test-fail.js:24:9)
-    at nextCase (test.js:271:13)
+    at Function.<anonymous> (test/test-fail.js:41:2)
+    at nextCase (test.js:270:20)
     at end (test.js:333:23)
-    at Function.testCase.plan (test.js:260:36)
-  ✘ it should fail on invalid test #7 [0/0]
-  ✘ it should fail on invalid assertions #8 [0/7]
+    at processTicksAndRejections (internal/process/task_queues.js:97:5)
+  ✘ it should fail on invalid test #9 [0/0]
+  ✘ it should fail on invalid assertions #10 [0/7]
 Error: Unable to swap "prop"
     at Mock.swap (test.js:461:45)
-    at Function.<anonymous> (test/test-fail.js:59:7)
-    at nextCase (test.js:271:13)
+    at Function.<anonymous> (test/test-fail.js:67:7)
+    at nextCase (test.js:270:20)
     at Function.end (test.js:333:23)
-    at Function.<anonymous> (test/test-fail.js:53:3)
-    at nextCase (test.js:271:13)
+    at Function.<anonymous> (test/test-fail.js:61:3)
+    at nextCase (test.js:270:20)
     at end (test.js:333:23)
     at nextCase (test.js:274:5)
-    at Function.end (test.js:333:23)
-    at Function.<anonymous> (test/test-fail.js:28:9)
-  ✘ it should fail on read-only swap #9 [0/0]
-  ✘ it should fail on fail #10 [0/0]
-  ✘ it should handle an error without a stack #11 [0/0]
-  ✘ it should handle an array as a stack #12 [0/0]
+    at end (test.js:333:23)
+    at processTicksAndRejections (internal/process/task_queues.js:97:5)
+  ✘ it should fail on read-only swap #11 [0/0]
+  ✘ it should handle an error without a stack #12 [0/0]
+  ✘ it should handle an array as a stack #13 [0/0]
 ---
-  ✘ it should handle an array as a stack #12 [0/0]
+  ✘ it should handle an array as a stack #13 [0/0]
 Error: 1
 ---
-  ✘ it should handle an error without a stack #11 [0/0]
+  ✘ it should handle an error without a stack #12 [0/0]
 Error
 ---
-  ✘ it should fail on fail #10 [0/0]
-Error
----
-  ✘ it should fail on read-only swap #9 [0/0]
+  ✘ it should fail on read-only swap #11 [0/0]
 Error: Unable to swap "prop"
 ---
-  ✘ it should fail on invalid assertions #8 [0/7]
+  ✘ it should fail on invalid assertions #10 [0/7]
 Error: Assertion:1: equal
 expected: undefined
 actual:   undefined
@@ -65,8 +57,18 @@ actual:   [/1/,B{},<null>{"a":Circular,"toJSON":()}]
 Error: Assertion:6: 0 is truthy
 Error: Assertion:7: throws
 ---
-  ✘ it should fail on invalid test #7 [0/0]
+  ✘ it should fail on invalid test #9 [0/0]
 ReferenceError: SOME_UNDEFINED_VALIABLE is not defined
+---
+  ✘ it should fail on promise reject #8 [0/0]
+Error: Reject
+---
+  ✘ it should fail on wrong plan 2 #4 [2/2]
+Error: assertion after end
+Error: ended multiple times
+---
+  ✘ it should fail on assertion after end #6 [1/1]
+Error: assertion after end
 ---
   ✘ it should fail on wrong plan 1 #3 [0/0]
 Error: planned 1 actual 0
@@ -79,29 +81,13 @@ Error: Assertion:1: equal
 expected: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.."
 actual:   ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaa..]
 ...
-# FAIL  tests 1, 2, 3, 7, 8, 9, 10, 11, 12
-1..12
-# pass  3/12 [1/9]
----
-  ✘ it should fail on assertion after end #6 [0/1]
-Error: assertion after end
-...
-# FAIL  tests 6
-1..12
-# pass  2/12 [1/9]
----
-  ✘ it should fail on wrong plan 2 #4 [1/2]
-Error: assertion after end
-...
-# FAIL  tests 4
-1..12
-# pass  1/12 [1/9]
-1..12
-# pass  1/12 [1/9]
+# FAIL  tests 1, 2, 3, 6, 4, 8, 9, 10, 11, 12, 13
+1..13
+# pass  2/13 [2/10]
 ---
   ✘ it should fail on multiple ends #5 [0/0]
 Error: ended multiple times
 ...
 # FAIL  tests 5
-1..12
-# pass  0/12 [1/9]
+1..13
+# pass  1/13 [2/10]

@@ -69,11 +69,7 @@ module.exports = function(opts) {
 	}
 	if (!opts.rewrite) run("tag", "! git rev-parse -q --verify v" + cur.version, "git tag exists?", "--rewrite")
 
-	run("build", "lj b;git add -u", "build failed")
-	if (opts.build !== false) {
-		// TODO:2019-12-21:lauri:Build three times till hash calculation is fixed in build
-		child.execSync("lj b;git add -u;lj b", { stdio: "ignore" })
-	}
+	run("build", "lj b", "build failed")
 
 	run("test", "lj test --brief", "tests failed")
 

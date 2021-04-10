@@ -61,10 +61,6 @@ try {
 } catch(e) {}
 
 
-Array.prototype.pushUniq = function(item) {
-	return this.indexOf(item) < 0 && this.push(item)
-}
-
 function getopts(str) {
 	var argv = process.argv.slice(2)
 	, opts = Object.assign({}, defaults, {args: argv, opts: [], nodeArgs: []})
