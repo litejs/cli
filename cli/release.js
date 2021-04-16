@@ -14,7 +14,7 @@
 //-    --no-test       Do not execute tests
 //-    --no-update     Ignore outdated dependencies
 //-    --no-upstream   Ignore new commits on upstream
-//-    --rewrite       Rewrite current tag
+//-    --rewrite       Rewrite last tag
 //-
 //-  Examples
 //-    lj r --no-install
@@ -33,16 +33,14 @@ module.exports = function(opts) {
 	, com = JSON.parse(child.execSync("git show HEAD:package.json").toString("utf8"))
 	, junks = com.version.split(".")
 	, len = junks.length
-	, lastTag = child.execSync("git describe --tags --abbrev=0 2>/dev/null||git rev-list --max-parents=0 HEAD").toString("utf8").trim()
+	, lastTag = child.execSync("git describe --tags --abbrev=0 2>/dev/null||echo 0.0.0").toString("utf8").trim()
 	, group = [
-		{ name: "New Features",      re: /add\b/i, log: [] },
-		{ name: "Removed Features",  re: /remove\b/i, log: [] },
-		{ name: "API Changes",       re: /api\b/i, log: [] },
-		{ name: "Breaking Changes",  re: /breake\b/i,
-			log: child.spawnSync("git", [
-				"log", "-z", "--grep", "break", "-i", lastTag + "..@"
-			], {stdio: ["ignore", "pipe", "inherit"]})
-			.stdout.toString("utf8").split("\0").filter(Boolean)
+		{ name: "New Features",      re: /\badd\b/i, log: [] },
+		{ name: "Removed Features",  re: /\b(remove|drop)\b/i, log: [] },
+		{ name: "API Changes",       re: /\bapi\b/i, log: [] },
+		{ name: "Breaking Changes",  re: /\bbreak[ei]/i,
+			log: child.execSync("git log -z --grep break -i " + lastTag + "..@")
+			.toString("utf8").split("\0").filter(Boolean)
 		},
 		{ name: "Fixes",             re: /fix\b/i, log: [] },
 		{ name: "Enhancements",      re: null, log: [] }
@@ -67,25 +65,30 @@ module.exports = function(opts) {
 		cur.version = opts.args[0] || junks.join(".")
 		cli.writePackage(cur)
 	}
-	if (!opts.rewrite) run("tag", "! git rev-parse -q --verify v" + cur.version, "git tag exists?", "--rewrite")
+	if (opts.rewrite) {
+		child.execSync("git rebase --onto " + lastTag + "~1 " + lastTag + ";git cherry-pick " + lastTag)
+		lastTag = child.execSync("git describe --tags --abbrev=0 HEAD~1 2>/dev/null||echo 0.0.0").toString("utf8").trim()
+	} else run("tag", "! git rev-parse -q --verify v" + cur.version, "git tag exists?", "--rewrite")
 
 	run("build", "lj b", "build failed")
 
 	run("test", "lj test --brief", "tests failed")
 
-	child.execSync("git log --pretty='format:%s (%aN)' " + lastTag + "..HEAD")
+	child.spawnSync("git", [
+		"commit", "-a", "-m", "Release " + cur.version + "\n" + msg,
+		(opts.rewrite ? "--amend" : "--")], { stdio: "inherit" })
+
+	msg = "# All commits:\n"
+	child.execSync("git log --pretty='format:%s (%aN)' " + lastTag + "..HEAD" + (opts.rewrite ? "~1" : ""))
 	.toString("utf8").split("\n").forEach(function(row) {
+		msg += "# - " + row + "\n"
 		for (var g, i = 0; (g = group[i++]); ) {
 			if (!g.re || g.re.test(row)) return g.log.push(row)
 		}
 	})
 
-	child.spawnSync("git", [
-		"commit", "-a", "-m", "Release " + cur.version + "\n" + msg,
-		(opts.rewrite ? "--amend" : "--")], { stdio: "inherit" })
-
-	msg = ""
-	for (i = 0; (g = group[i++]); ) {
+	if (opts.rewrite) msg += child.execSync("git tag -l --format='%(contents)' v" + cur.version).toString("utf8")
+	else for (i = 0; (g = group[i++]); ) {
 		if (g.log.length) {
 			msg += g.name + ":\n\n - " + g.log.join("\n - ") + "\n\n"
 		} else {
