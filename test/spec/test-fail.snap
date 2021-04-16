@@ -15,7 +15,7 @@ ReferenceError: SOME_UNDEFINED_VALIABLE is not defined
   ✘ it should fail on invalid test #9 [0/0]
   ✘ it should fail on invalid assertions #10 [0/7]
 Error: Unable to swap "prop"
-    at Mock.swap (test.js:461:45)
+    at Mock.swap (test.js:460:45)
     at Function.<anonymous> (test/test-fail.js:67:7)
     at nextCase (test.js:270:20)
     at Function.end (test.js:333:23)

@@ -399,7 +399,6 @@
 		return str
 	}
 
-
 	//  A spy is a wrapper function to verify an invocation
 	//  A stub is a spy with replaced behavior
 	function Mock() {
@@ -414,7 +413,7 @@
 			spy.results = []
 			return spy
 			function spy() {
-				var err, key, result = origin
+				var err, key, result
 				, args = _slice.call(arguments)
 				if (isFn(origin)) {
 					try {
@@ -428,7 +427,7 @@
 				} else if (isObj(origin)) {
 					key = JSON.stringify(args).slice(1, -1)
 					result = hasOwn.call(origin, key) ? origin[key] : origin["*"]
-				}
+				} else result = origin
 				spy.called++
 				spy.results.push(result)
 				spy.calls.push({
@@ -638,7 +637,6 @@
 			(t = item.constructor) === Object ? "{" + tmp + "}" :
 			(t ? t.name || /^\w+\s+([^\s(]+)|/.exec(t)[1] || "<anon>" : "<null>") + "{" + tmp + "}"
 		}
-
 		return str
 	}
 }(this) // jshint ignore:line
