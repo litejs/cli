@@ -270,7 +270,7 @@
 				args = args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
 				if (args && args.then) args.then(curry(end, null), end)
 			} catch (e) {
-				console.log(e)
+				print(e)
 				end(e)
 			}
 		}
@@ -395,7 +395,7 @@
 		if (testSuite && testSuite.indent) str = testSuite.indent + str.split("\n").join("\n" + testSuite.indent)
 		describe.output += str + "\n"
 		if (describe.onprint) describe.onprint(str)
-		if (console.log) console.log(str + conf.reset)
+		if (_global.console && console.log) console.log(str + conf.reset)
 		return str
 	}
 
