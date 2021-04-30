@@ -193,7 +193,7 @@ function html(opts) {
 	readHashes(opts._o)
 
 	Object.keys(hashMap).forEach(function(file) {
-		if (!fileHashes[file]) return console.log("WARN: %s not commited?", file)
+		if (!fileHashes[file]) console.log("WARN: %s not commited?", file)
 		var attrs = hashMap[file]
 		, res = JSON.stringify(rep(attrs._m || attrs._s, {h:fileHashes[file]})).replace(/="([-.:\w]+)"/g, "=$1")
 		out[attrs._l] = out[attrs._l].replace(/\b(src|href)=[^ >]+/, "$1=" + res)
