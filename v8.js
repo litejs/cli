@@ -21,7 +21,7 @@ var v8 = {
 try {
 	// chrome --js-flags="--allow-natives-syntax" test.html
 	// node --allow-natives-syntax test.js
-	describe.conf.v8 !== false && [ "GetOptimizationStatus", "HasFastProperties", "OptimizeFunctionOnNextCall"].map(function(name) {
+	if (describe.conf.v8 !== false) [ "GetOptimizationStatus", "HasFastProperties", "OptimizeFunctionOnNextCall"].map(function(name) {
 		v8[name] = Function("fn", "return %" + name+ "(fn)")
 	})
 } catch(e) {}

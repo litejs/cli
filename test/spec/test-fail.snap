@@ -8,23 +8,9 @@ Unnamed TestSuite
   ✔ it should pass on promise resolve #7 [1/1]
   ✘ it should fail on promise reject #8 [0/0]
 ReferenceError: SOME_UNDEFINED_VALIABLE is not defined
-    at Function.<anonymous> (test/test-fail.js:41:2)
-    at nextCase (test.js:270:20)
-    at end (test.js:333:23)
-    at processTicksAndRejections (internal/process/task_queues.js:97:5)
   ✘ it should fail on invalid test #9 [0/0]
   ✘ it should fail on invalid assertions #10 [0/7]
 Error: Unable to swap "prop"
-    at Mock.swap (test.js:460:45)
-    at Function.<anonymous> (test/test-fail.js:67:7)
-    at nextCase (test.js:270:20)
-    at Function.end (test.js:333:23)
-    at Function.<anonymous> (test/test-fail.js:61:3)
-    at nextCase (test.js:270:20)
-    at end (test.js:333:23)
-    at nextCase (test.js:274:5)
-    at end (test.js:333:23)
-    at processTicksAndRejections (internal/process/task_queues.js:97:5)
   ✘ it should fail on read-only swap #11 [0/0]
   ✘ it should handle an error without a stack #12 [0/0]
   ✘ it should handle an array as a stack #13 [0/0]

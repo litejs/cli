@@ -569,6 +569,7 @@
 	}
 
 	function type(obj) {
+		/* jshint -W041 */
 		// Standard clearly states that NaN is a number
 		// but this is not useful for testing.
 		return obj !== obj ? "nan" : obj == null ? "" + obj : toStr.call(obj).slice(8, -1).toLowerCase()

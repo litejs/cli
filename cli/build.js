@@ -39,7 +39,7 @@ var key
 }
 , commands = {
 	css: cssMin,
-	js: "uglifyjs --warn --ie8 -c 'evaluate=false,properties=false' -m eval --comments '/^\s*[@!]/' --beautify 'beautify=false,semicolons=false,keep_quoted_props=true'",
+	js: "uglifyjs --warn --ie8 -c 'evaluate=false,properties=false' -m eval --comments '/^\\s*[@!]/' --beautify 'beautify=false,semicolons=false,keep_quoted_props=true'",
 	//js: "uglifyjs",
 	json: function(attrs) {
 		return JSON.stringify(JSON.parse(attrs._j))
@@ -116,7 +116,7 @@ function html(opts) {
 				for (; (attr = tagRe.exec(opts._j)) && attr[3] !== "/" + match[3]; attrs._j += attr[0]);
 			}
 			if (attrs.exclude === "") continue
-			if (attr = attrs._s = attrs.src || attrs.href) {
+			if ((attr = attrs._s = attrs.src || attrs.href)) {
 				if (attr.indexOf("{") > -1) hashMap[opts._o + attr.split("?")[0]] = attrs
 				attr = opts._i + attr.split("?")[0]
 				ext = attr.split(".").pop()
@@ -175,7 +175,7 @@ function html(opts) {
 		)
 		if (attr !== "") out.push(attr)
 	}
-	for (attr = 0; attrs = minList[attr++]; ) {
+	for (attr = 0; (attrs = minList[attr++]); ) {
 		if (attrs.drop) attrs._j = drop(attrs)
 		if (opts.readme !== false) attrs._j = format(attrs._j)
 		if (attrs.type === "build") {
@@ -202,7 +202,7 @@ function html(opts) {
 	loadFiles = "" + loadFiles.map(function(attrs) {
 		return (attrs.if ? "(" + attrs.if + ")&&" : "") + JSON.stringify(rep(attrs._m, {h:fileHashes[opts._o + attrs._m.split("?")[0]]}))
 	})
-	for (attr = 0; attrs = minList[attr++]; ) {
+	for (attr = 0; (attrs = minList[attr++]); ) {
 		if (attrs.inline === "") {
 			attrs._j = attrs._j.replace(/\/[*\/]!{loadFiles}[*\/]*/, loadFiles).trim()
 			if (typeof attrs._m === "string") attrs._j = run(attrs)

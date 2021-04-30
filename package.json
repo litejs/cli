@@ -30,6 +30,8 @@
     "test-trace": "node --allow-natives-syntax --trace_opt --trace_deopt -- test/_all.js"
   },
   "litejs": {
+    "build": false,
+    "install": false,
     "lint": "jshint *.js cli/*.js",
     "test": "--allow-natives-syntax test/index.js"
   },
