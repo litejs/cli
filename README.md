@@ -1,32 +1,32 @@
-[LiteJS]: https://www.litejs.com/
-[npm package]: https://npmjs.org/package/@litejs/cli
-[GitHub repo]: https://github.com/litejs/cli
-[LiteJS wiki]: https://github.com/litejs/litejs/wiki
+[LiteJS]: https://github.com/litejs/litejs
+[Quick-Start]: https://github.com/litejs/litejs/wiki/Quick-Start
 
 [size]: https://packagephobia.now.sh/badge?p=@litejs/cli
 [size-src]: https://packagephobia.now.sh/result?p=@litejs/cli
+[wiki]: https://github.com/litejs/cli/wiki
+
 
 LiteJS CLI &ndash; [![size][size]][size-src]
 ==========
 
-Command line tools for LiteJS full-stack framework.
+Command line tools for [LiteJS][] full-stack framework.
 
 
 ## Get Started
 
-Build your first LiteJS app with in 5 minute [Quick Start Guide](https://github.com/litejs/litejs/wiki/Quick-Start).
-See [LiteJS wiki][] for more.
+Build your first [LiteJS][] app with in 5 minute [Quick Start Guide][Quick-Start].
+See [wiki][] for more.
 
 
 ## External links
 
-[GitHub repo][] |
-[npm package][]
+[GitHub repo](https://github.com/litejs/cli) |
+[npm package](https://npmjs.org/package/@litejs/cli)
 
 
 ## Licence
 
-Copyright (c) 2013-2020 Lauri Rooden &lt;lauri@rooden.ee&gt;  
+Copyright (c) 2013-2021 Lauri Rooden &lt;lauri@rooden.ee&gt;  
 [The MIT License](http://lauri.rooden.ee/mit-license.txt)
 
 

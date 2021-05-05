@@ -40,7 +40,7 @@ var key
 , commands = {
 	css: cssMin,
 	js: "uglifyjs --warn --ie8 -c 'evaluate=false,properties=false' -m eval --comments '/^\\s*[@!]/' --beautify 'beautify=false,semicolons=false,keep_quoted_props=true'",
-	//js: "uglifyjs",
+	//esbuild --minify --target=es5 load.js
 	json: function(attrs) {
 		return JSON.stringify(JSON.parse(attrs._j))
 	},
