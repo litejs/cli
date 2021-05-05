@@ -485,13 +485,11 @@
 			fakeDate._z = newZone
 		},
 		tick: function(amount, noRepeat) {
-			if (type(amount) === "number") {
-				fakeNow += amount
-			} else if (timers[0]) {
-				fakeNow = timers[0].at
-			}
+			var t
+			, nextNow = type(amount) === "number" ? fakeNow + amount : timers[0] ? timers[0].at : fakeNow
 
-			for (var t; (t = timers[0]) && t.at <= fakeNow; ) {
+			for (; (t = timers[0]) && t.at <= nextNow; ) {
+				fakeNow = t.at
 				timers.shift()
 				if (type(t.fn) === "string") t.fn = Function(t.fn)
 				if (isFn(t.fn)) t.fn.apply(null, t.args)
@@ -500,6 +498,7 @@
 					fakeTimeout(t)
 				}
 			}
+			fakeNow = nextNow
 		/* mockTime end */
 		}
 	}
