@@ -83,7 +83,8 @@ module.exports = function(opts) {
 	if (opts.readme !== false) {
 		output = format(output)
 	}
-	cli.writeFile(out, output)
+	if (opts.out) cli.writeFile(out, output)
+	else process.stdout.write(output)
 
 	if (opts.worker) {
 		updateWorker(opts.worker, attrs, {})
