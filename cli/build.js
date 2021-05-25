@@ -93,7 +93,7 @@ module.exports = function(opts) {
 }
 
 function html(opts) {
-	var attr, attrs, arr, ext
+	var attr, attrs, arr, ext, tag
 	, min = {}
 	, tagRe = /<(!--([\s\S]*?)--|!\[[\s\S]*?\]|[?!][\s\S]*?|((\/|)[^\s\/>]+)([^>]*?)\/?)>|[^<]+/g
 	, attrRe = /\b([-.:\w]+)\b(?:\s*=\s*(?:("|')((?:\\\2|(?!\2)[\s\S])*?)\2|(\S+)))?/g
@@ -103,20 +103,20 @@ function html(opts) {
 	, minList = []
 	, hashMap = {}
 
-	for (; (match = tagRe.exec(opts._j)); ) {
-		if (match[4] === "" && match[5]) {   // start with attributes
-			ext = match[3] === "script" ? "js" : "css"
+	for (; (tag = tagRe.exec(opts._j)); ) {
+		if (tag[4] === "" && tag[5]) {   // start tag with attributes
 			arr = []
-			for (attrs = {_l: out.length, _i: opts._i, _o: opts._o, _j: ""}; (attr = attrRe.exec(match[5])); ) {
+			for (attrs = {_l: out.length, _i: opts._i, _o: opts._o, _j: ""}; (attr = attrRe.exec(tag[5])); ) {
 				attrs[attr[1]] = (attr[3] || attr[4] || "").replace(unescRe, htmlReplace).replace(/\s+/g, " ").trim()
 				if (!dropRe.test(attr[1])) {
 					arr.push(attr[1] + "=\"" + attrs[attr[1]].replace(escRe, htmlReplace) + "\"")
 				}
 			}
-			if (match[3] === "script" || match[3] === "style") {
-				for (; (attr = tagRe.exec(opts._j)) && attr[3] !== "/" + match[3]; attrs._j += attr[0]);
+			if (tag[3] === "script" || tag[3] === "style") {
+				for (; (attr = tagRe.exec(opts._j)) && attr[3] !== "/" + tag[3]; attrs._j += attr[0]);
 			}
 			if (attrs.exclude === "") continue
+			ext = tag[3] === "script" ? "js" : "css"
 			if ((attr = attrs._s = attrs.src || attrs.href)) {
 				if (attr.indexOf("{") > -1) hashMap[opts._o + attr.split("?")[0]] = attrs
 				attr = opts._i + attr.split("?")[0]
@@ -136,7 +136,7 @@ function html(opts) {
 			}
 
 			attrs._e = ext
-			attrs._t = ext == "css" ? "style" : match[3]
+			attrs._t = ext == "css" ? "style" : tag[3]
 			if (typeof attrs.min === "string") {
 				if (attrs.min === "" && adapter[ext]) {
 					attr = adapter[ext](attrs)
@@ -169,10 +169,10 @@ function html(opts) {
 			arr = arr[0] ? " " + arr.join(" ").replace(/="([-.:\w]+)"/g, "=$1") + ">" : ">"
 		} else if (arr !== ">") arr = ">"
 		attr = (
-			match[3] ? "<" + match[3] + arr :            // start or close tag
-			match[2] ? "" :                              // comment
-			match[1] ? match[0].replace(/\s+/g, " ") :   // doctype
-			match[0].trim()                              // text
+			tag[3] ? "<" + tag[3] + arr :            // start or close tag
+			tag[2] ? "" :                            // comment
+			tag[1] ? tag[0].replace(/\s+/g, " ") :   // doctype
+			tag[0].trim()                            // text
 		)
 		if (attr !== "") out.push(attr)
 	}
