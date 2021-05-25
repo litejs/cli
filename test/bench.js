@@ -6,7 +6,7 @@ describe("bench.js", function() {
 	function nop() {}
 
 	it ("should measure cpu speed", function(assert) {
-		assert(bench.cpuSpeed() > 1).end()
+		assert(bench.cpuSpeed()).end()
 	})
 
 	it ("should return same result on same fn", function(assert) {
@@ -14,7 +14,7 @@ describe("bench.js", function() {
 		var count = 5
 		retry()
 		function retry() {
-			bench({ a: nop, b: nop }, {warmup:100,samples:2,"sample-time":30}, function(err, result) {
+			bench({ a: nop, b: nop }, {warmup:10,samples:3,"sample-time":30}, function(err, result) {
 				if (result.a.rel !== result.b.rel && --count) return retry()
 				assert.equal(result.a.rel, "fastest")
 				assert.equal(result.b.rel, "fastest")

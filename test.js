@@ -5,7 +5,7 @@
 	var started, testSuite, timerType, inSuite
 	, tests = []
 	, _global = exports.window || global
-	, _process = _global.process || /* istanbul ignore next */ { exit: This }
+	, _process = _global.process || /* c8 ignore next */ { exit: This }
 	, _setTimeout = setTimeout
 	, _clearTimeout = clearTimeout
 	, _Date = Date
@@ -95,7 +95,7 @@
 		green: "\x1b[32m",
 		yellow: "\x1b[33m",
 		reset: "\x1b[0m",
-		color: (_process.stdout || /* istanbul ignore next */ _process).isTTY,
+		color: (_process.stdout || /* c8 ignore next */ _process).isTTY,
 		cut: 160,
 		delay: 1,
 		seed: (Math.random() * 1e5)|0,
@@ -107,7 +107,7 @@
 	}
 	, toStr = conf.toString
 	, hasOwn = conf.hasOwnProperty
-	, argv = _process.argv && _process.argv.slice(2) || /* istanbul ignore next */ []
+	, argv = _process.argv && _process.argv.slice(2) || /* c8 ignore next */ []
 	, arg, argi = argv.length
 	/*** mockTime ***/
 	, fakeNow
@@ -151,7 +151,7 @@
 		}
 		for (var i = timers.length; i-- && !(timers[i].at <= repeat.at);); // jshint ignore:line
 		timers.splice(i + 1, 0, repeat)
-		return timerType == "number" ? /* istanbul ignore next */ repeat.id : {
+		return timerType == "number" ? /* c8 ignore next */ repeat.id : {
 			id: repeat.id,
 			unref: This
 		}

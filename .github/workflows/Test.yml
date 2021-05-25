@@ -10,16 +10,15 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
-      - name: Install and run
+      - name: Install
+        run: npm install -g c8 uglify-js
+      - name: Run
         run: |
           export TZ="Europe/Tallinn"
-          npm install -g nyc
-          node --allow-natives-syntax -r ./test.js test/index.js --tap
-          nyc node --allow-natives-syntax -r ./test.js test/index.js --no-status
+          c8 node --allow-natives-syntax -r ./test.js test/index.js --brief
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:

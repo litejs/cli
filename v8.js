@@ -45,7 +45,7 @@ assert.isOptimized = v8.GetOptimizationStatus ? function(fn, args, scope) {
 	}).join(", ")
 
 	return this(
-		(status & 16 || /* istanbul ignore next */ status & 32),
+		status & (16|32),
 		"Status " + status + " = " + statusText
 	)
 } : assert.skip

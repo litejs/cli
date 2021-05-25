@@ -9,8 +9,8 @@ function bench(tests, opts, next) {
 	, keys = Object.keys(tests).reverse()
 	, len = keys.length
 	, times = []
-	, samples = opts.samples || /* istanbul ignore next */ 7
-	, warmupTime = 0|((opts.warmup || /* istanbul ignore next */ 2000)/len)
+	, samples = opts.samples || /* c8 ignore next */ 7
+	, warmupTime = 0|((opts.warmup || /* c8 ignore next */ 2000)/len)
 
 	// warmup
 	for (i = len; i--; ) {
@@ -24,7 +24,7 @@ function bench(tests, opts, next) {
 
 	function runSync() {
 		if (i-->0 || samples-->0 && (i = len - 1)) {
-			times[i][samples] = measure(tests[keys[i]], opts["sample-time"] || /* istanbul ignore next */ 500)
+			times[i][samples] = measure(tests[keys[i]], opts["sample-time"] || /* c8 ignore next */ 500)
 			process.nextTick(runSync)
 		} else {
 			respond()
@@ -44,7 +44,7 @@ function bench(tests, opts, next) {
 			diff = Math.round((fastest - t.ops) / fastest * 100)
 			t.rel = diff ? diff + "% slower" : "fastest"
 		}
-		/* istanbul ignore else */
+		/* c8 ignore else */
 		if (typeof next === "function") {
 			next(null, result)
 		}
