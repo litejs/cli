@@ -18,7 +18,7 @@ jobs:
       - name: Run
         run: |
           export TZ="Europe/Tallinn"
-          c8 node --allow-natives-syntax -r ./test.js test/index.js --brief
+          c8 node --allow-natives-syntax --expose-gc -r ./test.js test/index.js --brief
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:

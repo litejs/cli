@@ -34,6 +34,7 @@ describe.assert.matchSnapshot = function(file, transform) {
 				input: actual,
 				encoding: "utf8"
 			})
+		/* c8 ignore next */
 		} catch(e) {
 			return this(0, e.stdout ?
 				"Snapshot " + file + "\n---\n" + e.stdout :
