@@ -83,10 +83,10 @@
 		global: "describe,it",
 		head: "",
 		indent: "  ",
-		suite: "{1}", //➜✺✽❖❣❢•※⁕∅
-		ok: "  {green}✔{reset} {n} #{i} [{passed}/{total}]",
-		nok: "  {red}✘{reset} {n} #{i} [{passed}/{total}]",
-		skip: "  {yellow}∅{reset} {n} #{i}",
+		suite: "{indent}{1}", //➜✺✽❖❣❢•※⁕∅
+		ok: "{indent}  {green}✔{reset} {n} #{i} [{passed}/{total}]",
+		nok: "{indent}  {red}✘{reset} {n} #{i} [{passed}/{total}]",
+		skip: "{indent}  {yellow}∅{reset} {n} #{i}",
 		sum: "1..{total}\n#{passGreen} pass  {pass}/{total} [{passAsserts}/{totalAsserts}]{timeStr}",
 		failSum: "#{red}{bold} FAIL  tests {failNums}",
 		skipSum: "#{yellow}{bold} skip  {skip}",
@@ -225,7 +225,7 @@
 		}
 		tests.splice(++splicePos, 0, {
 			parent: inSuite,
-			indent: inSuite ? inSuite.indent + conf.indent : "",
+			indent: inSuite ? inSuite.indent + (_ > 1 ? "" : conf.indent) : "",
 			skip:
 				_ > 1 && !isFn(fn) && "pending" ||
 				name.charAt(0) === "_" && (name = name.slice(1)) && "by name",
@@ -243,6 +243,7 @@
 		else if (args[0] === 1) nextSuite(args)
 		else {
 			testCase.i = ++totalCases
+			testCase.indent = testSuite.indent
 			testCase.n = (args[0] < 3 ? "" : "it " + (args[0] < 4 ? "" : "should ")) + args[1]
 			testCase.errors = []
 			testCase.total = testCase.passed = 0
@@ -392,7 +393,9 @@
 	}
 	function print(str) {
 		if (!str) return
-		if (testSuite && testSuite.indent) str = testSuite.indent + str.split("\n").join("\n" + testSuite.indent)
+		if (testSuite && testSuite.indent) {
+			str = str.split("\n").join("\n" + testSuite.indent)
+		}
 		describe.output += str + "\n"
 		if (describe.onprint) describe.onprint(str)
 		if (_global.console && console.log) console.log(str + conf.reset)

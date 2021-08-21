@@ -5,8 +5,8 @@ Error: Assertion:1: equal
 expected: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 actual:   ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
     at Function.<anonymous> (test/test-fail.js:7:9)
-    at nextCase (test.js:270:20)
-    at nextSuite (test.js:349:3)
+    at nextCase (test.js:271:20)
+    at nextSuite (test.js:350:3)
     at Timeout.nextCase [as _onTimeout] (test.js:243:27)[0m
 ...[0m
 #[31m[1m FAIL  tests 1[0m
