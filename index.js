@@ -22,6 +22,7 @@ var fs = require("fs")
 , cli = Object.assign(exports, require("./package.json"), {
 	command: command,
 	cp: cp,
+	debounce: debounce,
 	hold: hold,
 	ls: ls,
 	mkdirp: mkdirp,
@@ -134,6 +135,17 @@ function cp(src, dest) {
 	} else {
 		console.error("cp", src, dest)
 		fs.copyFileSync(src, dest)
+	}
+}
+
+function debounce(fn, time) {
+	var timer
+	return function() {
+		clearTimeout(timer)
+		timer = setTimeout(exec, time || 300, this, arguments)
+	}
+	function exec(scope, args) {
+		fn.apply(scope, args)
 	}
 }
 
