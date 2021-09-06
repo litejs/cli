@@ -27,6 +27,18 @@ module.exports = function(opts) {
 		if (!threads || threads === true) threads = require("os").cpus().length
 		for (; threads--; run());
 	}
+	if (opts.watch) {
+		var watcher
+		describe.onend = function() {
+			watcher = cli.watch(getRequired(), runAgain, 100)
+		}
+	}
+	function getRequired() {
+		return Object.keys(require.cache).map(fullPath)
+	}
+	function fullPath(file) {
+		return path.resolve(file)
+	}
 	function run() {
 		if (!files[0]) return
 		var runFiles = files.splice(0, 10)
@@ -43,6 +55,11 @@ module.exports = function(opts) {
 	function runDone(code) {
 		process.exitCode += code
 		run()
+	}
+	function runAgain() {
+		files = cli.ls(opts.args.filter(isNaN))
+		run()
+		watcher.add(getRequired())
 	}
 }
 
