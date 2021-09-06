@@ -4,7 +4,12 @@ var cli = require("..")
 , path = require("path")
 
 module.exports = function(opts) {
-	var subOpts
+	var subOpts = {
+		//env: {
+		//	NODE_PATH: process.argv[1].replace(/bin\/\w+$/, "lib/node_modules/")
+		//},
+		stdio: "inherit"
+	}
 	, files = cli.ls(opts.args.filter(isNaN))
 	, nums = opts.args.filter(Number)
 	, test = path.resolve(module.filename, "../../test.js")
@@ -18,13 +23,6 @@ module.exports = function(opts) {
 		require(test)
 		files.forEach(function(file) { require(path.resolve(file)) })
 	} else {
-		opts.nodeArgs.push("-r", test)
-		subOpts = {
-			//env: {
-			//	NODE_PATH: process.argv[1].replace(/bin\/\w+$/, "lib/node_modules/")
-			//},
-			stdio: "inherit"
-		}
 		var threads = opts.threads
 		if (!threads || threads === true) threads = require("os").cpus().length
 		for (; threads--; run());
@@ -33,12 +31,18 @@ module.exports = function(opts) {
 		if (!files[0]) return
 		var runFiles = files.splice(0, 10)
 		, last = runFiles.pop()
-		, args = []
+		, args = ["-r", test]
 		runFiles.forEach(function(file) {
 			args.push("-r", "./" + file)
 		})
-		child.spawn(process.argv[0], opts.nodeArgs.concat(args, last, opts.opts), subOpts)
-		.on("close", function(code) { process.exitCode += code; run() })
+		child.spawn(process.argv[0], opts.nodeArgs.concat(
+			args, last, opts.opts
+		), subOpts)
+		.on("close", runDone)
+	}
+	function runDone(code) {
+		process.exitCode += code
+		run()
 	}
 }
 
