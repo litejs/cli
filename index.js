@@ -29,6 +29,7 @@ var fs = require("fs")
 	readFile: readFile,
 	rmrf: rmrf,
 	wait: wait,
+	watch: watch,
 	writeFile: writeFile,
 	writePackage: writePackage
 })
@@ -262,6 +263,38 @@ function wait(fn) {
 		return resume
 	}
 	return resume
+}
+
+function watch(paths, cb, delay) {
+	var watchers = {}
+	, changed = []
+	, fn = debounce(function() {
+		add(changed)
+		changed.length = 0
+		cb()
+	}, delay)
+
+	add(paths)
+
+	return {
+		add: add
+	}
+	function add(paths) {
+		paths.forEach(watch)
+	}
+	function watch(file) {
+		if (watchers[file]) return
+		try {
+			watchers[file] = fs.watch(file, function() {
+				if (watchers[file]) {
+					changed.push(file)
+					watchers[file].close()
+					watchers[file] = null
+				}
+				fn()
+			})
+		} catch (e) {}
+	}
 }
 
 function hold(ignore) {
