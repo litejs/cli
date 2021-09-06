@@ -223,8 +223,8 @@ function readFile(fileName) {
 // With anti-virus software, renaming immediately after creation fails with EPERM error, as A/V locking up files for scanning time.
 
 function rmrf(dir) {
+	if (dir === "/") throw Error("Can not remove root")
 	try {
-		if (dir === "/") throw Error("can not remove root")
 		if (fs.lstatSync(dir).isDirectory()) {
 			for (var arr = fs.readdirSync(dir), i = arr.length; i--; ) {
 				rmrf(path.join(dir, arr[i]))
