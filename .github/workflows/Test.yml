@@ -14,12 +14,14 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
       - name: Install
-        run: npm install -g c8 uglify-js
-      - name: Run
         run: |
-          export TZ="Europe/Tallinn"
-          c8 node --allow-natives-syntax --expose-gc -r ./test.js test/index.js --brief
-      - name: Coveralls
+          npm install -g @litejs/cli jshint c8
+          npm install
+      - name: Run lint
+        run: lj lint
+      - name: Run tests
+        run: TZ="Europe/Tallinn" c8 -r lcov -r text-summary --check-coverage --branches=70 --functions=70 --lines=70 --statements=70 node --allow-natives-syntax --expose-gc -r ./test.js test/index.js --brief
+      - name: Upload coverage
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

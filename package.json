@@ -37,22 +37,5 @@
     "laxcomma": true,
     "maxdepth": 6,
     "quotmark": "double"
-  },
-  "c8": {
-    "check-coverage": true,
-    "branches": 80,
-    "lines": 80,
-    "functions": 80,
-    "statements": 80,
-    "exclude": [
-      "cli/patch-node.js",
-      "coverage/**",
-      "test/**"
-    ],
-    "reporter": [
-      "lcov",
-      "text",
-      "html"
-    ]
   }
 }
