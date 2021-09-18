@@ -107,7 +107,8 @@ function execute(str) {
 		if (opts[cmd]) try {
 			child.execSync(opts[cmd], { stdio: "inherit" })
 		} catch (e) {
-			return console.error("\n%s\nIgnore with --no-%s option.", e.message, cmd)
+			console.error("\n%s\nIgnore with --no-%s option.", e.message, cmd)
+			process.exit(1)
 		}
 		break;
 	case "help":
