@@ -33,13 +33,14 @@ module.exports = function(opts) {
 	, com = JSON.parse(child.execSync("git show HEAD:package.json").toString("utf8"))
 	, junks = com.version.split(".")
 	, len = junks.length
-	, lastTag = child.execSync("git describe --tags --abbrev=0 2>/dev/null||echo 0.0.0").toString("utf8").trim()
+	, lastTag = child.execSync("git describe --tags --abbrev=0 2>/dev/null||true").toString("utf8").trim()
+	, logRange = lastTag ? lastTag + "..@" : ""
 	, group = [
 		{ name: "New Features",      re: /\badd\b/i, log: [] },
 		{ name: "Removed Features",  re: /\b(remove|drop)\b/i, log: [] },
 		{ name: "API Changes",       re: /\bapi\b/i, log: [] },
 		{ name: "Breaking Changes",  re: /\bbreak[ei]/i,
-			log: child.execSync("git log -z --grep break -i " + lastTag + "..@")
+			log: child.execSync("git log -z --grep break -i " + logRange)
 			.toString("utf8").split("\0").filter(Boolean)
 		},
 		{ name: "Fixes",             re: /fix\b/i, log: [] },
@@ -79,7 +80,7 @@ module.exports = function(opts) {
 		(opts.rewrite ? "--amend" : "--")], { stdio: "inherit" })
 
 	msg = "# All commits:\n"
-	child.execSync("git log --pretty='format:%s (%aN)' " + lastTag + "..HEAD" + (opts.rewrite ? "~1" : ""))
+	child.execSync("git log --pretty='format:%s (%aN)' " + logRange + (opts.rewrite ? "~1" : ""))
 	.toString("utf8").split("\n").forEach(function(row) {
 		msg += "# - " + row + "\n"
 		for (var g, i = 0; (g = group[i++]); ) {
