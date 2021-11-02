@@ -58,7 +58,7 @@ module.exports = function(opts) {
 	run("global", "npm outdated -g @litejs/cli " + (opts.global || "uglify-js jshint c8"), "there are outdated global packages")
 
 	if (opts.args[0] || !opts.rewrite && com.version === cur.version) {
-		if (len > 3 || !(now[0] > junks[0] || now[1] > junks[1])) {
+		if (len > 3 || !(+now[0] > +junks[0] || +now[1] > +junks[1])) {
 			junks[len - 1] = parseInt(junks[len - 1], 10) + 1
 		} else {
 			junks = now
