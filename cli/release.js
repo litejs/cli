@@ -55,7 +55,7 @@ module.exports = function(opts) {
 	run("lint", opts.lint, "code does not comply to rules")
 	run("install", "rm -rf node_modules;npm install", "dependencies can not be installed")
 	run("update", "npm outdated", "there are outdated dependencies")
-	run("global", "npm outdated -g @litejs/cli " + (opts.global || "uglify-js jshint nyc"), "there are outdated global packages")
+	run("global", "npm outdated -g @litejs/cli " + (opts.global || "uglify-js jshint c8"), "there are outdated global packages")
 
 	if (opts.args[0] || !opts.rewrite && com.version === cur.version) {
 		if (len > 3 || !(now[0] > junks[0] || now[1] > junks[1])) {
