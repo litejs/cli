@@ -34,11 +34,11 @@ var fs = require("fs")
 	writePackage: writePackage
 })
 , defaults = {
-	"bench": "./test/bench/*.js",
-	"build": "--out=ui/index.html ui/dev.html",
+	"bench": "lj bench ./test/bench/*.js",
+	"build": "lj build --out=ui/index.html ui/dev.html",
 	"launch": "node",
 	"template": "default",
-	"test": "./test/index.js",
+	"test": "lj test ./test/index.js",
 	"threads": 0
 }
 , shortcut = {
@@ -83,6 +83,17 @@ if (!module.parent) {
 	execute()
 }
 
+function run(opt, cmd) {
+	if (cmd) try {
+		;(Array.isArray(cmd) ? cmd : [cmd]).forEach(function(cmd) {
+			child.execSync(cmd, { stdio: "inherit" })
+		})
+	} catch (e) {
+		console.error("\n%s\nIgnore with --no-%s option.", e.message, opt)
+		process.exit(1)
+	}
+}
+
 function execute(str) {
 	var sub
 	, opts = getopts(str)
@@ -96,7 +107,7 @@ function execute(str) {
 	case "build":
 	case "test":
 		if (opts.args.length < 1 && opts[cmd] && !str) {
-			return (Array.isArray(opts[cmd]) ? opts[cmd] : [opts[cmd]]).forEach(execute)
+			return run(cmd, opts[cmd])
 		}
 		/* falls through */
 	case "init":
@@ -104,14 +115,7 @@ function execute(str) {
 		require("./cli/" + cmd)(opts)
 		break;
 	case "lint":
-		if (opts[cmd]) try {
-			;(Array.isArray(opts[cmd]) ? opts[cmd] : [opts[cmd]]).forEach(function(cmd) {
-				child.execSync(cmd, { stdio: "inherit" })
-			})
-		} catch (e) {
-			console.error("\n%s\nIgnore with --no-%s option.", e.message, cmd)
-			process.exit(1)
-		}
+		run("lint", opts[cmd])
 		break;
 	case "help":
 		sub = shortcut[opts.args[0]] || opts.args[0]
