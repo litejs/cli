@@ -105,7 +105,9 @@ function execute(str) {
 		break;
 	case "lint":
 		if (opts[cmd]) try {
-			child.execSync(opts[cmd], { stdio: "inherit" })
+			;(Array.isArray(opts[cmd]) ? opts[cmd] : [opts[cmd]]).forEach(function(cmd) {
+				child.execSync(cmd, { stdio: "inherit" })
+			})
 		} catch (e) {
 			console.error("\n%s\nIgnore with --no-%s option.", e.message, cmd)
 			process.exit(1)

@@ -28,7 +28,10 @@
   "litejs": {
     "build": false,
     "install": false,
-    "lint": "jshint *.js cli/*.js",
+    "lint": [
+      "jshint *.js",
+      "jshint cli/*.js"
+    ],
     "test": "--allow-natives-syntax --expose-gc test/index.js --brief"
   },
   "jshintConfig": {

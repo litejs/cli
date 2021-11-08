@@ -111,8 +111,10 @@ module.exports = function(opts) {
 
 	function run(opt, cmd, err, flag) {
 		if (cmd && opts[opt] !== false) try {
-			log("\n-- " + cmd)
-			log(child.execSync(cmd))
+			;(Array.isArray(cmd) ? cmd : [cmd]).forEach(function(cmd) {
+				log("\n-- " + cmd)
+				log(child.execSync(cmd))
+			})
 		} catch (e) {
 			log(e.stdout)
 			log(e.stderr)
