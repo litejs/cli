@@ -16,8 +16,8 @@ describe("bench.js", function() {
 		function retry() {
 			bench({ a: nop, b: nop }, {warmup:10,samples:3,"sample-time":30}, function(err, result) {
 				if (result.a.rel !== result.b.rel && --count) return retry()
-				assert.equal(result.a.rel, "fastest")
-				assert.equal(result.b.rel, "fastest")
+				assert.ok(result.a.diff < 5)
+				assert.ok(result.b.diff < 5)
 				assert.end()
 			})
 		}

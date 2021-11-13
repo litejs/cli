@@ -41,7 +41,7 @@ function bench(tests, opts, next) {
 			}
 		}
 		for (i = len; (t = result[keys[--i]]); ) {
-			diff = Math.round((fastest - t.ops) / fastest * 100)
+			diff = t.diff = Math.round((fastest - t.ops) / fastest * 100)
 			t.rel = diff ? diff + "% slower" : "fastest"
 		}
 		/* c8 ignore else */
