@@ -24,6 +24,7 @@
 module.exports = function(opts) {
 	var g
 	, TAG_MSG = ".git/TAG_MSG"
+	, COMMIT_EDITMSG = ".git/COMMIT_EDITMSG"
 	, child = require("child_process")
 	, path = require("path")
 	, cli = require("../")
@@ -52,7 +53,7 @@ module.exports = function(opts) {
 		run("upstream", "git fetch;git merge-base --is-ancestor @{upstream} HEAD", "fast-forward with upstream is not possible")
 	} catch(e) {}
 
-	run("lint", opts.lint, "code does not comply to rules")
+	run("lint", "lj lint", "code does not comply to rules")
 	run("install", "rm -rf node_modules;npm install", "dependencies can not be installed")
 	run("update", "npm outdated", "there are outdated dependencies")
 	run("global", "npm outdated -g @litejs/cli " + (opts.global || "uglify-js jshint c8"), "there are outdated global packages")
@@ -71,13 +72,10 @@ module.exports = function(opts) {
 		lastTag = child.execSync("git describe --tags --abbrev=0 HEAD~1 2>/dev/null||echo 0.0.0").toString("utf8").trim()
 	} else run("tag", "! git rev-parse -q --verify v" + cur.version, "git tag exists?", "--rewrite")
 
-	run("build", "lj b", "build failed")
+	run("build", "lj build")
+	run("test", "lj test")
 
-	run("test", "lj test --brief", "tests failed")
-
-	child.spawnSync("git", [
-		"commit", "-a", "-m", "Release " + cur.version + "\n" + msg,
-		(opts.rewrite ? "--amend" : "--")], { stdio: "inherit" })
+	cli.writeFile(COMMIT_EDITMSG, "Release v" + cur.version + "\n" + msg)
 
 	msg = "# All commits:\n"
 	child.execSync("git log --pretty='format:%s (%aN)' " + logRange + (opts.rewrite ? "~1" : ""))
@@ -101,9 +99,10 @@ module.exports = function(opts) {
 
 	child.spawn(process.env.EDITOR || "vim", [TAG_MSG], { stdio: "inherit" })
 	.on("exit", function(e, code) {
+		run("commit", "git commit -a -F " + COMMIT_EDITMSG + (opts.rewrite ? " --amend" : " --"))
 		run("tag", "git tag -a v" + cur.version + " -F " + TAG_MSG + (opts.rewrite ? " -f" : ""), "git tag failed", "--rewrite")
 
-		console.log("\nVERSION: %s", cur.version)
+		console.log("\nVERSION: %s (editor exit %s)", cur.version, code)
 		if (!cur.private) {
 			console.log("PUBLISH: npm publish%s", len === 3 ? "" : " --tag next")
 		}
@@ -118,7 +117,7 @@ module.exports = function(opts) {
 		} catch (e) {
 			log(e.stdout)
 			log(e.stderr)
-			console.error("\nfatal: %s! Ignore with %s option.", err, flag || "--no-" + opt)
+			console.error("\nfatal: %s! Ignore with %s option.", err || opt + " failed", flag || "--no-" + opt)
 			process.exit(1)
 		}
 	}
