@@ -6,12 +6,10 @@
 //-    litejs bench test/bench/date-vs-native-date.js
 //-
 
-var tmp
+var cli = require("..")
 , child = require("child_process")
-, fs = require("fs")
 , path = require("path")
 , bench = require("../bench.js")
-, cli = require("..")
 
 global.requireGit = requireGit
 
@@ -35,23 +33,22 @@ function run(files, opts) {
 }
 
 function requireGit(id) {
-	if (!tmp) {
-		tmp = fs.mkdtempSync(path.join(require("os").tmpdir(), "bench-"))
-		console.log("mkdtemp", tmp)
-		process.on("exit", function() {
-			cli.rmrf(tmp)
-		})
+	var junks = id.split(":")
+	, calleeDir = Error(id).stack.split("\n")[2].replace(/^.*\(|\/[^\/]+$/g, "")
+	, newDir = path.resolve("_bench-" + junks[0])
+	, file = path.join(newDir, path.relative(process.cwd(), path.resolve(calleeDir, junks[1] || "")))
+
+	if (junks[0] === "last-tag") {
+		junks[0] = child.execSync("git describe --tags --abbrev=0").toString("utf8").trim()
 	}
 
-	id = id.replace(/:(.*)/, function(_, file) {
-		return ":" + path.relative(process.cwd(), path.join(__filename, "..", file))
+	child.execSync("git worktree add -d '" + newDir + "' " + junks[0])
+
+	process.on("exit", function() {
+		child.execSync("git worktree remove '" + newDir + "'")
 	})
 
-	var cleared = tmp + "/" + id.replace(/\.?\.\/|\/|:/g, "-")
-	, content = child.spawnSync("git", ["show", id]).output.join("")
-
-	fs.writeFileSync(cleared, content, "utf8")
-	return require(cleared)
+	return require(file)
 }
 
 

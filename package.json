@@ -32,7 +32,7 @@
       "jshint *.js",
       "jshint cli/*.js"
     ],
-    "test": "node -r ./test.js --allow-natives-syntax --expose-gc test/index.js --brief"
+    "test": "node -r ./test.js --allow-natives-syntax --expose-gc test/index.js"
   },
   "jshintConfig": {
     "asi": true,
