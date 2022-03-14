@@ -258,7 +258,7 @@ function rep(str, map) {
 	})
 }
 function readHashes(root) {
-	child.execSync("cd " + root + ";git add -u;git ls-files -sz --abbrev=1")
+	child.execSync((root ? "cd " + root + ";" : "") + "git add -u;git ls-files -sz --abbrev=1")
 	.toString("utf8").split("\0").map(function(line) {
 		line = line.split(/\s+/)
 		if (line[1]) fileHashes[root + line[3]] = line[1]
