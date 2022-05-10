@@ -104,7 +104,7 @@ module.exports = function(opts) {
 
 		console.log("\nVERSION: %s (editor exit %s)", cur.version, code)
 		if (!cur.private) {
-			console.log("PUBLISH: npm publish%s", len === 3 ? "" : " --tag next")
+			console.log("PUBLISH: npm publish%s", cur.version.split(/[-.]/).length === 3 ? "" : " --tag next")
 		}
 	})
 
