@@ -52,9 +52,11 @@
 			)
 		},
 		own: function(actual, expected, message) {
+			own.lastMsg = ""
 			return this(own(actual, expected), message || own.lastMsg)
 		},
 		notOwn: function(actual, expected, message) {
+			own.lastMsg = ""
 			return this(!own(actual, expected), message || own.lastMsg)
 		},
 		throws: function(fn, message) {
@@ -588,13 +590,16 @@
 	function own(a, b) {
 		if (a === b) {
 			own.lastMsg = "Can not be strictEqual"
-		} else {
+		} else if (a) {
 			for (var k in b) if (hasOwn.call(b, k)) {
-				if (
-					!hasOwn.call(a, k) ||
-					(isObj(b[k]) ? !own(a[k], b[k]) : a[k] !== b[k])
-				) {
-					own.lastMsg = k + " " + stringify(a[k]) + " != " + stringify(b[k])
+				if (!hasOwn.call(a, k) || (
+					isObj(b[k]) ? !own(a[k], b[k]) :
+					_isArray(b[k]) ? b[k].some(function(val, idx) {
+						return isObj(val) ? !own(a[k][idx], val) : a[k][idx] !== val
+					}) :
+					a[k] !== b[k]
+				)) {
+					own.lastMsg = own.lastMsg || k + " " + stringify(a[k]) + " != " + stringify(b[k])
 					return false
 				}
 			}
