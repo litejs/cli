@@ -38,6 +38,7 @@
     "asi": true,
     "evil": true,
     "laxcomma": true,
+    "laxbreak": true,
     "maxdepth": 6,
     "quotmark": "double"
   }
