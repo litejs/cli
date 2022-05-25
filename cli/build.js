@@ -98,6 +98,7 @@ function html(opts) {
 	, tagRe = /<(!--([\s\S]*?)--|!\[[\s\S]*?\]|[?!][\s\S]*?|((\/|)[^\s\/>]+)([^>]*?)\/?)>|[^<]+/g
 	, attrRe = /\b([-.:\w]+)\b(?:\s*=\s*(?:("|')((?:\\\2|(?!\2)[\s\S])*?)\2|(\S+)))?/g
 	, dropRe = /^(banner|cat|drop|if|inline|min)$/
+	, boolRe = /^(checked|disabled|multiple|readonly|selected)$/
 	, out = []
 	, loadFiles = []
 	, minList = []
@@ -109,7 +110,11 @@ function html(opts) {
 			for (attrs = {_l: out.length, _i: opts._i, _o: opts._o, _j: ""}; (attr = attrRe.exec(tag[5])); ) {
 				attrs[attr[1]] = (attr[3] || attr[4] || "").replace(unescRe, htmlReplace).replace(/\s+/g, " ").trim()
 				if (!dropRe.test(attr[1])) {
-					arr.push(attr[1] + "=\"" + attrs[attr[1]].replace(escRe, htmlReplace) + "\"")
+					arr.push(
+						boolRe.test(attr[1])
+						? attr[1]
+						: attr[1] + "=\"" + attrs[attr[1]].replace(escRe, htmlReplace) + "\""
+					)
 				}
 			}
 			if (tag[3] === "script" || tag[3] === "style") {
