@@ -98,7 +98,7 @@
 		yellow: "\x1b[33m",
 		reset: "\x1b[0m",
 		color: (_process.stdout || /* c8 ignore next */ _process).isTTY,
-		cut: 160,
+		cut: 1500,
 		delay: 1,
 		seed: (Math.random() * 1e5)|0,
 		stack: 4,
