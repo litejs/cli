@@ -15,8 +15,7 @@ jobs:
       - uses: actions/setup-node@v1
       - name: Install
         run: |
-          npm install -g @litejs/cli jshint c8
-          npm install
+          npm install -g @litejs/cli jshint c8 uglify-js
       - name: Run lint
         run: lj lint
       - name: Run tests
