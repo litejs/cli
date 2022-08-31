@@ -141,6 +141,9 @@
 		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3] // [seconds, nanoseconds]
 	}
 	function fakeTimeout(repeat, fn, ms) {
+		if (Date === _Date) {
+			return _setTimeout.apply(this, _slice.call(arguments, 1))
+		}
 		if (!isObj(repeat)) {
 			repeat = {
 				id: ++timerId,
