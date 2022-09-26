@@ -101,7 +101,7 @@
 		cut: 1500,
 		delay: 1,
 		seed: (Math.random() * 1e5)|0,
-		stack: 4,
+		stack: 9,
 		status: 1,
 		time: 1,
 		timeout: 999,
