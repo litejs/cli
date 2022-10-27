@@ -20,6 +20,9 @@
     "*.js",
     "cli"
   ],
+  "scripts": {
+    "test": "TZ='Europe/Tallinn' c8 -r lcov -r text-summary node -r ./test.js --allow-natives-syntax --expose-gc test/index.js --brief"
+  },
   "bin": {
     "lj-doc": "./cli/doc",
     "lj-stat": "./cli/stat",
