@@ -1,7 +1,7 @@
 
 
 
-!function(exports) {
+!function(exports, Infinity) {
 	var started, testSuite, timerType, inSuite
 	, tests = []
 	, _global = exports.window || global
@@ -577,9 +577,14 @@
 
 	function type(obj) {
 		/* jshint -W041 */
-		// Standard clearly states that NaN is a number
+		// Standard clearly states that NaN and Infinity are numbers
 		// but this is not useful for testing.
-		return obj !== obj ? "nan" : obj == null ? "" + obj : toStr.call(obj).slice(8, -1).toLowerCase()
+		return (
+			obj !== obj ? "nan" :
+			obj === Infinity || obj === -Infinity ? "infinity" :
+			obj == null ? "" + obj :
+			toStr.call(obj).slice(8, -1).toLowerCase()
+		)
 	}
 	function num(a, b) {
 		return type(a -= 0) === "number" ? a : b
@@ -629,7 +634,7 @@
 		, str =
 			t === "string" ? JSON.stringify(item) :
 			t === "function" ? ("" + item).replace(/^\w+|\s+|{[\s\S]*/g, "") :
-			(!item || item === true || t === "error" || t === "number" || t === "regexp") ? "" + item :
+			(!item || item === true || t === "error" || t === "infinity" || t === "number" || t === "regexp") ? "" + item :
 			item.toJSON ? item.toJSON() :
 			item
 
@@ -651,6 +656,6 @@
 		}
 		return str
 	}
-}(this) // jshint ignore:line
+}(this, Infinity) // jshint ignore:line
 
 
