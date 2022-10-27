@@ -1,5 +1,5 @@
 v8.js
-  ✔ it should test optimization #1 [0/0]
-  ✔ it should test fast properties #2 [0/0]
+  ✔ 1. it should test optimization [0/0]
+  ✔ 2. it should test fast properties [0/0]
 1..2
 # pass  2/2 [0/0]

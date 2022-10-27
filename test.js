@@ -86,9 +86,9 @@
 		head: "",
 		indent: "  ",
 		suite: "{indent}{1}", //➜✺✽❖❣❢•※⁕∅
-		ok: "{indent}  {green}✔{reset} {n} #{i} [{passed}/{total}]",
-		nok: "{indent}  {red}✘{reset} {n} #{i} [{passed}/{total}]",
-		skip: "{indent}  {yellow}∅{reset} {n} #{i}",
+		ok: "{indent}  {green}✔{reset} {i}. {n} [{passed}/{total}]",
+		nok: "{indent}  {red}✘{reset} {i}. {n} [{passed}/{total}]",
+		skip: "{indent}  {yellow}∅{reset} {i}. {n}",
 		sum: "1..{total}\n#{passGreen} pass  {pass}/{total} [{passAsserts}/{totalAsserts}]{timeStr}",
 		failSum: "#{red}{bold} FAIL  tests {failNums}",
 		skipSum: "#{yellow}{bold} skip  {skip}",
