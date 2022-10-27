@@ -69,11 +69,9 @@ module.exports = function(opts) {
 	child.spawnSync("lj", ["build"], stdio)
 
 	function add(name, dep) {
-		if (opts.link) {
-			child.spawnSync("npm", ["link", name], stdio)
-		} else {
-			child.spawnSync("npm", ["install", "--save-exact", "--save-" + dep, name], stdio)
-		}
+		child.spawnSync("npm", [
+			opts.link ? "link" : "install", "--save-exact", "--save-" + dep, name
+		], stdio)
 	}
 }
 
