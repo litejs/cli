@@ -7,7 +7,9 @@ actual:   ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     at Function.<anonymous> (test/test-fail.js:7:9)
     at nextCase (test.js:276:20)
     at nextSuite (test.js:355:3)
-    at Timeout.nextCase [as _onTimeout] (test.js:248:27)[0m
+    at Timeout.nextCase [as _onTimeout] (test.js:248:27)
+    at listOnTimeout (node:internal/timers:564:17)
+    at process.processTimers (node:internal/timers:507:7)[0m
 ...[0m
 #[31m[1m FAIL  tests 1[0m
 1..13

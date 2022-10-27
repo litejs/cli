@@ -63,10 +63,8 @@ try {
 } catch(e) {}
 
 
-function getopts(str) {
-	var argv = process.argv.slice(2)
-	, opts = Object.assign({}, defaults, {args: argv, opts: [], nodeArgs: []})
-	if (str) argv.push.apply(argv, str.split(/\s+/))
+function getopts(argv) {
+	var opts = Object.assign({}, defaults, {args: argv, opts: [], nodeArgs: []})
 	for (var arg, i = argv.length; i; ) {
 		arg = argv[--i].split(/^--(no-)?|=/)
 		if (arg[0] === "") {
@@ -80,7 +78,7 @@ function getopts(str) {
 }
 
 if (!module.parent) {
-	execute()
+	execute(getopts(process.argv.slice(2)))
 }
 
 function run(opt, cmd) {
@@ -94,9 +92,8 @@ function run(opt, cmd) {
 	}
 }
 
-function execute(str) {
+function execute(opts) {
 	var sub
-	, opts = getopts(str)
 	, cmd = shortcut[opts.cmd] || opts.cmd
 	, helpFile = module.filename
 
@@ -106,8 +103,8 @@ function execute(str) {
 	case "bench":
 	case "build":
 	case "test":
-		if (opts.args.length < 1 && opts[cmd] && !str) {
-			return run(cmd, opts[cmd])
+		if (opts.args.length < 1 && opts[cmd]) {
+			return run(cmd, opts[cmd] + (opts.opts.length ? " " + opts.opts.join(" ") : ""))
 		}
 		/* falls through */
 	case "init":
