@@ -62,6 +62,7 @@ describe("test.js", function() {
 			"function",  '()',                              function(){},
 			"function",  '()',                              function  ()  {  },
 			"function",  'abc(de,f)',                       function   abc( de , f )  {  },
+			"symbol",    'Symbol(Foo)',                     Symbol("Foo"),
 			"string",    '""',                              ""
 		]
 		, equals = [

@@ -634,7 +634,8 @@
 		, str =
 			t === "string" ? JSON.stringify(item) :
 			t === "function" ? ("" + item).replace(/^\w+|\s+|{[\s\S]*/g, "") :
-			(!item || item === true || t === "error" || t === "infinity" || t === "number" || t === "regexp") ? "" + item :
+			!item || item === true || t === "error" || t === "infinity" || t === "number" ? "" + item :
+			t === "symbol" || t === "regexp" ? item.toString() :
 			item.toJSON ? item.toJSON() :
 			item
 
