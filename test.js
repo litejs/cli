@@ -1,15 +1,10 @@
 
 
-
-!function(exports, Infinity) {
+!function(exports, _setTimeout, _clearTimeout, _Date, _Error, _Infinity) {
 	var started, testSuite, timerType, inSuite
 	, tests = []
 	, _global = exports.window || global
 	, _process = _global.process || /* c8 ignore next */ { exit: This }
-	, _setTimeout = setTimeout
-	, _clearTimeout = clearTimeout
-	, _Date = Date
-	, _Error = Error
 	, _isArray = Array.isArray
 	, _keys = Object.keys
 	, _slice = tests.slice
@@ -477,7 +472,7 @@
 				}
 			}
 		/*** mockTime ***/
-			this.tick(Infinity, true)
+			this.tick(_Infinity, true)
 		},
 		time: function(newTime, newZone) {
 			var mock = this
@@ -581,7 +576,7 @@
 		// but this is not useful for testing.
 		return (
 			obj !== obj ? "nan" :
-			obj === Infinity || obj === -Infinity ? "infinity" :
+			obj === _Infinity || obj === -_Infinity ? "infinity" :
 			obj == null ? "" + obj :
 			toStr.call(obj).slice(8, -1).toLowerCase()
 		)
@@ -622,7 +617,7 @@
 	}
 
 	function stringify(item, maxLen) {
-		var max = conf.cut > 0 ? conf.cut : Infinity
+		var max = conf.cut > 0 ? conf.cut : _Infinity
 		, str = _stringify(item, max, [])
 		return str.length > max ? str.slice(0, max - 3) + ".." + str.slice(-1) : str
 	}
@@ -657,6 +652,5 @@
 		}
 		return str
 	}
-}(this, Infinity) // jshint ignore:line
-
+}(this, setTimeout, clearTimeout, Date, Error, Infinity) // jshint ignore:line
 

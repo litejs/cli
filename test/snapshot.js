@@ -20,7 +20,7 @@ describe("snapshot.js", function() {
 			"./test/spec/test-fail"
 		)
 		assert.cmdSnapshot(
-			"node -r ./test.js test/test-fail.js --no-status --color --no-time ---stack=0 --no-cut 1",
+			"node -r ./test.js test/test-fail.js --no-status --color --no-time --stack=4 --no-cut 1",
 			"./test/spec/test-first"
 		)
 		assert.cmdSnapshot(
