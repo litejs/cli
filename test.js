@@ -276,7 +276,7 @@
 				args = args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
 				if (args && args.then) args.then(curry(end, null), end)
 			} catch (e) {
-				print(e)
+				print("" + e)
 				end(e)
 			}
 		}
