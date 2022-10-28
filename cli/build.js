@@ -337,7 +337,7 @@ function cssMin(attrs) {
 	.replace(/(.*)\/\*!\s*([\w-]+)\s*([\w-.]*)\s*\*\//g, cmdFn)
 
 	// Remove optional spaces and put each rule to separated line
-	.replace(/(["'])((?:\\?.)*?)\1|[^"']+/g, clearFn)
+	.replace(/(["'])((?:\\\1|.)*?)\1|[^"']+/g, clearFn)
 
 	// Use CSS shorthands
 	//.replace(/([^0-9])-?0(px|em|%|in|cm|mm|pc|pt|ex)/g, "$10")
@@ -374,7 +374,7 @@ function cssMin(attrs) {
 function tplMin(attrs) {
 	var out = [""]
 	//, templateRe = /^([ \t]*)(%?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))$/gm
-	, templateRe = /([ \t]*)(%?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))(?=\x1f|\n|$)+/g
+	, templateRe = /([ \t]*)(%?)((?:("|')(?:\\\4|.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))(?=\x1f|\n|$)+/g
 	, parent = 0
 	, stack = [-1]
 
