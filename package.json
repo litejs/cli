@@ -25,6 +25,9 @@
     "lj-stat": "./cli/stat",
     "lj": "./index.js"
   },
+  "workspaces": [
+    "test/dummy"
+  ],
   "litejs": {
     "build": false,
     "install": false,
