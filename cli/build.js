@@ -95,7 +95,7 @@ module.exports = function(opts) {
 function html(opts) {
 	var attr, attrs, arr, ext, tag
 	, min = {}
-	, tagRe = /<(!--([\s\S]*?)--|!\[[\s\S]*?\]|[?!][\s\S]*?|((\/|)[^\s\/>]+)([^>]*?)\/?)>|[^<]+/g
+	, tagRe = /<(!--([\s\S]*?)--!?|!\[[\s\S]*?\]|[?!][\s\S]*?|((\/|)[^\s\/>]+)([^>]*?)\/?)>|[^<]+/g
 	, attrRe = /\b([-.:\w]+)\b(?:\s*=\s*(?:("|')((?:\\\2|(?!\2)[\s\S])*?)\2|(\S+)))?/g
 	, dropRe = /^(banner|cat|drop|if|inline|min)$/
 	, boolRe = /^(checked|disabled|multiple|readonly|selected)$/
