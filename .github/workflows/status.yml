@@ -1,0 +1,17 @@
+name: Status
+run-name: "Status (${{ github.event.workflow_run.name }} #${{ github.event.workflow_run.run_number }} ${{ github.event.action }})"
+on:
+  workflow_run:
+    workflows: [ Test ]
+    types: [ completed ]
+jobs:
+  Update:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -X POST --fail \
+          -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          -H 'Content-type: application/json' \
+          -d '{"context":"Status / ${{ github.event.workflow_run.name }}","state":"${{ github.event.workflow_run.conclusion }}"}' \
+          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}
+

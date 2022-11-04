@@ -1,25 +1,15 @@
 name: CodeQL
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
-  schedule:
-  - cron: "29 1 2 * *"
-
+on: [ push ]
 jobs:
   Analyze:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+    - uses: github/codeql-action/init@v2
       with:
         languages: javascript
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+    - uses: github/codeql-action/analyze@v2
+      name: Perform CodeQL Analysis
       with:
         category: "/language:javascript"
 
