@@ -73,7 +73,7 @@ module.exports = function(opts) {
 	} else run("tag", "! git rev-parse -q --verify v" + cur.version, "git tag exists?", "--rewrite")
 
 	run("build", "lj build")
-	run("test", "lj test")
+	run("test", "lj test --brief test/index.js")
 
 	cli.writeFile(COMMIT_EDITMSG, "Release v" + cur.version + "\n" + msg)
 
