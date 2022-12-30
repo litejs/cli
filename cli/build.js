@@ -105,9 +105,10 @@ module.exports = function(opts) {
 function html(opts) {
 	var attr, attrs, arr, ext, tag
 	, min = {}
+	, httpRe = /^https?(?=:)/
 	, tagRe = /<(!--([\s\S]*?)--!?|!\[[\s\S]*?\]|[?!][\s\S]*?|((\/|)[^\s\/>]+)([^>]*?)\/?)>|[^<]+/g
 	, attrRe = /\b([-.:\w]+)\b(?:\s*=\s*(?:("|')((?:\\\2|(?!\2)[\s\S])*?)\2|(\S+)))?/g
-	, dropRe = /^(banner|cat|drop|if|inline|min)$/
+	, customAttr = /^(banner|cat|drop|if|inline|min)$/
 	, boolRe = /^(checked|disabled|multiple|readonly|selected)$/
 	, out = []
 	, loadFiles = []
@@ -119,7 +120,7 @@ function html(opts) {
 			arr = []
 			for (attrs = {_l: out.length, _i: opts._i, _o: opts._o, _j: ""}; (attr = attrRe.exec(tag[5])); ) {
 				attrs[attr[1]] = (attr[3] || attr[4] || "").replace(unescRe, htmlReplace).replace(/\s+/g, " ").trim()
-				if (!dropRe.test(attr[1])) {
+				if (!customAttr.test(attr[1])) {
 					arr.push(
 						boolRe.test(attr[1])
 						? attr[1]
@@ -133,20 +134,20 @@ function html(opts) {
 			if (attrs.exclude === "") continue
 			ext = tag[3] === "script" ? "js" : "css"
 			if ((attr = attrs._s = attrs.src || attrs.href)) {
-				if (attr.indexOf("{") > -1) hashMap[opts._o + attr.split("?")[0]] = attrs
-				attr = opts._i + attr.split("?")[0]
+				if (attr.indexOf("{") > -1) hashMap[attrs._o + attr.split("?")[0]] = attrs
+				attr = attrs._i + attr.split("?")[0]
 				ext = attr.split(".").pop()
 				if (alias[ext]) ext = alias[ext]
 				if (isString(attrs.cat)) {
 					if (!isString(attrs.min)) minList.push(attrs)
 					attrs._j = attrs.cat ? attrs.cat.match(/[^,\s]+/g).map(cat).join("\n") : ""
 					if (attrs.type !== "build") {
-						cli.writeFile(opts._i + attrs._s, drop(attrs))
+						cli.writeFile(attrs._i + attrs._s, drop(attrs))
 					}
 				} else if (attrs.inline === "" || isString(attrs.min)) {
 					attrs._j = cli.readFile(attr)
-				} else if (opts._i !== opts._o) {
-					cli.cp(opts._i + attrs._s, opts._o + attrs._s)
+				} else if (attrs._i !== attrs._o) {
+					cli.cp(attrs._i + attrs._s, attrs._o + attrs._s)
 				}
 			}
 
@@ -228,8 +229,25 @@ function html(opts) {
 
 	return out.join("")
 
-	function cat(name) {
-		var fullPath = path.resolve(opts._i + name)
+
+	function cat(name, idx, arr) {
+		var isHttp = httpRe.exec(name)
+		if (isHttp) {
+			if (arr.length === 1) {
+				var age
+				try {
+					age = (now - Date.parse(fs.statSync(attrs._i + attrs._s).mtime))
+				} catch(e) {}
+				if (age < 10 * 3600 * 1000) {
+					return cli.readFile(attrs._i + attrs._s)
+				}
+			}
+			console.log("GET " + name)
+			return child.execSync(
+				"curl " + name + (isString(attrs.min) ? "|uglifyjs --beautify" : "")
+			).toString("utf8")
+		}
+		var fullPath = path.resolve(attrs._i + name)
 		return cli.readFile(fs.existsSync(fullPath) ? fullPath : require.resolve(defMap(name)))
 	}
 }
