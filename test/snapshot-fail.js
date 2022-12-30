@@ -32,7 +32,7 @@ it("should create a new snapshot", function(assert, mock) {
 	mock.restore()
 	assert
 	.matchSnapshot(snap, cli.readFile("./test/spec/test-no-global.snap"))
-	cli.rmrf(snap + ".snap")
+	cli.rmrf(snap + ".snap1")
 	assert.end()
 })
 
