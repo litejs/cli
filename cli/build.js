@@ -11,6 +11,16 @@
 //-  Examples
 //-    lj b --readme=README.md --out=ui/index.html ui/dev.html
 //-
+//
+// $ git hash-object -w -- README.md
+// 49f5e1141260555ba8819903b19f8960ae04bd46
+// $ git rev-parse --short=1 49f5e1141260555ba8819903b19f8960ae04bd46
+// 49f5e
+//
+//
+// Node.js
+//  - Arrow functions 4.0.0 (correct from 6)
+//  - await 7.6.0
 
 var key
 , child = require("child_process")
@@ -220,7 +230,7 @@ function html(opts) {
 
 	function cat(name) {
 		var fullPath = path.resolve(opts._i + name)
-		return cli.readFile(fs.existsSync(fullPath) ? fullPath : require.resolve(defMap(name))).trim()
+		return cli.readFile(fs.existsSync(fullPath) ? fullPath : require.resolve(defMap(name)))
 	}
 }
 function htmlReplace(ent, name, hex, num) {
