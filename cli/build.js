@@ -137,13 +137,13 @@ function html(opts) {
 				attr = opts._i + attr.split("?")[0]
 				ext = attr.split(".").pop()
 				if (alias[ext]) ext = alias[ext]
-				if (typeof attrs.cat === "string") {
-					if (typeof attrs.min !== "string") minList.push(attrs)
+				if (isString(attrs.cat)) {
+					if (!isString(attrs.min)) minList.push(attrs)
 					attrs._j = attrs.cat ? attrs.cat.match(/[^,\s]+/g).map(cat).join("\n") : ""
 					if (attrs.type !== "build") {
 						cli.writeFile(opts._i + attrs._s, drop(attrs))
 					}
-				} else if (attrs.inline === "" || typeof attrs.min === "string") {
+				} else if (attrs.inline === "" || isString(attrs.min)) {
 					attrs._j = cli.readFile(attr)
 				} else if (opts._i !== opts._o) {
 					cli.cp(opts._i + attrs._s, opts._o + attrs._s)
@@ -152,7 +152,7 @@ function html(opts) {
 
 			attrs._e = ext
 			attrs._t = ext == "css" ? "style" : tag[3]
-			if (typeof attrs.min === "string") {
+			if (isString(attrs.min)) {
 				if (attrs.min === "" && adapter[ext]) {
 					attr = adapter[ext](attrs)
 					if (min.css) min.css._j += attr.css
@@ -221,7 +221,7 @@ function html(opts) {
 	for (attr = 0; (attrs = minList[attr++]); ) {
 		if (attrs.inline === "") {
 			attrs._j = attrs._j.replace(/\/[*\/]!{loadFiles}[*\/]*/, loadFiles).trim()
-			if (typeof attrs._m === "string") attrs._j = run(attrs)
+			if (isString(attrs._m)) attrs._j = run(attrs)
 			out[attrs._l] += rep("<{_t}>\n{_j}\n</{_t}>", attrs)
 		}
 	}
@@ -235,8 +235,8 @@ function html(opts) {
 }
 function htmlReplace(ent, name, hex, num) {
 	return (
-		typeof hex === "string" ? String.fromCharCode(parseInt(num, hex ? 16 : 10)) :
-		typeof htmlMap[name] == "string" ? htmlMap[name] :
+		isString(hex) ? String.fromCharCode(parseInt(num, hex ? 16 : 10)) :
+		isString(htmlMap[name]) ? htmlMap[name] :
 		ent
 	)
 }
@@ -257,8 +257,8 @@ function defMap(str) {
 function run(attrs) {
 	var cmd = commands[attrs._e]
 	return (
-		typeof attrs._m !== "string" ? attrs._j :
-		typeof cmd === "string" ?
+		!isString(attrs._m) ? attrs._j :
+		isString(cmd) ?
 		child.execSync(cmd, {input:attrs._j}).toString("utf8").replace(/.{10000}\}/g, "$&\n") :
 		typeof cmd === "function" ? cmd(attrs) :
 		attrs._j
@@ -397,13 +397,13 @@ function tplMin(attrs) {
 		if (offset && all === indent) return
 
 		for (q = indent.length; q <= stack[0]; ) {
-			if (typeof out[parent] !== "string") {
+			if (!isString(out[parent])) {
 				parent = out.push("") - 1
 			}
 			stack.shift()
 		}
 
-		if (typeof out[parent] !== "string") {
+		if (!isString(out[parent])) {
 			out[parent]._j += all + "\n"
 		} else if (plugin && (name === "js" || name === "css")) {
 			out[parent] += all
@@ -460,6 +460,10 @@ function updateWorker(file, opts, hashes) {
 		console.log(log)
 		cli.writeFile(opts._o + file, updated)
 	}
+}
+
+function isString(str) {
+	return typeof str === "string"
 }
 
 
