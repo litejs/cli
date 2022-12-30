@@ -109,7 +109,7 @@ function html(opts) {
 	, tagRe = /<(!--([\s\S]*?)--!?|!\[[\s\S]*?\]|[?!][\s\S]*?|((\/|)[^\s\/>]+)([^>]*?)\/?)>|[^<]+/g
 	, attrRe = /\b([-.:\w]+)\b(?:\s*=\s*(?:("|')((?:\\\2|(?!\2)[\s\S])*?)\2|(\S+)))?/g
 	, customAttr = /^(banner|cat|drop|if|inline|min)$/
-	, boolRe = /^(checked|disabled|multiple|readonly|selected)$/
+	, boolRe = /^(checked|disabled|multiple|readonly|selected|defer)$/
 	, out = []
 	, loadFiles = []
 	, minList = []
@@ -153,7 +153,10 @@ function html(opts) {
 
 			attrs._e = ext
 			attrs._t = ext == "css" ? "style" : tag[3]
-			if (isString(attrs.min)) {
+			if (isString(attrs.defer)) {
+				if (isString(attrs.inline)) throw "Defered can not be inline"
+				if (attrs.min) queueForMinification()
+			} else if (isString(attrs.min)) {
 				if (attrs.min === "" && adapter[ext]) {
 					attr = adapter[ext](attrs)
 					if (min.css) min.css._j += attr.css
@@ -165,13 +168,13 @@ function html(opts) {
 					continue
 				}
 				if (attrs.min || !min[ext]) {
-					attrs._m = attrs.min || attrs.inline !== "" && minList.length.toString(32) + "." + ext + "?{h}" || ""
-					if (attrs._m.indexOf("{") > -1) hashMap[opts._o + attrs._m.split("?")[0]] = attrs
-					minList.push(min[ext] = attrs)
+					queueForMinification()
 					if (ext == "css" || ext == "js" || ext == "view" || ext == "tpl") {
-						if (min[ext].inline !== "") loadFiles.push(attrs)
+						min[ext] = attrs
+						if (attrs.inline !== "") loadFiles.push(attrs)
 						out.push("")
 					} else {
+						// .json
 						min[ext] = null
 					}
 				} else {
@@ -229,6 +232,11 @@ function html(opts) {
 
 	return out.join("")
 
+	function queueForMinification() {
+		attrs._m = attrs.min || attrs.inline !== "" && minList.length.toString(32) + "." + ext + "?{h}" || ""
+		if (attrs._m.indexOf("{") > -1) hashMap[opts._o + attrs._m.split("?")[0]] = attrs
+		minList.push(attrs)
+	}
 
 	function cat(name, idx, arr) {
 		var isHttp = httpRe.exec(name)
