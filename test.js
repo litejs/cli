@@ -616,7 +616,7 @@
 		}
 	}
 
-	function stringify(item, maxLen) {
+	function stringify(item) {
 		var max = conf.cut > 0 ? conf.cut : _Infinity
 		, str = _stringify(item, max, [])
 		return str.length > max ? str.slice(0, max - 3) + ".." + str.slice(-1) : str

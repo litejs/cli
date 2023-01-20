@@ -6,6 +6,7 @@ var cli = require(".")
 , relPathFn = path.relative.bind(path, process.cwd())
 , seen = {}
 
+/* globals describe */
 describe.assert.cmdSnapshot = function(cmd, file) {
 	var actual
 	try {

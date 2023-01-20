@@ -122,8 +122,7 @@ function html(opts) {
 				attrs[attr[1]] = (attr[3] || attr[4] || "").replace(unescRe, htmlReplace).replace(/\s+/g, " ").trim()
 				if (!customAttr.test(attr[1])) {
 					arr.push(
-						boolRe.test(attr[1])
-						? attr[1]
+						boolRe.test(attr[1]) ? attr[1]
 						: attr[1] + "=\"" + attrs[attr[1]].replace(escRe, htmlReplace) + "\""
 					)
 				}
@@ -388,9 +387,10 @@ function cssMin(attrs) {
 	function cmdFn(_, line, cmd, param) {
 		switch (cmd) {
 		case "data-uri":
+			var enc = param || "base64"
 			line = line.replace(/url\((['"]?)(.+?)\1\)/g, function(_, quote, fileName) {
-				var str = fs.readFileSync(path.resolve(opts.root + fileName), "base64")
-				return "url(\"data:image/" + fileName.split(".").pop() + ";base64," + str + "\")"
+				var str = fs.readFileSync(path.resolve(attrs.root + fileName), enc)
+				return "url(\"data:image/" + fileName.split(".").pop() + ";" + enc + "," + str + "\")"
 			})
 			break;
 		}

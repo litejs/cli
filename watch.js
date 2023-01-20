@@ -1,6 +1,5 @@
 
-var path = require("../lib/path")
-, child = require("child_process")
+var child = require("child_process")
 , fs = require("fs")
 , describe = require("./").describe
 
@@ -18,7 +17,7 @@ describe.onend = function() {
 	function watch(name) {
 		fs.watch(name, watchFn).name = name
 	}
-	function watchFn(ev, name) {
+	function watchFn(ev) {
 		if (ev == "rename") {
 			this.close()
 			setTimeout(watch, 5, this.name)

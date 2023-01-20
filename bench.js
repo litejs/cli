@@ -51,7 +51,7 @@ function bench(tests, opts, next) {
 	}
 }
 
-function measure(fn, time, next) {
+function measure(fn, time) {
 	var i, hr
 	, count = 0
 	, ms = 0

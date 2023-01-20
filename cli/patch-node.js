@@ -16,7 +16,7 @@ if (!Buffer.from) {
 
 if (!fs.copyFileSync) {
 	// Added in: v8.5.0
-	fs.copyFileSync = function(src, dest, mode) {
+	fs.copyFileSync = function(src, dest) {
 		fs.writeFileSync(dest, fs.readFileSync(src))
 	}
 }

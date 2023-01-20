@@ -1,4 +1,7 @@
 ﻿
+/* jshint browser:true */
+/* global El, View */
+
 !function(describe) {
 	var assert = describe.assert
 	, GLOBAL = {}
@@ -9,7 +12,7 @@
 		, hooks = []
 		, hooked = []
 
-		for (k in obj) if (isFn(obj[k])) swap(k)
+		for (k in obj) if (typeof obj[k] === "function") swap(k)
 		function swap(k) {
 			hooked.push(k, obj[k])
 			obj[k] = function() {

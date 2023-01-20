@@ -21,7 +21,7 @@
     "cli"
   ],
   "scripts": {
-    "test": "TZ='Europe/Tallinn' c8 -r lcov -r text-summary node -r ./test.js --allow-natives-syntax --expose-gc test/index.js --brief"
+    "test": "TZ='Europe/Tallinn' c8 -r lcov -r text-summary node -r ./test.js --allow-natives-syntax --expose-gc test/index.js --brief && jshint *.js cli/*.js"
   },
   "bin": {
     "lj-doc": "./cli/doc",
@@ -34,18 +34,19 @@
   "litejs": {
     "build": false,
     "install": false,
-    "lint": [
-      "jshint *.js",
-      "jshint cli/*.js"
-    ],
+    "lint": false,
     "test": "node -r ./test.js --allow-natives-syntax --expose-gc test/index.js"
   },
   "jshintConfig": {
+    "esversion": 5,
     "asi": true,
     "evil": true,
     "laxcomma": true,
-    "laxbreak": true,
     "maxdepth": 6,
+    "node": true,
+    "nonbsp": true,
+    "undef": true,
+    "unused": true,
     "quotmark": "double"
   }
 }

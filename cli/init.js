@@ -22,7 +22,7 @@ var fs = require("fs")
 }
 
 module.exports = function(opts) {
-	var tmp, undef
+	var tmp
 	, dir = path.join(process.cwd(), opts.args[0] || "")
 	, stdio = {stdio: "inherit"}
 

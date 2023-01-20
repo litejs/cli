@@ -22,7 +22,7 @@
 
 
 module.exports = function(opts) {
-	var g
+	var g, i
 	, TAG_MSG = ".git/TAG_MSG"
 	, COMMIT_EDITMSG = ".git/COMMIT_EDITMSG"
 	, child = require("child_process")

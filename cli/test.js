@@ -3,6 +3,8 @@ var cli = require("..")
 , child = require("child_process")
 , path = require("path")
 
+/* global describe */
+
 module.exports = function(opts) {
 	var subOpts = {
 		//env: {
