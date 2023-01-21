@@ -223,25 +223,9 @@ function readFile(fileName) {
 	return fs.readFileSync(path.resolve(fileName.split("?")[0]), "utf8")
 }
 
-// On windows unlinking an opened file will mark it for deletion and the file is still there until it is closed.
-// With anti-virus software, renaming immediately after creation fails with EPERM error, as A/V locking up files for scanning time.
-
 function rmrf(dir) {
 	if (dir === "/") throw Error("Can not remove root")
-	try {
-		if (fs.lstatSync(dir).isDirectory()) {
-			for (var arr = fs.readdirSync(dir), i = arr.length; i--; ) {
-				rmrf(path.join(dir, arr[i]))
-			}
-			console.error("rmdir", dir)
-			fs.rmdirSync(dir)
-		} else {
-			console.error("rm", dir)
-			fs.unlinkSync(dir)
-		}
-	} catch (e) {
-		if (e.code !== "ENOENT") throw e
-	}
+	fs.rmSync(dir, { force: true, recursive: true })
 }
 
 function writeFile(fileName, content) {
