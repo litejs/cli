@@ -5,11 +5,8 @@ describe("bench.js", function() {
 
 	function nop() {}
 
-	it ("should measure cpu speed", function(assert) {
-		assert(bench.cpuSpeed()).end()
-	})
 
-	it ("should return same result on same fn", function(assert) {
+	it ("should return similar result on same fn", function(assert) {
 		assert.setTimeout(3000)
 		var count = 5
 		retry()
@@ -31,6 +28,24 @@ describe("bench.js", function() {
 			assert.equal(result.b.rel, "fastest")
 			assert.end()
 		})
+	})
+	it ("should spread fns array", function(assert) {
+		bench({
+			a: nop,
+			b: {
+				fns: [ function b1(){}, function b2(){} ],
+				run: nop
+			},
+			c: nop
+		}, {warmup:1,"sample-time":1}, function(err, result) {
+			assert.equal(Object.keys(result), ["a", "b.b1", "b.b2", "c"])
+			assert.end()
+		})
+	})
+	it ("should estimate cpu speed", function(assert) {
+		var speed = bench.cpuSpeed()
+		console.log("# Estimated CPU speed: " + speed)
+		assert(speed > 0.1).end()
 	})
 })
 

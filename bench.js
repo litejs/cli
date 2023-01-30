@@ -5,12 +5,26 @@ module.exports = bench
 bench.cpuSpeed = cpuSpeed
 
 function bench(tests, opts, next) {
-	var i
+	var i, test
 	, keys = Object.keys(tests).reverse()
 	, len = keys.length
 	, times = []
 	, samples = opts.samples || /* c8 ignore next */ 7
 	, warmupTime = 0|((opts.warmup || /* c8 ignore next */ 2000)/len)
+
+	// spread array of functions
+	for (i = len; i--; ) {
+		test = tests[keys[i]]
+		if (typeof test !== "function" && Array.isArray(test.fns)) {
+			keys.splice.apply(keys, [i, 1].concat(test.fns.map(bindFn).reverse()))
+		}
+		len = keys.length
+	}
+	function bindFn(fn) {
+		var name = keys[i] + "." + fn.name
+		tests[name] = test.run.bind(test, fn)
+		return name
+	}
 
 	// warmup
 	for (i = len; i--; ) {
