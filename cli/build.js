@@ -145,7 +145,7 @@ function html(opts) {
 					}
 				} else if (attrs.inline === "" || isString(attrs.min)) {
 					attrs._j = cli.readFile(attr)
-				} else if (attrs._i !== attrs._o) {
+				} else if (attrs._i !== attrs._o && attrs._s.slice(0, 5) !== "data:") {
 					cli.cp(attrs._i + attrs._s, attrs._o + attrs._s)
 				}
 			}
