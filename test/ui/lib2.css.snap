@@ -1,0 +1,19 @@
+.base {
+	color: red;
+}
+
+
+.grid {
+	display: block;
+}
+
+.app {
+	margin: 0 auto;
+}
+
+
+		.logo {
+			background: red;
+			/*url("data:image/svg+xml;base64,[data]");*/
+		}
+		

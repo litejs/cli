@@ -77,7 +77,7 @@ module.exports = function(opts) {
 		if (!opts.coverage) return
 		var coverages = {}
 		, fileCoverage = require("./coverage.js").fileCoverage
-		, fileNames = cli.ls(opts.sources).filter(function(name) {
+		, fileNames = cli.ls.apply(null, opts.sources.split(",")).filter(function(name) {
 			return this.indexOf(name) < 0
 		}, ("" + opts.ignore).split(","))
 		, fileMap = fileNames.reduce(function(map, name) {

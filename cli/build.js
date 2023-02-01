@@ -22,30 +22,19 @@
 //  - Arrow functions 4.0.0 (correct from 6)
 //  - await 7.6.0
 
-var key
-, child = require("child_process")
+var child = require("child_process")
 , fs = require("fs")
 , path = require("path")
+, dom = require("@litejs/dom")
+, parser = new dom.DOMParser()
 , cli = require("..")
 , now = new Date()
 , lastStr = ""
-, htmlMap = {
-	lt: "<", gt: ">", quot: "\"", amp: "&",
-	"#x60": "`"
-}
-, escRe = /([&"<>`])/g
-, unescRe = /&(\w+|#(x|)([\da-f]+));/ig
-, adapter = {
-	view: view2js
-}
-, alias = {
-	tpl: "view"
-}
 , banner = {
 	css: "/*! {0} */\n",
 	html: "<!-- {0} -->\n",
 	js: "/*! {0} */\n",
-	tpl: "/{0}\n"
+	view: "/{0}\n"
 }
 , commands = {
 	css: cssMin,
@@ -54,10 +43,9 @@ var key
 	json: function(attrs) {
 		return JSON.stringify(JSON.parse(attrs._j))
 	},
-	tpl: tplMin,
-	view: tplMin
+	view: viewMin
 }
-, fileHashes = {}
+, fileHashes
 , conf = {
 	date: now.toISOString().split("T")[0]
 }
@@ -76,201 +64,228 @@ if (linked) {
 	// module.paths.push(path.resolve(process.cwd(), "node_modules"))
 }
 
-for (key in htmlMap) htmlMap[htmlMap[key]] = "&" + key + ";"
 
 module.exports = function(opts) {
 	if (opts.ver) conf.version = opts.ver
 
 	var out = opts.out || opts.args[0]
 	, attrs = {
-		_i: opts.args[0].replace(/[^\/]+$/, ""),   // Input dir
-		_s: opts.args[0].replace(/.*\//, ""),      // Input file
-		_o: out.replace(/[^\/]+$/, ""),            // Output dir
-		_m: out.replace(/.*\//, ""),               // Output file
+		inDir: opts.args[0].replace(/[^\/]+$/, ""),   // Input dir
+		inFile: opts.args[0].replace(/.*\//, ""),      // Input file
+		outDir: out.replace(/[^\/]+$/, ""),            // Output dir
+		outFile: out.replace(/.*\//, ""),               // Output file
 		_j: cli.readFile(opts.args[0])
 	}
-	, output = html(attrs)
-	if (opts.readme !== false) {
-		output = format(output)
-	}
-	if (opts.out) cli.writeFile(out, output)
-	else process.stdout.write(output)
+	html(attrs, function(output) {
+		if (opts.readme !== false) {
+			output = format(output)
+		}
+		if (opts.out) cli.writeFile(out, output)
+		else process.stdout.write(output)
 
-	if (opts.worker) {
-		updateWorker(opts.worker, attrs, {})
-	}
-	child.execSync("git add -u")
+		if (opts.worker) {
+			updateWorker(opts.worker, attrs, {})
+		}
+		child.execSync("git add -u")
+	})
 }
 
-function html(opts) {
-	var attr, attrs, arr, ext, tag
-	, min = {}
+function html(opts, next) {
+	var doc = parser.parseFromString(opts._j)
 	, httpRe = /^https?(?=:)/
-	, tagRe = /<(!--([\s\S]*?)--!?|!\[[\s\S]*?\]|[?!][\s\S]*?|((\/|)[^\s\/>]+)([^>]*?)\/?)>|[^<]+/g
-	, attrRe = /\b([-.:\w]+)\b(?:\s*=\s*(?:("|')((?:\\\2|(?!\2)[\s\S])*?)\2|(\S+)))?/g
-	, customAttr = /^(banner|cat|drop|if|inline|min)$/
-	, boolRe = /^(checked|disabled|multiple|readonly|selected|defer)$/
-	, out = []
+	, inDir = opts.inDir
+	, inFile = path.resolve(inDir + opts.inFile)
+	, outDir = opts.outDir
 	, loadFiles = []
-	, minList = []
-	, hashMap = {}
+	, loadFilesRe = /\/[*\/]!{loadFiles}[*\/]*/
+	, cacheFile = inFile + ".cache.json"
+	, cache = {}
+	, written = {}
+	, lastMinEl = {}
 
-	for (; (tag = tagRe.exec(opts._j)); ) {
-		if (tag[4] === "" && tag[5]) {   // start tag with attributes
-			arr = []
-			for (attrs = {_l: out.length, _i: opts._i, _o: opts._o, _j: ""}; (attr = attrRe.exec(tag[5])); ) {
-				attrs[attr[1]] = (attr[3] || attr[4] || "").replace(unescRe, htmlReplace).replace(/\s+/g, " ").trim()
-				if (!customAttr.test(attr[1])) {
-					arr.push(
-						boolRe.test(attr[1]) ? attr[1]
-						: attr[1] + "=\"" + attrs[attr[1]].replace(escRe, htmlReplace) + "\""
-					)
-				}
-			}
-			if (tag[3] === "script" || tag[3] === "style") {
-				for (; (attr = tagRe.exec(opts._j)) && attr[3] !== "/" + tag[3]; attrs._j += attr[0]);
-			}
-			if (attrs.exclude === "") continue
-			ext = tag[3] === "script" ? "js" : "css"
-			if ((attr = attrs._s = attrs.src || attrs.href)) {
-				if (attr.indexOf("{") > -1) hashMap[attrs._o + attr.split("?")[0]] = attrs
-				attr = attrs._i + attr.split("?")[0]
-				ext = attr.split(".").pop()
-				if (alias[ext]) ext = alias[ext]
-				if (isString(attrs.cat)) {
-					if (!isString(attrs.min)) minList.push(attrs)
-					attrs._j = attrs.cat ? attrs.cat.match(/[^,\s]+/g).map(cat).join("\n") : ""
-					if (attrs.type !== "build") {
-						cli.writeFile(attrs._i + attrs._s, drop(attrs))
-					}
-				} else if (attrs.inline === "" || isString(attrs.min)) {
-					attrs._j = cli.readFile(attr)
-				} else if (attrs._i !== attrs._o && attrs._s.slice(0, 5) !== "data:") {
-					cli.cp(attrs._i + attrs._s, attrs._o + attrs._s)
-				}
-			}
+	try {
+		var age = (now - Date.parse(fs.statSync(cacheFile).mtime))
+		if (age < 36000000) cache = require(cacheFile)
+	} catch(e) {}
 
-			attrs._e = ext
-			attrs._t = ext == "css" ? "style" : tag[3]
-			if (isString(attrs.defer)) {
-				if (isString(attrs.inline)) throw "Defered can not be inline"
-				if (attrs.min) queueForMinification()
-			} else if (isString(attrs.min)) {
-				if (attrs.min === "" && adapter[ext]) {
-					attr = adapter[ext](attrs)
-					if (min.css) min.css._j += attr.css
-					else if (attr.css) attr.js += ";xhr.css('" + attr.css.replace(/\n/g, "").replace(/'/g, "\\'") + "')"
-					if (min.view) min.view._j += attr.view
-					else if (attr.view) attr.js += ";El.tpl('" + attr.view.replace(/\n+/g, "\x1f").replace(/'/g, "\\$&") + "')"
-					if (min.js) min.js._j += attr.js
-					else if (attr.js) throw "Should create a new script tag"
-					continue
-				}
-				if (attrs.min || !min[ext]) {
-					queueForMinification()
-					if (ext == "css" || ext == "js" || ext == "view" || ext == "tpl") {
-						min[ext] = attrs
-						if (attrs.inline !== "") loadFiles.push(attrs)
-						out.push("")
-					} else {
-						// .json
-						min[ext] = null
-					}
-				} else {
-					min[ext]._j += "\n" + attrs._j.trim()
-				}
-				if (min[ext]) continue
-			} else if (attrs.inline === "") {
-				minList.push(min[ext] = attrs)
-				continue
+	readHashes(inDir)
+
+	$$("[exclude]").forEach(remove)
+
+	following("cat", function(el, siblings) {
+		setLastEl(el, el.cat.match(/[^,\s]+/g) || [], siblings)
+		write(inDir, getSrc(el), el._txt, el)
+	})
+
+	following("min", function(el, siblings) {
+		setLastEl(el, [el], siblings)
+		el[el.src ? "src" : el.href ? "href" : "_min"] = el._min = getSrc(el.min || el)
+	})
+
+
+	//*
+	$$("[src]:not([src^='data:']),[href]:not([href^='data:'])").forEach(function(el) {
+		if (el._txt) return
+		var name = getSrc(el)
+		, name2 = name.split("?")[0]
+		if (name.indexOf("{h}") > -1) {
+			el[el.src ? "src" : "href"] = name.replace("{h}", fileHashes[name2] || now.getTime())
+		}
+		if (inDir !== outDir) {
+			cli.cp(path.resolve(inDir, name2), path.resolve(outDir, name2))
+		}
+	})
+	//*/
+
+	$$("[_min]:not([inline])").forEach(function(el) {
+		write(outDir, el._min, minimize(el, { input: el._txt }), el)
+		delete el._min
+		delete el._txt
+	})
+
+	$$("[inline]").forEach(function(el) {
+		if (el.defer === "") throw "Defered can not be inline"
+		if (el.if) throw "Conditional load can not be inline"
+		var content = el._txt
+		if (loadFilesRe.test(content)) {
+			content = content.replace(loadFilesRe, "" + loadFiles.map(function(el) {
+				return (el.if ? "(" + el.if + ")&&" : "") + JSON.stringify(getSrc(el))
+			}))
+			loadFiles.forEach(remove)
+		}
+		if (el._min) content = minimize(el, { input: content })
+		el.parentNode.insertBefore(doc.createElement(el.tagName === "SCRIPT" ? "script" : "style"), el).textContent = "\n" + content.trim() + "\n"
+		remove(el)
+	})
+
+	if (Object.keys(cache)[0]) write(inDir, cacheFile, JSON.stringify(cache, null, 2), {})
+
+	next(doc.toString(true))
+
+	function setLastEl(el, els, siblings) {
+		var ext = getExt(el.min || el)
+		, content = els.concat(siblings).map(read, el).join("\n")
+		if ((el.min || el.inline === "" && el.min === "") && !el.if) {
+			lastMinEl[ext] = el
+		}
+		el._txt = content
+		if (ext === "js" || ext === "css" || ext === "view") {
+			if (el.inline !== "" && loadFiles.indexOf(el) < 0) loadFiles.push(el)
+		}
+	}
+
+	function $$(sel) {
+		return Array.from(doc.querySelectorAll(sel))
+	}
+	function following(attr, fn) {
+		$$("[%]:not([%='']),[%=''][inline='']".replace(/%/g, attr)).forEach(function(el) {
+			for (
+				var pos = el, siblings = [], sel = "[" + attr + "='']:not([inline])";
+				(pos = pos.nextElementSibling) && pos.matches(sel);
+				siblings.push(pos)
+			);
+			fn(el, siblings)
+			siblings.forEach(remove)
+			removeAttrs(el, [attr])
+		})
+	}
+	function remove(el) {
+		if (el.parentNode) {
+			if (el.previousSibling.nodeType === doc.TEXT_NODE) el.parentNode.removeChild(el.previousSibling)
+			el.parentNode.removeChild(el)
+		}
+	}
+	function removeAttrs(el, attrs) {
+		if (el.removeAttribute) attrs.forEach(el.removeAttribute, el)
+	}
+	function getSrc(el) {
+		return (el.src || el.href || el)
+	}
+	function getExt(el) {
+		var ext = getSrc(el).split("?")[0].split(".").pop()
+		//var ext = el.tagName === "SCRIPT" ? "js" : el.tagName === "STYLE" ? "css" : getSrc(el).split("?")[0].split(".").pop()
+		return ext === "tpl" ? "view" : ext
+	}
+	function read(_name) {
+		var name = getSrc(_name)
+		if (name.nodeType) return name.parentNode ? name._txt || name.textContent : ""
+		var fullPath = path.resolve(inDir, name.split("?")[0])
+		, content = httpRe.test(name) ?
+			cache[name] || (cache[name] = child.execSync("curl " + name + "|uglifyjs --beautify").toString("utf8")) :
+			cli.readFile(name = fs.existsSync(fullPath) ? fullPath : require.resolve(defMap(name)))
+		, ext = getExt(name)
+		, extTo = getExt(this) || ext
+
+		if (ext !== extTo) {
+			if (extTo !== "js") throw "Can not transform to " + extTo
+			if (ext === "view") {
+				var map = parseView(content)
+				content = ""
+				if (lastMinEl.css) lastMinEl.css._txt += map.css
+				else content += css2js(map.css)
+				if (lastMinEl.view) lastMinEl.view._txt += map.view
+				else content += view2js(map.view)
+				if (lastMinEl.js) lastMinEl.js._txt += map.js
+				else content += map.js
+			} else if (ext === "css") {
+				content = css2js(content)
 			}
-			arr = arr[0] ? " " + arr.join(" ").replace(/="([-.:\w]+)"/g, "=$1") + ">" : ">"
-		} else if (arr !== ">") arr = ">"
-		attr = (
-			tag[3] ? "<" + tag[3] + arr :            // start or close tag
-			tag[2] ? "" :                            // comment
-			tag[1] ? tag[0].replace(/\s+/g, " ") :   // doctype
-			tag[0].trim()                            // text
+		}
+		return content
+	}
+	function contentHash(content) {
+		var hash = child.execSync("git hash-object -w --stdin", { input: content }).toString("utf8")
+		return child.execSync("git rev-parse --short=1 " + hash).toString("utf8").trim()
+	}
+	function write(dir, name, content, el) {
+		var ext = getExt(name)
+		if (el.drop) content = content.replace(
+			RegExp("\\/(\\*\\*+)\\s*(" + el.drop.replace(/[^\w.:]+/g, "|") + ")\\s*\\1\\/", "g"), "/$1 $2 $1"
 		)
-		if (attr !== "") out.push(attr)
-	}
-	for (attr = 0; (attrs = minList[attr++]); ) {
-		if (attrs.drop) attrs._j = drop(attrs)
-		if (opts.readme !== false) attrs._j = format(attrs._j)
-		if (attrs.type === "build") {
-			cli.writeFile(opts._i + attrs._s, attrs._j.trim())
+		if (el.banner && banner[ext]) {
+			content = banner[ext].replace(/\{0\}/g, el.banner) + content
 		}
-		if (attrs.inline !== "") {
-			ext = run(attrs)
-			if (attrs.banner && banner[attrs._e]) ext = banner[attrs._e].replace(/\{0\}/g, attrs.banner) + ext
-			if (attrs._m) {
-				cli.writeFile(opts._o + attrs._m, ext)
-			}
+		if (name.indexOf("{h}") > -1) {
+			name = name.replace("{h}", contentHash(content))
 		}
+		el[el.src ? "src" : "href"] = name
+		name = path.resolve(dir, name.split("?")[0])
+		cli.writeFile(name, written[name] = content)
+		removeAttrs(el, ["banner", "drop"])
+		return name
 	}
-
-	readHashes(opts._o)
-
-	Object.keys(hashMap).forEach(function(file) {
-		if (!fileHashes[file]) console.log("WARN: %s not commited?", file)
-		var attrs = hashMap[file]
-		, res = JSON.stringify(rep(attrs._m || attrs._s, {h:fileHashes[file]})).replace(/="([-.:\w]+)"/g, "=$1")
-		out[attrs._l] = out[attrs._l].replace(/\b(src|href)=[^ >]+/, "$1=" + res)
-	})
-
-	loadFiles = "" + loadFiles.map(function(attrs) {
-		return (attrs.if ? "(" + attrs.if + ")&&" : "") + JSON.stringify(rep(attrs._m, {h:fileHashes[opts._o + attrs._m.split("?")[0]]}))
-	})
-	for (attr = 0; (attrs = minList[attr++]); ) {
-		if (attrs.inline === "") {
-			attrs._j = attrs._j.replace(/\/[*\/]!{loadFiles}[*\/]*/, loadFiles).trim()
-			if (isString(attrs._m)) attrs._j = run(attrs)
-			out[attrs._l] += rep("<{_t}>\n{_j}\n</{_t}>", attrs)
+	function minimize(el, _opts) {
+		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
+		, ext = getExt(el.min || el)
+		if (ext === "json") {
+			return JSON.stringify(JSON.parse(content))
 		}
-	}
-
-	return out.join("")
-
-	function queueForMinification() {
-		attrs._m = attrs.min || attrs.inline !== "" && minList.length.toString(32) + "." + ext + "?{h}" || ""
-		if (attrs._m.indexOf("{") > -1) hashMap[opts._o + attrs._m.split("?")[0]] = attrs
-		minList.push(attrs)
-	}
-
-	function cat(name, idx, arr) {
-		var isHttp = httpRe.exec(name)
-		if (isHttp) {
-			if (arr.length === 1) {
-				var age
-				try {
-					age = (now - Date.parse(fs.statSync(attrs._i + attrs._s).mtime))
-				} catch(e) {}
-				if (age < 10 * 3600 * 1000) {
-					return cli.readFile(attrs._i + attrs._s)
-				}
-			}
-			console.log("GET " + name)
-			return child.execSync(
-				"curl " + name + (isString(attrs.min) ? "|uglifyjs --beautify" : "")
-			).toString("utf8")
+		if (ext === "css") {
+			return cssMin({_j: _opts.input, inDir:inDir, outDir:outDir, inFile: el.min || el.href, outFile: el.min})
+			//return child.execSync("csso", { input: content }).toString("utf8")
 		}
-		var fullPath = path.resolve(attrs._i + name)
-		return cli.readFile(fs.existsSync(fullPath) ? fullPath : require.resolve(defMap(name)))
+		if (ext === "view") {
+			var map = parseView(content)
+			content = ""
+			if (lastMinEl.css) lastMinEl.css._txt += map.css
+			else content += "%css " + map.css
+			if (lastMinEl.js) lastMinEl.js._txt += map.js
+			else content += "%js " + map.js
+			content += map.view
+			return viewMin({_j: content})
+		}
+		if (ext === "js") {
+			var cmd = [
+				"uglifyjs --warn --ie8 -c 'evaluate=false,properties=false'",
+				"-m eval --comments '/^\\s*[@!]/'",
+				"--beautify 'beautify=false,semicolons=false,keep_quoted_props=true' --"
+			].concat(_opts.files || []).join(" ")
+			return child.execSync(cmd, _opts).toString("utf8")
+		}
+		throw "Invalid file ext " + ext
 	}
 }
-function htmlReplace(ent, name, hex, num) {
-	return (
-		isString(hex) ? String.fromCharCode(parseInt(num, hex ? 16 : 10)) :
-		isString(htmlMap[name]) ? htmlMap[name] :
-		ent
-	)
-}
-function drop(attrs) {
-	return attrs.drop ? attrs._j.replace(
-		RegExp("\\/(\\*\\*+)\\s*(" + attrs.drop.replace(/[^\w.:]+/g, "|") + ")\\s*\\1\\/", "g"),
-		"/$1 $2 $1"
-	) : attrs._j
-}
+
 function defMap(str) {
 	var chr = str.charAt(0)
 	, slice = str.slice(1)
@@ -282,7 +297,7 @@ function defMap(str) {
 function run(attrs) {
 	var cmd = commands[attrs._e]
 	return (
-		!isString(attrs._m) ? attrs._j :
+		!isString(attrs.outFile) ? attrs._j :
 		isString(cmd) ?
 		child.execSync(cmd, {input:attrs._j}).toString("utf8").replace(/.{10000}\}/g, "$&\n") :
 		typeof cmd === "function" ? cmd(attrs) :
@@ -291,13 +306,9 @@ function run(attrs) {
 	.replace(/\\x0B/ig, "\\v")
 	.trim()
 }
-function rep(str, map) {
-	return str.replace(/\{(.+?)}/g, function(match, expr) {
-		var junk = expr.split(";")
-		return Array.isArray(map[junk[0]]) ? map[junk[0]].join(junk[1]) : map[junk[0]] || now.getTime()
-	})
-}
 function readHashes(root) {
+	if (fileHashes) return
+	fileHashes = {}
 	child.execSync((root ? "cd " + root + ";" : "") + "git add -u;git ls-files -sz --abbrev=1")
 	.toString("utf8").split("\0").map(function(line) {
 		line = line.split(/\s+/)
@@ -305,31 +316,11 @@ function readHashes(root) {
 	})
 }
 
-
-function view2js(attrs) {
-	var line
-	, arr = attrs._j.split(/[\n\x1f]/)
-	, i = 0
-	, l = arr.length
-	, map = { "%css": "", "%js": "" }
-	, last = -1
-
-	for (; i < l; ) {
-		line = arr[i++]
-		if (line === "") {
-			if (last > -1) {
-				map[arr[last]] += arr.splice(last, i - last).slice(1).join("\n")
-				i -= i - last
-				last = -1
-			}
-		} else if (map.hasOwnProperty(line)) last = i - 1
-	}
-
-	return {
-		css: map["%css"],
-		js: map["%js"] ? ";!function(){" + map["%js"] + "}()" : "",
-		view: tplMin({_j:arr.join("\n")})
-	}
+function css2js(content) {
+	return content ? ";xhr.css('" + content.replace(/\n/g, "").replace(/'/g, "\\'") + "')" : ""
+}
+function view2js(content) {
+	return content ? ";El.tpl('" + content.replace(/\n+/g, "\x1f").replace(/'/g, "\\$&") + "')" : ""
 }
 
 function cssImport(attrs) {
@@ -337,8 +328,8 @@ function cssImport(attrs) {
 	, str = attrs._j
 	, lastIndex = 0
 	, re = /@import\s+url\((['"]?)(?!data:)(.+?)\1\);*/ig
-	, inDir = path.resolve(attrs._i, attrs._s || "").replace(/[^\/]+$/, "")
-	, outDir = path.resolve(attrs._o, attrs._m || "inline").replace(/[^\/]+$/, "")
+	, inDir = path.resolve(attrs.inDir, attrs.inFile || "").replace(/[^\/]+$/, "")
+	, outDir = path.resolve(attrs.outDir, attrs.outFile || "inline").replace(/[^\/]+$/, "")
 
 	if (inDir !== outDir) {
 		str = str.replace(/\/\*(?!!)[^]*?\*\/|url\((['"]?)(?!data:)(.+?)\1\)/ig, function(_, q, name) {
@@ -352,10 +343,10 @@ function cssImport(attrs) {
 		out.splice(-1, 1,
 			str.slice(lastIndex, match.index),
 			cssImport({
-				_i: inDir,
-				_s: inDir + match[2],
-				_o: outDir,
-				_m: attrs._m,
+				inDir: inDir,
+				inFile: inDir + match[2],
+				outDir: outDir,
+				outFile: attrs.outFile,
 				_j: cli.readFile(path.resolve(outDir, match[2]))
 			}),
 			str.slice(lastIndex = re.lastIndex)
@@ -407,7 +398,33 @@ function cssMin(attrs) {
 	}
 }
 
-function tplMin(attrs) {
+function parseView(content) {
+	var line
+	, arr = content.split(/[\n\x1f]/)
+	, i = 0
+	, l = arr.length
+	, map = { "%css": "", "%js": "" }
+	, last = -1
+
+	for (; i < l; ) {
+		line = arr[i++]
+		if (line === "") {
+			if (last > -1) {
+				map[arr[last]] += arr.splice(last, i - last).slice(1).join("\n")
+				i -= i - last
+				last = -1
+			}
+		} else if (map.hasOwnProperty(line)) last = i - 1
+	}
+
+	return {
+		css: map["%css"],
+		js: map["%js"] ? ";!function(){" + map["%js"] + "}()" : "",
+		view: viewMin({_j:arr.join("\n")})
+	}
+}
+
+function viewMin(attrs) {
 	var out = [""]
 	//, templateRe = /^([ \t]*)(%?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))$/gm
 	, templateRe = /([ \t]*)(%?)((?:("|')(?:\\\4|.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))(?=\x1f|\n|$)+/g
@@ -434,7 +451,7 @@ function tplMin(attrs) {
 		} else if (plugin && (name === "js" || name === "css")) {
 			out[parent] += all
 			parent = out.push({
-				_s: attrs._s, _m: attrs._m, _i: attrs._i, _o: attrs._i,
+				inFile: attrs.inFile, outFile: attrs.outFile, inDir: attrs.inDir, outDir: attrs.inDir,
 				_j: "", _e: name, _p: " ".repeat(indent.length + 1),
 				toString: function() {
 					return this._p + run(this).split("\n").join("\n" + this._p)
@@ -455,9 +472,9 @@ function format(str) {
 }
 
 function updateWorker(file, opts, hashes) {
-	var root = opts._i + file.replace(/[^\/]+$/, "")
+	var root = opts.inDir + file.replace(/[^\/]+$/, "")
 	, re = /(\s+VERSION\s*=\s*)("|').*?\2/
-	, current = cli.readFile(opts._i + file)
+	, current = cli.readFile(opts.inDir + file)
 	, log = "# Update worker: " + file
 
 	readHashes(root)
@@ -484,7 +501,7 @@ function updateWorker(file, opts, hashes) {
 
 	if (current != updated) {
 		console.log(log)
-		cli.writeFile(opts._o + file, updated)
+		cli.writeFile(opts.outDir + file, updated)
 	}
 }
 

@@ -39,7 +39,7 @@ describe("cli", function() {
 		comp("test/index.js")
 		comp("*.js")
 		comp("test/[ab]*.js")
-		comp("**/a*.js")
+		comp("test/**/a*.js")
 		assert.end()
 	})
 	require("./build.js")

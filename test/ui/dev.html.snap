@@ -1,21 +1,22 @@
 
-<!DOCTYPE   html>
+<!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="initial-scale=1,maximum-scale=1">
 		<!-- Replace hash in min -->
+		<link rel="manifest" href=manifest.json>
 		<link rel="manifest" href=manifest.json min="m.json?{h}">
+		<link rel="manifest2" href=manifest.json min="m-{h}.json">
 
-		<meta name="application-name" content="UI">
-
-		<title>UI</title>
-		<link rel="stylesheet" href="lib.css" min cat="
+		<link rel="stylesheet" href="lib1.css" cat="
 			dummy/base.css
 			%/grid.css
 		" inline>
-		<link rel="stylesheet" href="app.css" min>
-		<style min>
+		<link rel="stylesheet" href="lib2.css" cat="
+			dummy/base.css
+			%/grid.css
+		" inline min>
+		<link rel="stylesheet" href="app.css" cat>
+		<style cat>
 		.logo {
 			background: red;
 			/*url("data:image/svg+xml;base64,[data]");*/
@@ -30,10 +31,9 @@
 			cat="
 				dummy/polyfill
 		"></script>
-		<script src="a.js" min="min.js?{h}"></script>
+		<script src="a.js" min="min-{h}.js"></script>
 		<script src="b.js" min cat="b1.js b2.js" drop=test></script>
 		<script src="c.view" min x="&amp;amp; &#x26;amp;"  ></script>
-		<img src="your.svg" onerror="this.src='your.png'" alt="Your image">
 		<img src="data:image/svg+xml;base64,[data]">
 		<object type="image/svg+xml" data="image.svg">
 			<!-- Your fall back here, this will be loaded twice -->

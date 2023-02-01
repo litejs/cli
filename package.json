@@ -21,7 +21,10 @@
     "cli"
   ],
   "scripts": {
-    "test": "TZ='Europe/Tallinn' node --allow-natives-syntax --expose-gc ./index.js test test/index.js --coverage --lcov --brief --no-status && jshint *.js cli/*.js"
+    "test": "TZ='Europe/Tallinn' node --allow-natives-syntax --expose-gc ./index.js test test/index.js --coverage --sources='*.js,cli/*.js' --brief --no-status && jshint *.js cli/*.js"
+  },
+  "dependencies": {
+    "@litejs/dom": "23.2.2"
   },
   "bin": {
     "lj-doc": "./cli/doc",

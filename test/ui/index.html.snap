@@ -1,8 +1,17 @@
-<!DOCTYPE html><html><head><meta charset=UTF-8><meta name=viewport content="initial-scale=1,maximum-scale=1"><link rel=manifest href="m.json?d947"><meta name=application-name content=UI><title>UI</title><style>
+<!DOCTYPE html><html><head><link rel=manifest href=manifest.json><link rel=manifest href=m.json?d947><link rel=manifest2 href=m-d947.json><style>
+.base {
+	color: red;
+}
+
+
+.grid {
+	display: block;
+}
+</style><style>
 .base{color:red}
 .grid{display:block}
 .app{margin:0 auto}
 .logo{background:red}
 </style></head><body><script>
-var load=[(!window.PointerEvent||!navigator.sendBeacon)&&"0.js?690b","min.js?4df8"]
-</script><img src=your.svg onerror="this.src='your.png'" alt="Your image"><img src="data:image/svg+xml;base64,[data]"><object type="image/svg+xml" data=image.svg><img src=image.svg></object></body></html>
+var load=[(!window.PointerEvent||!navigator.sendBeacon)&&"0.js?5fea","b.js","min-4575.js"]
+</script><img src=data:image/svg+xml;base64,[data]><object type=image/svg+xml data=image.svg><img src=image.svg></object></body></html>
