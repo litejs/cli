@@ -507,17 +507,12 @@
 	}
 
 	function xorshift128(a) {
-		var b = a * 2e3
-		, c = a * 3e4
-		, d = a * 4e5
+		var b = a * 2e3, c = a * 3e4, d = a * 4e5
 		return function() {
-			var z, t = d
-			t ^= t << 11; t ^= t >>> 8
-			d = c; c = b
-			z = b = a
-			t ^= z; t ^= z >>> 19
-			a = t
-			return (t >>> 0) / 4294967295
+			var t = d ^ (d << 11)
+			d = c; c = b; b = a
+			a ^= t ^ (t >>> 8) ^ (a >>> 19)
+			return (a >>> 0) / 4294967295
 		}
 	}
 
