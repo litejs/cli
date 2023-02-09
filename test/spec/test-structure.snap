@@ -11,7 +11,7 @@ TestSuite 2 with map
     ∅ 7. Case 2.4.2
     ∅ 8. Case 2.5
     ∅ 9. it supports a pending test 2.6
-    ∅ 10. it should skip test by name 2.7
+    ∅ 10. it _should skip test by name 2.7
 TestSuite 4
   ✔ 11. it should run second test 4.2 [1/1]
 1..11

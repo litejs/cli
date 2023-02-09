@@ -226,9 +226,7 @@
 		tests.splice(++splicePos, 0, {
 			parent: inSuite,
 			indent: inSuite ? inSuite.indent + (_ > 1 ? "" : conf.indent) : "",
-			skip:
-				_ > 1 && !isFn(fn) && "pending" ||
-				name.charAt(0) === "_" && (name = name.slice(1)) && "by name",
+			skip: _ > 1 && !isFn(fn) ? "pending" : name.charAt(0) === "_" ? "by name" : 0,
 			0: _,
 			1: name,
 			2: fn

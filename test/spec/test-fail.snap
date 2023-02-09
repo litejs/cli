@@ -1,4 +1,4 @@
-Unnamed TestSuite
+Tests
   ✘ 1. it should fail [0/1]
   ✘ 2. it should fail on timeout [0/0]
   ✘ 3. it should fail on wrong plan 1 [0/0]
