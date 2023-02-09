@@ -221,7 +221,7 @@
 
 			line("head")
 			timerType = type(_setTimeout(nextCase, conf.delay|0))
-			if (splicePos === 0 && _ !== 1) def(1)
+			if (splicePos === 0 && _ !== 1) def(1, "Tests")
 		}
 		tests.splice(++splicePos, 0, {
 			parent: inSuite,
