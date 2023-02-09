@@ -482,7 +482,7 @@
 				mock.swap(_process, { nextTick: fakeNextTick, hrtime: fakeHrtime })
 			}
 			if (newTime) {
-				fakeNow = type(newTime) === "string" ? _Date.parse(newTime) : newTime
+				fakeNow = isStr(newTime) ? _Date.parse(newTime) : newTime
 				mock.tick(0)
 			}
 			fakeDate._z = newZone
@@ -494,7 +494,7 @@
 			for (; (t = timers[0]) && t.at <= nextNow; ) {
 				fakeNow = t.at
 				timers.shift()
-				if (type(t.fn) === "string") t.fn = Function(t.fn)
+				if (isStr(t.fn)) t.fn = Function(t.fn)
 				if (isFn(t.fn)) t.fn.apply(null, t.args)
 				if (!noRepeat && t.repeat) {
 					t.at += t.ms
@@ -579,8 +579,11 @@
 	function num(a, b) {
 		return type(a -= 0) === "number" ? a : b
 	}
-	function isFn(obj) {
-		return type(obj) === "function"
+	function isStr(str) {
+		return typeof str === "string"
+	}
+	function isFn(fn) {
+		return typeof fn === "function"
 	}
 	function isObj(obj) {
 		return type(obj) === "object"
@@ -618,18 +621,17 @@
 	}
 
 	function _stringify(item, max, circ) {
-		var i, tmp
+		var i, t, tmp
 		, left = max
-		, t = type(item)
 		, str =
-			t === "string" ? JSON.stringify(item) :
-			t === "function" ? ("" + item).replace(/^\w+|\s+|{[\s\S]*/g, "") :
-			!item || item === true || t === "error" || t === "infinity" || t === "number" ? "" + item :
-			t === "symbol" || t === "regexp" ? item.toString() :
+			isStr(item) ? JSON.stringify(item) :
+			isFn(item) ? ("" + item).replace(/^\w+|\s+|{[\s\S]*/g, "") :
+			!item || item === true || typeof item === "number" ? "" + item :
+			(t = type(item)) === "error" || t === "symbol" || t === "regexp" ? item.toString() :
 			item.toJSON ? item.toJSON() :
 			item
 
-		if (typeof str == "object") {
+		if (!isStr(str)) {
 			if (circ.indexOf(str) > -1) return "Circular"
 			circ.push(str)
 			tmp = []
