@@ -29,16 +29,35 @@ describe("TestSuite 1 with fn", function() {
 	},
 	"Case 2.5": null
 })
-.it("supports a pending test 2.6")
-.it("_should skip test by name 2.7", function(assert) {
-	assert.fail()
-	assert.end()
+
+
+var suitesTable = [
+	[ "env.1", function() { return Promise.resolve(1) } ],
+	[ "env.2", function() { return Promise.resolve(2) } ]
+]
+, casesTable = [
+	[ "ca1", 3 ],
+	[ "ca2", 4 ]
+]
+
+describe("TestSuite 3 {0}", suitesTable, function(suiteName, suiteSetup) {
+	it("set up a " + suiteName, suiteSetup)
+	it("tests case {0}", casesTable, function(caseName, caseId, assert) {
+		assert.type(caseId, "number")
+		assert.type(suiteName, "string")
+		assert.type(caseName, "string")
+		assert.end()
+	})
 })
 
-
 describe("TestSuite 4")
-.test("it should run second test 4.2", function(assert) {
+.test("it should run chained test 4.1", function(assert) {
 	assert.plan(1)
 	assert.ok(true)
+})
+.it("supports a pending test 4.2")
+.it("_should skip test by name 4.3", function(assert) {
+	assert.fail()
+	assert.end()
 })
 

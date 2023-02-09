@@ -462,25 +462,29 @@ describe("test.js", function() {
 		test.end()
 	})
 
+	var randomTable = [
+		[ 12345, [ 0.7260542734819591, 0.21872897521097423, 0.9517854940965272 ]]
+	]
 
-	it("should mock Math.random()", function(assert, mock) {
+	it("should mock Math.random() with seed {0}", randomTable, function(seed, expected, assert, mock) {
 		var _random = Math.random
-		mock.rand(12345)
+		mock.rand(seed)
 		assert
 		.notStrictEqual(Math.random, _random)
-		.equal(
-			[ Math.random(), Math.random(), Math.random() ],
-			[ 0.7260542734819591, 0.21872897521097423, 0.9517854940965272 ]
-		)
+		.equal([ Math.random(), Math.random(), Math.random() ], expected)
 
+		mock.restore()
+		assert.strictEqual(Math.random, _random).end()
+	})
+
+	it("should take Math.random() seed from arguments", function(assert) {
 		require("child_process").execSync("node -r ./test.js test/test-random.js --seed=123456")
 		try {
 			require("child_process").execSync("node -r ./test.js test/test-random.js")
 		} catch(e) {
 			assert.equal(e.status, 1)
 		}
-		mock.restore()
-		assert.strictEqual(Math.random, _random).end()
+		assert.end()
 	})
 })
 

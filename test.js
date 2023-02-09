@@ -195,11 +195,7 @@
 		_global[key] = describe[key]
 	})
 
-	function def(_, name, fn) {
-		if (!name || isFn(name)) {
-			fn = name
-			name = "Unnamed Test" + (_ == 1 ? "Suite" : "Case")
-		}
+	function def(_, name, data, fn) {
 		if (!started) {
 			started = new _Date()
 
@@ -223,14 +219,31 @@
 			timerType = type(_setTimeout(nextCase, conf.delay|0))
 			if (splicePos === 0 && _ !== 1) def(1, "Tests")
 		}
-		tests.splice(++splicePos, 0, {
+		if (!isStr(name)) {
+			fn = data
+			data = name
+			name = "Unnamed Test" + (_ == 1 ? "Suite" : "Case")
+		}
+		if (!_isArray(data)) {
+			fn = data
+		}
+		var item = {
 			parent: inSuite,
 			indent: inSuite ? inSuite.indent + (_ > 1 ? "" : conf.indent) : "",
 			skip: _ > 1 && !isFn(fn) ? "pending" : name.charAt(0) === "_" ? "by name" : 0,
 			0: _,
 			1: name,
 			2: fn
-		})
+		}
+		, spliceData = [ ++splicePos, 0, item ]
+		if (_isArray(data)) {
+			data.forEach(function(row, i) {
+				var newItem = spliceData[i + 2] = Object.create(item)
+				newItem[1] = format(item[1], row)
+				newItem[2] = def.bind.apply(item[2], [null].concat(row))
+			})
+		}
+		tests.splice.apply(tests, spliceData)
 		return describe
 	}
 
@@ -384,10 +397,13 @@
 	function This() {
 		return this
 	}
+	function format(str, map) {
+		return str.replace(lineRe, function(_, field) {
+			return map[field] != null ? map[field] : conf[field]
+		})
+	}
 	function line(name, map) {
-		return print(conf[name].replace(lineRe, function(_, field) {
-			return hasOwn.call(map, field) ? map[field] : conf[field]
-		}))
+		return print(format(conf[name], map))
 	}
 	function print(str) {
 		if (!str) return

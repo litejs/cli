@@ -10,10 +10,18 @@ TestSuite 2 with map
     ∅ 6. Case 2.4.1
     ∅ 7. Case 2.4.2
     ∅ 8. Case 2.5
-    ∅ 9. it supports a pending test 2.6
-    ∅ 10. it _should skip test by name 2.7
+TestSuite 3 env.1
+  ✔ 9. it set up a env.1 [0/0]
+  ✔ 10. it tests case ca1 [3/3]
+  ✔ 11. it tests case ca2 [3/3]
+TestSuite 3 env.2
+  ✔ 12. it set up a env.2 [0/0]
+  ✔ 13. it tests case ca1 [3/3]
+  ✔ 14. it tests case ca2 [3/3]
 TestSuite 4
-  ✔ 11. it should run second test 4.2 [1/1]
-1..11
-# pass  11/11 [6/6]
+  ✔ 15. it should run chained test 4.1 [1/1]
+  ∅ 16. it supports a pending test 4.2
+  ∅ 17. it _should skip test by name 4.3
+1..17
+# pass  17/17 [18/18]
 # skip  7
