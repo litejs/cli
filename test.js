@@ -408,7 +408,7 @@
 		this.txt = ""
 		this._r = []
 	}
-	Mock.prototype = {
+	Mock.prototype = describe.mock = {
 		fn: function(origin) {
 			spy.called = 0
 			spy.calls = []
