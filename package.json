@@ -21,12 +21,16 @@
     "cli"
   ],
   "scripts": {
-    "test": "TZ='Europe/Tallinn' c8 -r lcov -r text-summary node -r ./test.js --allow-natives-syntax --expose-gc test/index.js --brief && jshint *.js cli/*.js"
+    "test": "TZ='Europe/Tallinn' node --allow-natives-syntax --expose-gc ./index.js test test/index.js --coverage --lcov --brief --no-status && jshint *.js cli/*.js"
   },
   "bin": {
     "lj-doc": "./cli/doc",
     "lj-stat": "./cli/stat",
     "lj": "./index.js"
+  },
+  "devDependencies": {
+    "jshint": "2.13.6",
+    "uglify-js": "3.17.4"
   },
   "workspaces": [
     "test/dummy"

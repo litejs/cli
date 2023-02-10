@@ -37,6 +37,8 @@ var fs = require("fs")
 	"bench": "lj bench ./test/bench/*.js",
 	"build": "lj build --out=ui/index.html ui/dev.html",
 	"launch": "node",
+	"sources": "./*.js",
+	"status": 1,
 	"template": "default",
 	"test": "lj test ./test/index.js",
 	"threads": 0

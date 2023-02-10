@@ -7,10 +7,10 @@ var cli = require(".")
 , seen = {}
 
 /* globals describe */
-describe.assert.cmdSnapshot = function(cmd, file) {
+describe.assert.cmdSnapshot = function(cmd, file, opts) {
 	var actual
 	try {
-		actual = child.execSync(cmd).toString("utf8").replace(relPathRe, relPathFn)
+		actual = child.execSync(cmd, opts).toString("utf8").replace(relPathRe, relPathFn)
 	} catch(e) {
 		return this(0, "Snapshot command failed: " + cmd + "\n---\n" + e.stdout.toString("utf8"))
 	}
