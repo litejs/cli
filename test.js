@@ -80,13 +80,13 @@
 		global: "describe,it",
 		head: "",
 		indent: "  ",
-		suite: "{indent}{1}", //➜✺✽❖❣❢•※⁕∅
+		suite: "{indent}{n}", //➜✺✽❖❣❢•※⁕∅
 		ok: "{indent}  {green}✔{reset} {i}. {n} [{passed}/{total}]",
 		nok: "{indent}  {red}✘{reset} {i}. {n} [{passed}/{total}]",
 		skip: "{indent}  {yellow}∅{reset} {i}. {n}",
 		sum: "1..{total}\n#{passGreen} pass  {pass}/{total} [{passAsserts}/{totalAsserts}]{timeStr}",
 		failSum: "#{red}{bold} FAIL  tests {failNums}",
-		skipSum: "#{yellow}{bold} skip  {skip}",
+		skipSum: "#{yellow}{bold} skip  {s}",
 		bold: "\x1b[1m",
 		red: "\x1b[31m",
 		green: "\x1b[32m",
@@ -195,7 +195,7 @@
 		_global[key] = describe[key]
 	})
 
-	function def(_, name, data, fn) {
+	function def(t, name, data, fn) {
 		if (!started) {
 			started = new _Date()
 
@@ -205,7 +205,7 @@
 
 			if (conf.tap) {
 				conf.head = "TAP version 13"
-				conf.suite = "# {1}"
+				conf.suite = "# {n}"
 				conf.ok = conf.skip = "ok {i} - {n} [{passed}/{total}]"
 				conf.nok = "not " + conf.ok
 				conf.indent = ""
@@ -217,30 +217,30 @@
 
 			line("head")
 			timerType = type(_setTimeout(nextCase, conf.delay|0))
-			if (splicePos === 0 && _ !== 1) def(1, "Tests")
+			if (splicePos === 0 && t !== 1) def(1, "Tests")
 		}
 		if (!isStr(name)) {
 			fn = data
 			data = name
-			name = "Unnamed Test" + (_ == 1 ? "Suite" : "Case")
+			name = "Unnamed Test" + (t == 1 ? "Suite" : "Case")
 		}
 		if (!_isArray(data)) {
 			fn = data
 		}
 		var item = {
-			parent: inSuite,
-			indent: inSuite ? inSuite.indent + (_ > 1 ? "" : conf.indent) : "",
-			skip: _ > 1 && !isFn(fn) ? "pending" : name.charAt(0) === "_" ? "by name" : 0,
-			0: _,
-			1: name,
-			2: fn
+			p: inSuite,
+			indent: inSuite ? inSuite.indent + (t > 1 ? "" : conf.indent) : "",
+			s: t > 1 && !isFn(fn) ? "pending" : name.charAt(0) === "_" ? "by name" : 0,
+			t: t,
+			n: name,
+			f: fn
 		}
 		, spliceData = [ ++splicePos, 0, item ]
 		if (_isArray(data)) {
 			data.forEach(function(row, i) {
 				var newItem = spliceData[i + 2] = Object.create(item)
-				newItem[1] = format(item[1], row)
-				newItem[2] = def.bind.apply(item[2], [null].concat(row))
+				newItem.n = format(item.n, row)
+				newItem.f = def.bind.apply(item.f, [null].concat(row))
 			})
 		}
 		tests.splice.apply(tests, spliceData)
@@ -251,14 +251,14 @@
 		var tick
 		, args = tests[splicePos = runPos++]
 		if (!args) printResult()
-		else if (args[0] === 1) nextSuite(args)
+		else if (args.t === 1) nextSuite(args)
 		else {
 			testCase.i = ++totalCases
 			testCase.indent = testSuite.indent
-			testCase.n = (args[0] < 3 ? "" : "it " + (args[0] < 4 ? "" : "should ")) + args[1]
+			testCase.n = (args.t < 3 ? "" : "it " + (args.t < 4 ? "" : "should ")) + args.n
 			testCase.errors = []
 			testCase.total = testCase.passed = 0
-			if (args.skip || testSuite.skip || argv.length && argv.indexOf("" + totalCases) < 0) {
+			if (args.s || testSuite.s || argv.length && argv.indexOf("" + totalCases) < 0) {
 				skipped++
 				if (!argv.length) line("skip", testCase)
 				return nextCase()
@@ -279,7 +279,7 @@
 
 			try {
 				testCase.setTimeout(conf.timeout)
-				args = args[2].call(testCase, testCase, (testCase.mock = args[2].length > 1 && new Mock()))
+				args = args.f.call(testCase, testCase, (testCase.mock = args.f.length > 1 && new Mock()))
 				if (args && args.then) args.then(curry(end, null), end)
 			} catch (e) {
 				print("" + e)
@@ -348,16 +348,16 @@
 	}
 	function nextSuite(newSuite) {
 		if (!argv.length) line("suite", newSuite)
-		newSuite.parent = inSuite
+		newSuite.p = inSuite
 		inSuite = testSuite = newSuite
-		if (isFn(testSuite[2])) {
-			testSuite[2].call(describe)
-		} else if (isObj(testSuite[2])) {
-			for (var name in testSuite[2]) if (hasOwn.call(testSuite[2], name)) {
-				def(isObj(testSuite[2][name]) ? 1 : 2, name, testSuite[2][name])
+		if (isFn(testSuite.f)) {
+			testSuite.f.call(describe)
+		} else if (isObj(testSuite.f)) {
+			for (var name in testSuite.f) if (hasOwn.call(testSuite.f, name)) {
+				def(isObj(testSuite.f[name]) ? 1 : 2, name, testSuite.f[name])
 			}
 		}
-		inSuite = newSuite.parent
+		inSuite = newSuite.p
 		nextCase()
 	}
 	function printResult() {
@@ -368,7 +368,7 @@
 		, failed = failedCases.length
 		conf.fail = describe.failed += failed
 		conf.pass = totalCases - conf.fail
-		conf.skip = skipped
+		conf.s = skipped
 		conf.passAsserts = passedAsserts
 		conf.totalAsserts = totalAsserts
 		conf.passGreen = conf.fail ? "" : conf.green + conf.bold
