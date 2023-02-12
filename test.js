@@ -238,9 +238,9 @@
 		, spliceData = [ ++splicePos, 0, item ]
 		if (_isArray(data)) {
 			data.forEach(function(row, i) {
-				var newItem = spliceData[i + 2] = Object.create(item)
-				newItem.n = format(item.n, row)
-				newItem.f = def.bind.apply(item.f, [null].concat(row))
+				i = spliceData[i + 2] = Object.create(item)
+				i.n = format(i.n, row)
+				i.f = curry(i.f, row)
 			})
 		}
 		tests.splice.apply(tests, spliceData)
@@ -623,9 +623,7 @@
 		}
 	}
 	function curry(fn, arg) {
-		return function() {
-			return fn.apply(null, [arg].concat(_slice.call(arguments)))
-		}
+		return fn.bind.apply(fn, [null].concat(arg))
 	}
 
 	function stringify(item) {
