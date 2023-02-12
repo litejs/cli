@@ -6,7 +6,7 @@ expected: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 actual:   ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
     at Function.<anonymous> (test/test-fail.js:7:9)
     at nextCase (test.js:282:19)
-    at nextSuite (test.js:361:3)
+    at nextSuite (test.js:359:3)
     at Timeout.nextCase [as _onTimeout] (test.js:254:26)[0m
 ...[0m
 #[31m[1m FAIL  tests 1[0m

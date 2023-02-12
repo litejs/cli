@@ -191,11 +191,12 @@
 		}
 	}
 
-	if (conf.global) conf.global.split(",").map(function(key) {
-		_global[key] = describe[key]
+	each(conf.global, function(_i, value) {
+		_global[value] = describe[value]
 	})
 
 	function def(t, name, data, fn) {
+		if (t < 1) t = isFn(data) + 1
 		if (!started) {
 			started = new _Date()
 
@@ -215,33 +216,32 @@
 				conf.sum = conf.sum.slice(11)
 			}
 
+			if (t !== 1) def(1, "Tests")
 			line("head")
 			timerType = type(_setTimeout(nextCase, conf.delay|0))
-			if (splicePos === 0 && t !== 1) def(1, "Tests")
 		}
 		if (!isStr(name)) {
 			fn = data
 			data = name
-			name = "Unnamed Test" + (t == 1 ? "Suite" : "Case")
+			name = "Unnamed Test" + (t > 1 ? "Case" : "Suite")
 		}
-		if (!_isArray(data)) {
+		if (!isFn(fn)) {
 			fn = data
 		}
-		var item = {
+		var spliceData = [++splicePos, 0, {
 			p: inSuite,
 			indent: inSuite ? inSuite.indent + (t > 1 ? "" : conf.indent) : "",
 			s: t > 1 && !isFn(fn) ? "pending" : name.charAt(0) === "_" ? "by name" : 0,
 			t: t,
 			n: name,
 			f: fn
-		}
-		, spliceData = [ ++splicePos, 0, item ]
-		if (_isArray(data)) {
-			data.forEach(function(row, i) {
-				i = spliceData[i + 2] = Object.create(item)
+		}]
+		if (data !== fn) {
+			each(data, curry(function(item, i, row) {
+				i = spliceData[i - 0 + 2] = Object.create(item)
 				i.n = format(i.n, row)
 				i.f = curry(i.f, row)
-			})
+			}, spliceData[2]))
 		}
 		tests.splice.apply(tests, spliceData)
 		return describe
@@ -353,9 +353,7 @@
 		if (isFn(testSuite.f)) {
 			testSuite.f.call(describe)
 		} else if (isObj(testSuite.f)) {
-			for (var name in testSuite.f) if (hasOwn.call(testSuite.f, name)) {
-				def(isObj(testSuite.f[name]) ? 1 : 2, name, testSuite.f[name])
-			}
+			each(testSuite.f, curry(def, 0))
 		}
 		inSuite = newSuite.p
 		nextCase()
@@ -464,11 +462,9 @@
 		spy: function(obj, name, stub) {
 			this.swap(obj, name, this.fn(stub || obj[name]))
 		},
-		swap: function(obj, name, fn) {
+		swap: function swap(obj, name, fn) {
 			if (isObj(name)) {
-				for (fn in name) if (hasOwn.call(name, fn)) {
-					this.swap(obj, fn, name[fn])
-				}
+				each(name, curry(swap, obj, this))
 				return
 			}
 			var existing = obj[name]
@@ -622,8 +618,15 @@
 			return isObj(val) ? !own(this[idx], val) : this[idx] !== val
 		}
 	}
-	function curry(fn, arg) {
-		return fn.bind.apply(fn, [null].concat(arg))
+	function curry(fn, arg, scope) {
+		return fn.bind.apply(fn, [scope].concat(arg))
+	}
+
+	function each(arr, fn) {
+		if (arr) {
+			if (isStr(arr)) arr = arr.split(",")
+			for (var i in arr) if (hasOwn.call(arr, i)) fn(i, arr[i])
+		}
 	}
 
 	function stringify(item) {

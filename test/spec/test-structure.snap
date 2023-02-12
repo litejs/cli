@@ -4,24 +4,24 @@ TestSuite 2 with map
   ✔ 2. Case 2.1 [1/1]
   ✔ 3. Case 2.2 [1/1]
   Nested Suite 2.3
-    ∅ 4. Case 2.3.1
-    ∅ 5. Case 2.3.2
+    Case 2.3.1
+    Case 2.3.2
   Nested Suite 2.4
-    ∅ 6. Case 2.4.1
-    ∅ 7. Case 2.4.2
-    ∅ 8. Case 2.5
+    Case 2.4.1
+    Case 2.4.2
+  Case 2.5
 TestSuite 3 env.1
-  ✔ 9. it set up a env.1 [0/0]
-  ✔ 10. it tests case ca1 [3/3]
-  ✔ 11. it tests case ca2 [3/3]
+  ✔ 4. it set up a env.1 [0/0]
+  ✔ 5. it tests case ca1 [3/3]
+  ✔ 6. it tests case ca2 [3/3]
 TestSuite 3 env.2
-  ✔ 12. it set up a env.2 [0/0]
-  ✔ 13. it tests case ca1 [3/3]
-  ✔ 14. it tests case ca2 [3/3]
+  ✔ 7. it set up a env.2 [0/0]
+  ✔ 8. it tests case ca1 [3/3]
+  ✔ 9. it tests case ca2 [3/3]
 TestSuite 4
-  ✔ 15. it should run chained test 4.1 [1/1]
-  ∅ 16. it supports a pending test 4.2
-  ∅ 17. it _should skip test by name 4.3
-1..17
-# pass  17/17 [18/18]
-# skip  7
+  ✔ 10. it should run chained test 4.1 [1/1]
+  ∅ 11. it supports a pending test 4.2
+  ∅ 12. it _should skip test by name 4.3
+1..12
+# pass  12/12 [18/18]
+# skip  2
