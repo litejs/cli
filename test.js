@@ -180,6 +180,8 @@
 	describe.should = curry(def, 4)
 	describe.failed = 0
 	describe.output = ""
+
+	describe.format = format
 	describe.print = print
 	describe.stringify = stringify
 
@@ -239,7 +241,7 @@
 		if (data !== fn) {
 			each(data, curry(function(item, i, row) {
 				i = spliceData[i - 0 + 2] = Object.create(item)
-				i.n = format(i.n, row)
+				i.n = format(i.n, row, conf)
 				i.f = curry(i.f, row)
 			}, spliceData[2]))
 		}
@@ -396,13 +398,13 @@
 	function This() {
 		return this
 	}
-	function format(str, map) {
+	function format(str, map, fallback) {
 		return str.replace(lineRe, function(_, field) {
-			return map[field] != null ? map[field] : conf[field]
+			return map[field] != null ? map[field] : fallback[field]
 		})
 	}
 	function line(name, map) {
-		return print(format(conf[name], map))
+		return print(format(conf[name], map, conf))
 	}
 	function print(str) {
 		if (!str) return

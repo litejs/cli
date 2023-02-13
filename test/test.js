@@ -186,6 +186,20 @@ describe("test.js", function() {
 		assert.end()
 	})
 
+	describe("format", function() {
+		var formatData = {
+			who: "World"
+		}
+
+		it ("should format '{0}'", [
+			[ "", "" ],
+			[ "Hello", "Hello" ],
+			[ "Hello, {who}!", "Hello, World!" ]
+		], function(str, expected, assert) {
+			assert.equal(describe.format(str, formatData), expected).end()
+		})
+	})
+
 	it("should mock fn", function(assert, mock) {
 		var count = 0
 		, spy1 = mock.fn()
