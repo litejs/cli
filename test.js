@@ -254,6 +254,7 @@
 		else if (args.t === 1) nextSuite(args)
 		else {
 			testCase.i = ++totalCases
+			if (args.p && args.p !== testSuite) testSuite = args.p
 			testCase.indent = testSuite.indent
 			testCase.n = (args.t < 3 ? "" : "it " + (args.t < 4 ? "" : "should ")) + args.n
 			testCase.errors = []
