@@ -11,8 +11,10 @@ module.exports = function(opts) {
 		stdio: "inherit"
 	}
 	, files = cli.ls(opts.args.filter(isNaN))
+	, threads = opts.threads
 	, nums = opts.args.filter(Number)
 	, test = path.resolve(module.filename, "../../test.js")
+	, pendingRuns = 0
 	if (!files[0]) return console.error("No files found: " + opts.args)
 
 	process.exitCode = 0
@@ -30,9 +32,8 @@ module.exports = function(opts) {
 			cli.rmrf(opts.coverage)
 			if (opts.lcov === true) opts.lcov = opts.coverage + "/lcov.info"
 		}
-		var threads = opts.threads
 		if (!threads || threads === true) threads = require("os").cpus().length
-		for (; threads--; run());
+		runAgain()
 	}
 	if (opts.watch) {
 		var watcher
@@ -47,7 +48,7 @@ module.exports = function(opts) {
 		return path.resolve(file)
 	}
 	function run() {
-		if (!files[0]) return allDone()
+		if (!files[0]) return
 		var runFiles = files.splice(0, 10)
 		, last = runFiles.pop()
 		, args = ["-r", test]
@@ -61,43 +62,68 @@ module.exports = function(opts) {
 	}
 	function runDone(code) {
 		if (opts.status) process.exitCode += code
-		run()
+		if (--pendingRuns < 1) allDone()
+		else run()
 	}
 	function allDone() {
 		printCoverage()
 	}
 	function runAgain() {
-		files = cli.ls(opts.args.filter(isNaN))
-		run()
-		watcher.add(getRequired())
+		pendingRuns += files.length
+		for (; threads--; run());
+		if (opts.watch) watcher.add(getRequired())
 	}
 	function printCoverage() {
 		if (!opts.coverage) return
-		var coverages = cli.ls(subOpts.env.NODE_V8_COVERAGE + "/*.json")
+		var coverages = {}
 		, fileCoverage = require("./coverage.js").fileCoverage
-		, files = cli.ls(opts.sources).reduce(function(map, name) {
-			map["file://" + path.resolve(name)] = name
+		, fileNames = cli.ls(opts.sources).filter(function(name) {
+			return this.indexOf(name) < 0
+		}, ("" + opts.ignore).split(","))
+		, fileMap = fileNames.reduce(function(map, name) {
+			map[map[name] = "file://" + path.resolve(name)] = name
 			return map
 		}, {})
 		, good = []
 		, bad = []
 		, lcov = []
-		, results = []
-		coverages.forEach(function(file) {
-			var data = require(path.resolve(file))
-			data.result.forEach(function(row) {
-				if (!files[row.url]) return
-				var source = cli.readFile(row.url.slice(7))
-				, result = fileCoverage(files[row.url], source, row.functions)
-				if (result.coverage < 100) {
-					if (opts.status) process.exitCode++
-					bad.push(files[row.url] + " coverage " + result.text)
-				} else {
-					good.push(files[row.url])
-				}
-				lcov.push(result.lcov)
-				results.push(result)
+
+		cli.ls(opts.coverage + "/*.json").forEach(function(file) {
+			require(path.resolve(file)).result.forEach(function(row) {
+				if (!fileMap[row.url]) return
+				if (coverages[row.url]) {
+					var current = coverages[row.url]
+					if (current.functions.length < row.functions.length) {
+						coverages[row.url] = row
+						row = current
+						current = coverages[row.url]
+					}
+					row.functions.forEach(function(fn, i) {
+						var current = this[i].ranges
+						if (current.length < fn.ranges.length) {
+							this[i].ranges = fn.ranges
+							fn.ranges = current
+							current = this[i].ranges
+						}
+						fn.ranges.forEach(function(range, i) {
+							this[i].count += range.count
+						}, current)
+					}, current.functions)
+				} else coverages[row.url] = row
 			})
+		})
+
+		var results = fileNames.map(function(file) {
+			var source = cli.readFile(fileMap[file].slice(7))
+			, result = fileCoverage(file, source, (coverages[fileMap[file]] || { functions: [{ranges:[{count:0}]}]}).functions)
+			if (result.coverage < 100) {
+				if (opts.status) process.exitCode++
+				bad.push(file + " coverage " + result.text)
+			} else {
+				good.push(file)
+			}
+			lcov.push(result.lcov)
+			return result
 		})
 		if (opts.lcov) cli.writeFile(opts.lcov, lcov.join("\n"))
 		if (good[0]) console.log("# Coverage 100%:", good.join(", "))

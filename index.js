@@ -20,6 +20,8 @@ var fs = require("fs")
 , child = require("child_process")
 , path = require("path")
 , cli = Object.assign(exports, require("./package.json"), {
+	cols: +process.env.COLUMNS || process.stdout.columns || 80,
+	rows: +process.env.ROWS || process.stdout.rows || 24,
 	command: command,
 	cp: cp,
 	debounce: debounce,
