@@ -59,11 +59,7 @@ function fileCoverage(name, source, v8data) {
 	, lnCov = 0
 	, lnTot = lnCounts.length = lines.length
 
-
-
-
 	lnCounts.fill(v8data[0].ranges[0].count, 0, lnTot)
-
 
 	for (; i < l; ) {
 		ranges = v8data[i++].ranges
@@ -155,7 +151,7 @@ function fileCoverage(name, source, v8data) {
 		return values.map(
 			names ?
 			function(value, i) { return prefix + value + "," + names[i] } :
-			function(value, i) { return prefix + value + "," + (i + 1) }
+			function(value, i) { return prefix + (i + 1) + "," + value }
 		).join("\n")
 	}
 }
