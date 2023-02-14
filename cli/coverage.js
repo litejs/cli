@@ -135,15 +135,17 @@ function fileCoverage(name, source, v8data) {
 	}
 
 	function fillLines(range) {
-		var blockSource = source.slice(range.startOffset, range.endOffset).trimEnd()
+		var blockSource = source.slice(range.startOffset, range.endOffset).replace(/(\s*},?)?\s*$/, "")
 		, blockLines = blockSource.split("\n").length
+
 
 		if (lastOffset > (lastOffset = range.startOffset)) {
 			offset = j = 0
 		}
 		for (; offset < lastOffset; offset += lines[j++].length + 1);
+		//console.log("FILL", blockLines > 1, range.count, j, j + blockLines, JSON.stringify(blockSource))
 		if (blockLines > 1) {
-			lnCounts.fill(range.count, j, j + blockLines)
+			lnCounts.fill(range.count, j, j + blockLines - 1)
 		}
 	}
 
