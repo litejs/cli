@@ -38,10 +38,12 @@ var fs = require("fs")
 , defaults = {
 	"bench": "lj bench ./test/bench/*.js",
 	"build": "lj build --out=ui/index.html ui/dev.html",
+	"commit": true,
 	"launch": "node",
 	"lcov": true,
 	"sources": "./*.js",
 	"status": 1,
+	"tag": true,
 	"template": "default",
 	"test": "lj test ./test/index.js",
 	"threads": 0,
