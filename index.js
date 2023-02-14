@@ -43,7 +43,8 @@ var fs = require("fs")
 	"status": 1,
 	"template": "default",
 	"test": "lj test ./test/index.js",
-	"threads": 0
+	"threads": 0,
+	"update": true
 }
 , shortcut = {
 	b: "build",
