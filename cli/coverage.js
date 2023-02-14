@@ -54,6 +54,7 @@ function fileCoverage(name, source, v8data) {
 
 	, brCov = 0
 	, brTot = 0
+	, brUncovered = []
 
 	, lnCounts = []
 	, lnCov = 0
@@ -65,7 +66,7 @@ function fileCoverage(name, source, v8data) {
 		ranges = v8data[i++].ranges
 
 		if (i > 1) {
-			fillLines(ranges[0])
+			fillLines(ranges[0], true)
 
 			fnNames[i - 2] = v8data[i - 1].functionName || "<anon>"
 			fnCounts[i - 2] = ranges[0].count
@@ -73,13 +74,12 @@ function fileCoverage(name, source, v8data) {
 		}
 
 		for (k = 1, ll = ranges.length; k < ll; ) {
-			fillLines(ranges[k])
+			fillLines(ranges[k], false)
 			if (ranges[k++].count > 0) brCov++
 		}
 		brTot += ll - 1
 	}
 
-	for (j = 0; j < fnTot; ) if (fnCounts[j++] > 0) fnCov++
 	for (j = 0; j < lnTot; ) if (lnCounts[j++] > 0) lnCov++
 
 	var lcov = [
@@ -113,7 +113,8 @@ function fileCoverage(name, source, v8data) {
 			title: "Branches",
 			pct: pct(brTot, brCov),
 			total: brTot,
-			covered: brCov
+			covered: brCov,
+			uncovered: brUncovered
 		},
 		lines: {
 			title: "Lines",
@@ -134,18 +135,33 @@ function fileCoverage(name, source, v8data) {
 		return obj.title + " " + obj.pct + "% [" + obj.covered + "/" + obj.total + "]"
 	}
 
-	function fillLines(range) {
-		var blockSource = source.slice(range.startOffset, range.endOffset).replace(/(\s*},?)?\s*$/, "")
-		, blockLines = blockSource.split("\n").length
+	function fillLines(range, isBlock) {
+		var blockLines, match
+		, start = range.startOffset
+		, end = range.endOffset
+		, blockSource = source.slice(start, end).replace(/\s*$/, "")
+
+		if (isBlock) {
+			if (range.count > 0) fnCov++
+			match = blockSource.match(/^[^{]+\{\n*/)
+			if (match) {
+				start += match[0].length
+				blockSource = blockSource.replace(/^[^{]+\{\n*|\s*}[^}]*$/g, "")
+			}
+			blockLines = blockSource.split("\n").length
+			// console.log("FILL", match, blockLines, range.count, JSON.stringify(blockSource))
+		} else {
+			if (range.count < 1) brUncovered.push([start, end])
+			blockLines = blockSource.split("\n").length
+		}
 
 
-		if (lastOffset > (lastOffset = range.startOffset)) {
+		if (lastOffset > (lastOffset = start)) {
 			offset = j = 0
 		}
 		for (; offset < lastOffset; offset += lines[j++].length + 1);
-		//console.log("FILL", blockLines > 1, range.count, j, j + blockLines, JSON.stringify(blockSource))
-		if (blockLines > 1) {
-			lnCounts.fill(range.count, j, j + blockLines - 1)
+		if (isBlock === true || blockLines > 1) {
+			lnCounts.fill(range.count, j, j + blockLines)
 		}
 	}
 
