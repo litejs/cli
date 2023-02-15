@@ -52,9 +52,11 @@ function fileCoverage(name, source, v8data) {
 	, fnNames = []
 	, fnLines = []
 
+	, brCounts = []
 	, brCov = 0
 	, brTot = 0
 	, brUncovered = []
+	, brLines = []
 
 	, lnCounts = []
 	, lnCov = 0
@@ -66,18 +68,12 @@ function fileCoverage(name, source, v8data) {
 		ranges = v8data[i++].ranges
 
 		if (i > 1) {
-			fillLines(ranges[0], true)
-
-			fnNames[i - 2] = v8data[i - 1].functionName || "<anon>"
-			fnCounts[i - 2] = ranges[0].count
-			fnLines[i - 2] = j
+			fillLines(ranges[0], true, fnLines, i - 2)
 		}
 
 		for (k = 1, ll = ranges.length; k < ll; ) {
-			fillLines(ranges[k], false)
-			if (ranges[k++].count > 0) brCov++
+			fillLines(ranges[k++], false, brLines, brTot++)
 		}
-		brTot += ll - 1
 	}
 
 	for (j = 0; j < lnTot; ) if (lnCounts[j++] > 0) lnCov++
@@ -94,6 +90,7 @@ function fileCoverage(name, source, v8data) {
 		"LH:" + lnCov,
 		"BRF:" + brTot,
 		"BRH:" + brCov,
+		zipJoin("BRDA:", brLines, brCounts),
 		"end_of_record"
 	].join("\n")
 	, result = {
@@ -102,25 +99,25 @@ function fileCoverage(name, source, v8data) {
 		lcov: lcov,
 		functions: {
 			title: "Functions",
-			pct: pct(fnTot, fnCov),
 			total: fnTot,
 			covered: fnCov,
+			pct: pct(fnTot, fnCov),
 			names: fnNames,
 			counts: fnCounts,
 			lines: fnLines
 		},
 		branches: {
 			title: "Branches",
-			pct: pct(brTot, brCov),
 			total: brTot,
 			covered: brCov,
+			pct: pct(brTot, brCov),
 			uncovered: brUncovered
 		},
 		lines: {
 			title: "Lines",
-			pct: pct(lnTot, lnCov),
 			total: lnTot,
 			covered: lnCov,
+			pct: pct(lnTot, lnCov),
 			counts: lnCounts
 		}
 	}
@@ -135,13 +132,15 @@ function fileCoverage(name, source, v8data) {
 		return obj.title + " " + obj.pct + "% [" + obj.covered + "/" + obj.total + "]"
 	}
 
-	function fillLines(range, isBlock) {
+	function fillLines(range, isBlock, inLine, i) {
 		var blockLines, match
 		, start = range.startOffset
 		, end = range.endOffset
 		, blockSource = source.slice(start, end).replace(/\s*$/, "")
 
 		if (isBlock) {
+			fnCounts[i] = range.count
+			fnNames[i] = v8data[i + 1].functionName || "<anon>"
 			if (range.count > 0) fnCov++
 			match = blockSource.match(/^[^{]+\{\n*/)
 			if (match) {
@@ -151,7 +150,9 @@ function fileCoverage(name, source, v8data) {
 			blockLines = blockSource.split("\n").length
 			// console.log("FILL", match, blockLines, range.count, JSON.stringify(blockSource))
 		} else {
-			if (range.count < 1) brUncovered.push([start, end])
+			brCounts[i] = "0," + i + "," + range.count
+			if (range.count > 0) brCov++
+			else brUncovered[i] = [start, end]
 			blockLines = blockSource.split("\n").length
 		}
 
@@ -160,6 +161,7 @@ function fileCoverage(name, source, v8data) {
 			offset = j = 0
 		}
 		for (; offset < lastOffset; offset += lines[j++].length + 1);
+		inLine[i] = j
 		if (isBlock === true || blockLines > 1) {
 			lnCounts.fill(range.count, j, j + blockLines)
 		}
