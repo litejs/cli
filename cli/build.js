@@ -170,7 +170,7 @@ function html(opts, next) {
 		}
 		el._txt = content
 		if (ext === "js" || ext === "css" || ext === "view") {
-			if (el.inline !== "" && loadFiles.indexOf(el) < 0) loadFiles.push(el)
+			if (el.inline !== "" && el.defer !== "" && loadFiles.indexOf(el) < 0) loadFiles.push(el)
 		}
 	}
 
