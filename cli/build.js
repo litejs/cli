@@ -280,7 +280,7 @@ function html(opts, next) {
 				"-m eval --comments '/^\\s*[@!]/'",
 				"--beautify 'beautify=false,semicolons=false,keep_quoted_props=true' --"
 			].concat(_opts.files || []).join(" ")
-			return child.execSync(cmd, _opts).toString("utf8")
+			return child.execSync(cmd, _opts).toString("utf8").replace(/\\x0B/g, "\\v")
 		}
 		throw "Invalid file ext " + ext
 	}
