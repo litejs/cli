@@ -143,8 +143,7 @@ function html(opts, next) {
 	})
 
 	$$("[inline]").forEach(function(el) {
-		if (el.defer === "") throw "Defered can not be inline"
-		if (el.if) throw "Conditional load can not be inline"
+		if (el.defer === "" || el.if) throw "'defer' and 'if' can not combined with 'inline'"
 		var content = read.call(el)
 		if (loadFilesRe.test(content)) {
 			content = content.replace(loadFilesRe, "" + loadFiles.map(function(el) {
