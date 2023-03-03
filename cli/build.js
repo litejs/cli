@@ -146,7 +146,7 @@ function html(opts, next) {
 	$$("[inline]").forEach(function(el) {
 		if (el.defer === "") throw "Defered can not be inline"
 		if (el.if) throw "Conditional load can not be inline"
-		var content = el._txt
+		var content = read.call(el)
 		if (loadFilesRe.test(content)) {
 			content = content.replace(loadFilesRe, "" + loadFiles.map(function(el) {
 				return (el.if ? "(" + el.if + ")&&" : "") + JSON.stringify(getSrc(el))
@@ -207,7 +207,7 @@ function html(opts, next) {
 		return ext === "tpl" ? "view" : ext
 	}
 	function read(_name) {
-		var name = getSrc(_name)
+		var name = getSrc(_name || this)
 		if (name.nodeType) return name.parentNode ? name._txt || name.textContent : ""
 		var fullPath = path.resolve(inDir, name.split("?")[0])
 		, content = httpRe.test(name) ?
@@ -426,7 +426,6 @@ function parseView(content) {
 
 function viewMin(attrs) {
 	var out = [""]
-	//, templateRe = /^([ \t]*)(%?)((?:("|')(?:\\?.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))$/gm
 	, templateRe = /([ \t]*)(%?)((?:("|')(?:\\\4|.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))(?=\x1f|\n|$)+/g
 	, parent = 0
 	, stack = [-1]
