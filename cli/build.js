@@ -100,7 +100,6 @@ function html(opts, next) {
 	, loadFilesRe = /\/[*\/]!{loadFiles}[*\/]*/
 	, cacheFile = inFile + ".cache.json"
 	, cache = {}
-	, written = {}
 	, lastMinEl = {}
 
 	try {
@@ -186,7 +185,7 @@ function html(opts, next) {
 			);
 			fn(el, siblings)
 			siblings.forEach(remove)
-			removeAttrs(el, [attr])
+			;[attr, "banner", "drop"].forEach(el.removeAttribute, el)
 		})
 	}
 	function remove(el) {
@@ -194,9 +193,6 @@ function html(opts, next) {
 			if (el.previousSibling.nodeType === doc.TEXT_NODE) el.parentNode.removeChild(el.previousSibling)
 			el.parentNode.removeChild(el)
 		}
-	}
-	function removeAttrs(el, attrs) {
-		if (el.removeAttribute) attrs.forEach(el.removeAttribute, el)
 	}
 	function getSrc(el) {
 		return (el.src || el.href || el)
@@ -207,14 +203,15 @@ function html(opts, next) {
 		return ext === "tpl" ? "view" : ext
 	}
 	function read(_name) {
-		var name = getSrc(_name || this)
+		var el = this
+		, name = getSrc(_name || el)
 		if (name.nodeType) return name.parentNode ? name._txt || name.textContent : ""
 		var fullPath = path.resolve(inDir, name.split("?")[0])
 		, content = httpRe.test(name) ?
 			cache[name] || (cache[name] = child.execSync("curl " + name + "|uglifyjs --beautify").toString("utf8")) :
 			cli.readFile(name = fs.existsSync(fullPath) ? fullPath : require.resolve(defMap(name)))
 		, ext = getExt(name)
-		, extTo = getExt(this) || ext
+		, extTo = getExt(el) || ext
 
 		if (ext !== extTo) {
 			if (extTo !== "js") throw "Can not transform to " + extTo
@@ -231,6 +228,14 @@ function html(opts, next) {
 				content = css2js(content)
 			}
 		}
+		if (el.drop) content = content.replace(
+			RegExp("\\/(\\*\\*+)\\s*(" + el.drop.replace(/[^\w.:]+/g, "|") + ")\\s*\\1\\/", "g"), "/$1 $2 $1"
+		).replace(
+			RegExp("/(?=\\*\\* (" + el.drop.replace(/[^\w.:]+/g, "|") + "))$", "mg"), ""
+		)
+		if (el.banner && banner[extTo]) {
+			content = banner[extTo].replace(/\{0\}/g, el.banner) + content
+		}
 		return content
 	}
 	function contentHash(content) {
@@ -238,21 +243,11 @@ function html(opts, next) {
 		return child.execSync("git rev-parse --short=1 " + hash).toString("utf8").trim()
 	}
 	function write(dir, name, content, el) {
-		var ext = getExt(name)
-		if (el.drop) content = content.replace(
-			RegExp("\\/(\\*\\*+)\\s*(" + el.drop.replace(/[^\w.:]+/g, "|") + ")\\s*\\1\\/", "g"), "/$1 $2 $1"
-		)
-		if (el.banner && banner[ext]) {
-			content = banner[ext].replace(/\{0\}/g, el.banner) + content
-		}
 		if (name.indexOf("{h}") > -1) {
 			name = name.replace("{h}", contentHash(content))
 		}
 		el[el.src ? "src" : "href"] = name
-		name = path.resolve(dir, name.split("?")[0])
-		cli.writeFile(name, written[name] = content)
-		removeAttrs(el, ["banner", "drop"])
-		return name
+		cli.writeFile(path.resolve(dir, name.split("?")[0]), content)
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
