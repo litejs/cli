@@ -213,15 +213,7 @@ function html(opts, next) {
 		if (ext !== extTo) {
 			if (extTo !== "js") throw "Can not transform to " + extTo
 			if (ext === "view") {
-				var map = parseView(content)
-				content = ""
-
-				if (lastMinEl.css) lastMinEl.css._txt += map.css
-				else content += css2js(map.css)
-				if (lastMinEl.view) lastMinEl.view._txt += map.view
-				else content += view2js(map.view)
-				if (lastMinEl.js) lastMinEl.js._txt += map.js
-				else content += map.js
+				content = parseView(content, extTo, lastMinEl)
 			} else if (ext === "css") {
 				content = css2js(content)
 			}
@@ -259,14 +251,7 @@ function html(opts, next) {
 			//return child.execSync("csso", { input: content }).toString("utf8")
 		}
 		if (ext === "view") {
-			var map = parseView(content)
-			content = ""
-			if (lastMinEl.css) lastMinEl.css._txt += map.css
-			else content += "%css " + map.css
-			if (lastMinEl.js) lastMinEl.js._txt += map.js
-			else content += "%js " + map.js
-			content += map.view
-			return viewMin({_j: content})
+			return parseView(content, ext, lastMinEl)
 		}
 		if (ext === "js") {
 			var cmd = [
@@ -311,10 +296,10 @@ function readHashes(root) {
 }
 
 function css2js(content) {
-	return content ? ";xhr.css('" + content.replace(/\n/g, "").replace(/'/g, "\\'") + "')" : ""
+	return content ? ";xhr.css('" + content.replace(/\n/g, "").replace(/'/g, "\\'") + "');" : ""
 }
 function view2js(content) {
-	return content ? ";El.tpl('" + content.replace(/\n+/g, "\x1f").replace(/'/g, "\\$&") + "')" : ""
+	return content ? ";El.tpl('" + content.replace(/\n+/g, "\x1f").replace(/'/g, "\\$&") + "');" : ""
 }
 
 function cssImport(attrs) {
@@ -392,7 +377,7 @@ function cssMin(attrs) {
 	}
 }
 
-function parseView(content) {
+function parseView(content, extTo, lastMinEl) {
 	var line
 	, arr = content.split(/[\n\x1f]/)
 	, i = 0
@@ -411,11 +396,20 @@ function parseView(content) {
 		} else if (map.hasOwnProperty(line)) last = i - 1
 	}
 
-	return {
-		css: map["%css"],
-		js: map["%js"] ? ";!function(){" + map["%js"] + "}()" : "",
-		view: viewMin({_j:arr.join("\n")})
+	var out = ""
+	if ((line = map["%css"])) {
+		if (lastMinEl.css) lastMinEl.css._txt += line
+		else out += extTo === "js" ? css2js(line) : "%css " + line
 	}
+	if ((line = map["%js"])) {
+		if (lastMinEl.js && extTo !== "js") lastMinEl.js._txt += line
+		else out += extTo === "js" ? line : "%js " + line
+	}
+	if ((line = viewMin({_j:arr.join("\n")}))) {
+		if (lastMinEl.view && extTo !== "view") lastMinEl.view._txt += line
+		else out += extTo === "js" ? view2js(line) : line
+	}
+	return out
 }
 
 function viewMin(attrs) {
