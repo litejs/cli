@@ -121,20 +121,18 @@ function html(opts, next) {
 		el[el.src ? "src" : el.href ? "href" : "_min"] = el._min = getSrc(el.min || el)
 	})
 
-
-	//*
 	$$("[src]:not([src^='data:']),[href]:not([href^='data:'])").forEach(function(el) {
 		if (el._txt) return
 		var name = getSrc(el)
-		, name2 = name.split("?")[0]
+		, cleanName = name.split("?")[0]
+		, inName = path.join(inDir, cleanName)
 		if (name.indexOf("{h}") > -1) {
-			el[el.src ? "src" : "href"] = name.replace("{h}", fileHashes[name2] || now.getTime())
+			el[el.src ? "src" : "href"] = name.replace("{h}", fileHashes[inName] || now.getTime())
 		}
 		if (inDir !== outDir) {
-			cli.cp(path.resolve(inDir, name2), path.resolve(outDir, name2))
+			cli.cp(inName, path.join(outDir, cleanName))
 		}
 	})
-	//*/
 
 	$$("[_min]:not([inline])").forEach(function(el) {
 		write(outDir, el._min, minimize(el, { input: el._txt }), el)
