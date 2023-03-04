@@ -275,10 +275,10 @@ function readHashes(root) {
 }
 
 function css2js(content) {
-	return content ? ";xhr.css('" + content.replace(/\n/g, "").replace(/'/g, "\\'") + "');" : ""
+	return content ? ";xhr.css('" + cssMin(content, {}).replace(/'/g, "\\'") + "');" : ""
 }
 function view2js(content) {
-	return content ? ";El.tpl('" + content.replace(/\n+/g, "\x1f").replace(/'/g, "\\$&") + "');" : ""
+	return content ? ";El.tpl('" + viewMin(content, {}).replace(/\n+/g, "\x1f").replace(/'/g, "\\$&") + "');" : ""
 }
 
 function cssImport(str, attrs) {
@@ -382,7 +382,7 @@ function parseView(content, extTo, lastMinEl) {
 		if (lastMinEl.js && extTo !== "js") lastMinEl.js._txt += line
 		else out += extTo === "js" ? line : "%js " + line
 	}
-	if ((line = viewMin(arr.join("\n"), {}))) {
+	if ((line = arr.join("\n"))) {
 		if (lastMinEl.view && extTo !== "view") lastMinEl.view._txt += line
 		else out += extTo === "js" ? view2js(line) : line
 	}
