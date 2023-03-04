@@ -36,10 +36,6 @@ var child = require("child_process")
 	js: "/*! {0} */\n",
 	view: "/{0}\n"
 }
-, commands = {
-	js: "uglifyjs --warn --ie8 -c 'evaluate=false,properties=false' -m eval --comments '/^\\s*[@!]/' --beautify 'beautify=false,semicolons=false,keep_quoted_props=true'",
-	view: viewMin
-}
 , fileHashes
 , conf = {
 	date: now.toISOString().split("T")[0]
@@ -246,7 +242,7 @@ function html(opts, next) {
 			//return child.execSync("csso", { input: content }).toString("utf8")
 		}
 		if (ext === "view") {
-			return parseView(content, ext, lastMinEl)
+			return viewMin(parseView(content, ext, lastMinEl), {})
 		}
 		if (ext === "js") {
 			var cmd = [
@@ -268,18 +264,6 @@ function defMap(str) {
 	(lastStr = str)
 }
 
-function run(attrs) {
-	var cmd = commands[attrs._e]
-	return (
-		!isString(attrs.outFile) ? attrs._j :
-		isString(cmd) ?
-		child.execSync(cmd, {input:attrs._j}).toString("utf8").replace(/.{10000}\}/g, "$&\n") :
-		typeof cmd === "function" ? cmd(attrs) :
-		attrs._j
-	)
-	.replace(/\\x0B/ig, "\\v")
-	.trim()
-}
 function readHashes(root) {
 	if (fileHashes) return
 	fileHashes = {}
@@ -398,20 +382,20 @@ function parseView(content, extTo, lastMinEl) {
 		if (lastMinEl.js && extTo !== "js") lastMinEl.js._txt += line
 		else out += extTo === "js" ? line : "%js " + line
 	}
-	if ((line = viewMin({_j:arr.join("\n")}))) {
+	if ((line = viewMin(arr.join("\n"), {}))) {
 		if (lastMinEl.view && extTo !== "view") lastMinEl.view._txt += line
 		else out += extTo === "js" ? view2js(line) : line
 	}
 	return out
 }
 
-function viewMin(attrs) {
+function viewMin(str, attrs) {
 	var out = [""]
 	, templateRe = /([ \t]*)(%?)((?:("|')(?:\\\4|.)*?\4|[-\w:.#[\]]=?)*)[ \t]*([>^;@|\\\/]|!?=|)(([\])}]?).*?([[({]?))(?=\x1f|\n|$)+/g
 	, parent = 0
 	, stack = [-1]
 
-	attrs._j.replace(templateRe, work)
+	str.replace(templateRe, work)
 
 	//return out.join("\n")
 	return out.join("\n")//.replace(/^[\s\x1f]+|[\s\x1f]+$/g, "").replace(/\n+/g, "\\n")
@@ -428,13 +412,13 @@ function viewMin(attrs) {
 
 		if (!isString(out[parent])) {
 			out[parent]._j += all + "\n"
-		} else if (plugin && (name === "js" || name === "css")) {
+		} else if (plugin && (name === "todo def")) {
 			out[parent] += all
 			parent = out.push({
 				inFile: attrs.inFile, outFile: attrs.outFile, inDir: attrs.inDir, outDir: attrs.inDir,
 				_j: "", _e: name, _p: " ".repeat(indent.length + 1),
 				toString: function() {
-					return this._p + run(this).split("\n").join("\n" + this._p)
+					return this._p + this._j.split("\n").join("\n" + this._p)
 				}
 			}) - 1
 			stack.unshift(q)
