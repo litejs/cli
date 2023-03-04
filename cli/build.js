@@ -182,7 +182,7 @@ function html(opts, next) {
 			);
 			fn(el, siblings)
 			siblings.forEach(remove)
-			;[attr, "banner", "drop"].forEach(el.removeAttribute, el)
+			;[attr, "drop"].forEach(el.removeAttribute, el)
 		})
 	}
 	function remove(el) {
@@ -233,6 +233,7 @@ function html(opts, next) {
 		)
 		if (el.banner && banner[extTo]) {
 			content = banner[extTo].replace(/\{0\}/g, el.banner) + content
+			el.removeAttribute("banner")
 		}
 		return content
 	}
