@@ -142,7 +142,7 @@ function html(opts, next) {
 
 	$$("[inline]").forEach(function(el) {
 		if (el.defer === "" || el.if) throw "'defer' and 'if' can not combined with 'inline'"
-		var content = read.call(el)
+		var content = el._txt || read.call(el)
 		if (loadFilesRe.test(content)) {
 			content = content.replace(loadFilesRe, "" + loadFiles.map(function(el) {
 				return (el.if ? "(" + el.if + ")&&" : "") + JSON.stringify(getSrc(el))
@@ -215,6 +215,7 @@ function html(opts, next) {
 			if (ext === "view") {
 				var map = parseView(content)
 				content = ""
+
 				if (lastMinEl.css) lastMinEl.css._txt += map.css
 				else content += css2js(map.css)
 				if (lastMinEl.view) lastMinEl.view._txt += map.view
@@ -248,12 +249,12 @@ function html(opts, next) {
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
-		, ext = getExt(el.min || el)
+		, ext = getExt(el._min || el)
 		if (ext === "json") {
 			return JSON.stringify(JSON.parse(content))
 		}
 		if (ext === "css") {
-			return cssMin({_j: _opts.input, inDir:inDir, outDir:outDir, inFile: el.min || el.href, outFile: el.min})
+			return cssMin({_j: _opts.input, inDir:inDir, outDir:outDir, inFile: el._min || el.href, outFile: el._min})
 			//return child.execSync("csso", { input: content }).toString("utf8")
 		}
 		if (ext === "view") {
