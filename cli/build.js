@@ -37,12 +37,7 @@ var child = require("child_process")
 	view: "/{0}\n"
 }
 , commands = {
-	css: cssMin,
 	js: "uglifyjs --warn --ie8 -c 'evaluate=false,properties=false' -m eval --comments '/^\\s*[@!]/' --beautify 'beautify=false,semicolons=false,keep_quoted_props=true'",
-	//esbuild --minify --target=es5 load.js
-	json: function(attrs) {
-		return JSON.stringify(JSON.parse(attrs._j))
-	},
 	view: viewMin
 }
 , fileHashes
@@ -247,7 +242,7 @@ function html(opts, next) {
 			return JSON.stringify(JSON.parse(content))
 		}
 		if (ext === "css") {
-			return cssMin({_j: _opts.input, inDir:inDir, outDir:outDir, inFile: el._min || el.href, outFile: el._min})
+			return cssMin(content, {inDir:inDir, outDir:outDir, inFile: el._min || el.href, outFile: el._min})
 			//return child.execSync("csso", { input: content }).toString("utf8")
 		}
 		if (ext === "view") {
@@ -302,9 +297,8 @@ function view2js(content) {
 	return content ? ";El.tpl('" + content.replace(/\n+/g, "\x1f").replace(/'/g, "\\$&") + "');" : ""
 }
 
-function cssImport(attrs) {
+function cssImport(str, attrs) {
 	var match, out
-	, str = attrs._j
 	, lastIndex = 0
 	, re = /@import\s+url\((['"]?)(?!data:)(.+?)\1\);*/ig
 	, inDir = path.resolve(attrs.inDir, attrs.inFile || "").replace(/[^\/]+$/, "")
@@ -321,12 +315,11 @@ function cssImport(attrs) {
 	for (out = [ str ]; (match = re.exec(str)); ) {
 		out.splice(-1, 1,
 			str.slice(lastIndex, match.index),
-			cssImport({
+			cssImport(cli.readFile(path.resolve(outDir, match[2])), {
 				inDir: inDir,
 				inFile: inDir + match[2],
 				outDir: outDir,
-				outFile: attrs.outFile,
-				_j: cli.readFile(path.resolve(outDir, match[2]))
+				outFile: attrs.outFile
 			}),
 			str.slice(lastIndex = re.lastIndex)
 		)
@@ -334,8 +327,8 @@ function cssImport(attrs) {
 	return out.filter(Boolean).join("")
 }
 
-function cssMin(attrs) {
-	var out = cssImport(attrs)
+function cssMin(str, attrs) {
+	var out = cssImport(str, attrs)
 	.replace(/\/\*(?!!)[^]*?\*\//g, "")
 	.replace(/[\r\n]+/g, "\n")
 
