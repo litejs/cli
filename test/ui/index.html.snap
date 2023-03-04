@@ -13,5 +13,5 @@
 .app{margin:0 auto}
 .logo{background:red}
 </style></head><body><script>
-var load=[(!window.PointerEvent||!navigator.sendBeacon)&&"0.js?5fea","b.js","min-4575.js"]
+var load=[(!window.PointerEvent||!navigator.sendBeacon)&&"0.js?5fea","b.js","min-bc66.js"]
 </script><img src=data:image/svg+xml;base64,[data]><object type=image/svg+xml data=image.svg><img src=image.svg></object></body></html>
