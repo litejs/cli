@@ -275,7 +275,7 @@ function readHashes(root) {
 }
 
 function css2js(content) {
-	return content ? ";xhr.css('" + cssMin(content, {}).replace(/'/g, "\\'") + "');" : ""
+	return content ? ";xhr.css('" + cssMin(content, {}).replace(/\n+/g, "").replace(/'/g, "\\'") + "');" : ""
 }
 function view2js(content) {
 	return content ? ";El.tpl('" + viewMin(content, {}).replace(/\n+/g, "\x1f").replace(/'/g, "\\$&") + "');" : ""
@@ -285,8 +285,8 @@ function cssImport(str, attrs) {
 	var match, out
 	, lastIndex = 0
 	, re = /@import\s+url\((['"]?)(?!data:)(.+?)\1\);*/ig
-	, inDir = path.resolve(attrs.inDir, attrs.inFile || "").replace(/[^\/]+$/, "")
-	, outDir = path.resolve(attrs.outDir, attrs.outFile || "inline").replace(/[^\/]+$/, "")
+	, inDir = path.resolve(attrs.inDir || "", attrs.inFile || "").replace(/[^\/]+$/, "")
+	, outDir = path.resolve(attrs.outDir || "", attrs.outFile || "inline").replace(/[^\/]+$/, "")
 
 	if (inDir !== outDir) {
 		str = str.replace(/\/\*(?!!)[^]*?\*\/|url\((['"]?)(?!data:)(.+?)\1\)/ig, function(_, q, name) {
