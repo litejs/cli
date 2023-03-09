@@ -395,7 +395,10 @@ function viewMin(str, attrs) {
 	, parent = 0
 	, stack = [-1]
 
-	str.replace(templateRe, work)
+	str
+	.replace(/^([ \t]+)(;\w+:+)[ \t]+/gm, "$1$2")
+	.replace(/^([ \t]+)(;.*)\n\1(;.*)/gm, "$1$2$3")
+	.replace(templateRe, work).trim()
 
 	//return out.join("\n")
 	return out.join("\n")//.replace(/^[\s\x1f]+|[\s\x1f]+$/g, "").replace(/\n+/g, "\\n")
