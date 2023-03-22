@@ -133,7 +133,8 @@ function html(opts, next) {
 
 	$$("[inline]").forEach(function(el) {
 		if (el.defer === "" || el.if) throw "'defer' and 'if' can not combined with 'inline'"
-		var content = el._txt || read.call(el)
+		var newEl
+		, content = el._txt || read.call(el)
 		if (loadFilesRe.test(content)) {
 			content = content.replace(loadFilesRe, "" + loadFiles.map(function(el) {
 				return (el.if ? "(" + el.if + ")&&" : "") + JSON.stringify(getSrc(el))
@@ -141,7 +142,8 @@ function html(opts, next) {
 			loadFiles.forEach(remove)
 		}
 		if (el._min) content = minimize(el, { input: content })
-		el.parentNode.insertBefore(doc.createElement(el.tagName === "SCRIPT" ? "script" : "style"), el).textContent = "\n" + content.trim() + "\n"
+		el.parentNode.insertBefore(newEl = doc.createElement(el.tagName === "SCRIPT" ? "script" : "style"), el).textContent = "\n" + content.trim() + "\n"
+		if (el.type) newEl.type = el.type
 		remove(el)
 	})
 
