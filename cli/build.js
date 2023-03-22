@@ -125,6 +125,11 @@ function html(opts, next) {
 		}
 	})
 
+	$$("[_min][type='litejs/view']").forEach(function(el) {
+		el._txt = minimize(el, { input: el._txt })
+		delete el._min
+	})
+
 	$$("[_min]:not([inline])").forEach(function(el) {
 		write(outDir, el._min, minimize(el, { input: el._txt }), el)
 		delete el._min
@@ -167,7 +172,7 @@ function html(opts, next) {
 		return Array.from(doc.querySelectorAll(sel))
 	}
 	function following(attr, fn) {
-		$$("[%]:not([%='']),[%=''][inline='']".replace(/%/g, attr)).forEach(function(el) {
+		$$("[%]:not([%='']),[%=''][inline]".replace(/%/g, attr)).forEach(function(el) {
 			for (
 				var pos = el, siblings = [], sel = "[" + attr + "='']:not([inline])";
 				(pos = pos.nextElementSibling) && pos.matches(sel);
