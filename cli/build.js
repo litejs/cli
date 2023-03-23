@@ -87,7 +87,6 @@ function write(dir, name, content, el) {
 		hash = child.execSync("git hash-object -w --stdin", { input: content }).toString("utf8")
 		hash = fileHashes[outFile] = child.execSync("git rev-parse --short=1 " + hash).toString("utf8").trim()
 		name = name.replace("{h}", hash)
-		console.log("HASH", outFile, hash, fileHashes)
 	}
 	if (el) el[el.src ? "src" : "href"] = name
 	cli.writeFile(outFile, content)
