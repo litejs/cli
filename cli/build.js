@@ -89,6 +89,7 @@ function html(opts, next) {
 	, outDir = opts.outDir
 	, loadFiles = []
 	, loadFilesRe = /\/[*\/]!{loadFiles}[*\/]*/
+	, loadRewriteRe = /\/[*\/]!{loadRewrite}[*\/]*/
 	, cacheFile = inFile + ".cache.json"
 	, cache = {}
 	, lastMinEl = {}
@@ -145,6 +146,23 @@ function html(opts, next) {
 				return (el.if ? "(" + el.if + ")&&" : "") + JSON.stringify(getSrc(el))
 			}))
 			loadFiles.forEach(remove)
+		}
+		if (el.rewrite && loadRewriteRe.test(content)) {
+			var rewriteMap = (el.rewrite.match(/[^,\s]+/g) || []).reduce(function(map, rule) {
+				var junks = rule.split(":")
+				cli.ls(path.join(inDir, junks[0])).forEach(function(file) {
+					var inName = defMap(path.relative(inDir, file))
+					, outName = defMap(junks[1]).replace("{h}", fileHashes[file] || now.getTime())
+					if (inDir !== outDir || outName.indexOf(inName) !== 0) {
+						var content = minimize(inName, { src: file, files: [inName] })
+						cli.writeFile(path.join(outDir, outName.split("?")[0]), content)
+					}
+					map[inName] = outName
+				})
+				return map
+			}, {})
+			content = content.replace(loadRewriteRe, JSON.stringify(rewriteMap).slice(1, -1))
+			delete el.rewrite
 		}
 		if (el._min) content = minimize(el, { input: content })
 		el.parentNode.insertBefore(newEl = doc.createElement(el.tagName === "SCRIPT" ? "script" : "style"), el).textContent = "\n" + content.trim() + "\n"
