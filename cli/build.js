@@ -71,7 +71,7 @@ module.exports = function(opts) {
 		if (opts.readme !== false) {
 			output = format(output)
 		}
-		if (opts.out) cli.writeFile(out, output)
+		if (opts.out) write(attrs.outDir, attrs.outFile+"?{h}", output)
 		else process.stdout.write(output)
 
 		if (opts.worker) {
@@ -79,6 +79,18 @@ module.exports = function(opts) {
 		}
 		child.execSync("git add -u")
 	})
+}
+
+function write(dir, name, content, el) {
+	var hash, outFile = path.join(dir, name.split("?")[0])
+	if (name.indexOf("{h}") > -1) {
+		hash = child.execSync("git hash-object -w --stdin", { input: content }).toString("utf8")
+		hash = fileHashes[outFile] = child.execSync("git rev-parse --short=1 " + hash).toString("utf8").trim()
+		name = name.replace("{h}", hash)
+		console.log("HASH", outFile, hash, fileHashes)
+	}
+	if (el) el[el.src ? "src" : "href"] = name
+	cli.writeFile(outFile, content)
 }
 
 function html(opts, next) {
@@ -244,17 +256,6 @@ function html(opts, next) {
 			el.removeAttribute("banner")
 		}
 		return content
-	}
-	function contentHash(content) {
-		var hash = child.execSync("git hash-object -w --stdin", { input: content }).toString("utf8")
-		return child.execSync("git rev-parse --short=1 " + hash).toString("utf8").trim()
-	}
-	function write(dir, name, content, el) {
-		if (name.indexOf("{h}") > -1) {
-			name = name.replace("{h}", contentHash(content))
-		}
-		el[el.src ? "src" : "href"] = name
-		cli.writeFile(path.resolve(dir, name.split("?")[0]), content)
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
