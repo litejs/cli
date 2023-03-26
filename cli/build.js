@@ -82,7 +82,7 @@ module.exports = function(opts) {
 }
 
 function write(dir, name, content, el) {
-	var hash, outFile = path.join(dir, name.split("?")[0])
+	var hash, outFile = path.resolve(dir, name.split("?")[0])
 	if (name.indexOf("{h}") > -1) {
 		hash = child.execSync("git hash-object -w --stdin", { input: content }).toString("utf8")
 		hash = fileHashes[outFile] = child.execSync("git rev-parse --short=1 " + hash).toString("utf8").trim()
@@ -101,7 +101,7 @@ function html(opts, next) {
 	, loadFiles = []
 	, loadFilesRe = /\/[*\/]!{loadFiles}[*\/]*/
 	, loadRewriteRe = /\/[*\/]!{loadRewrite}[*\/]*/
-	, cacheFile = inFile + ".cache.json"
+	, cacheFile = path.resolve(".cache.json")
 	, cache = {}
 	, lastMinEl = {}
 
