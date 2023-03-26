@@ -59,23 +59,15 @@ if (linked) {
 module.exports = function(opts) {
 	if (opts.ver) conf.version = opts.ver
 
-	var out = opts.out || opts.args[0]
-	, attrs = {
-		inDir: opts.args[0].replace(/[^\/]+$/, ""),   // Input dir
-		inFile: opts.args[0].replace(/.*\//, ""),      // Input file
-		outDir: out.replace(/[^\/]+$/, ""),            // Output dir
-		outFile: out.replace(/.*\//, ""),               // Output file
-		_j: cli.readFile(opts.args[0])
-	}
-	html(attrs, function(output) {
+	html(opts, function(output) {
 		if (opts.readme !== false) {
 			output = format(output)
 		}
-		if (opts.out) write(attrs.outDir, attrs.outFile+"?{h}", output)
+		if (opts.out) write(opts.outDir, opts.outFile+"?{h}", output)
 		else process.stdout.write(output)
 
 		if (opts.worker) {
-			updateWorker(opts.worker, attrs, {})
+			updateWorker(opts.worker, opts, {})
 		}
 		child.execSync("git add -u")
 	})
@@ -93,17 +85,19 @@ function write(dir, name, content, el) {
 }
 
 function html(opts, next) {
-	var doc = parser.parseFromString(opts._j)
+	var doc = parser.parseFromString(cli.readFile(opts.args[0]))
 	, httpRe = /^https?(?=:)/
-	, inDir = opts.inDir
-	, inFile = path.resolve(inDir + opts.inFile)
-	, outDir = opts.outDir
+	, out = opts.out || opts.args[0]
+	, inDir = opts.inDir = opts.args[0].replace(/[^\/]+$/, "")
+	, outDir = opts.outDir = out.replace(/[^\/]+$/, "")
 	, loadFiles = []
 	, loadFilesRe = /\/[*\/]!{loadFiles}[*\/]*/
 	, loadRewriteRe = /\/[*\/]!{loadRewrite}[*\/]*/
 	, cacheFile = path.resolve(".cache.json")
 	, cache = {}
 	, lastMinEl = {}
+
+	opts.outFile = out.replace(/.*\//, "")
 
 	try {
 		var age = (now - Date.parse(fs.statSync(cacheFile).mtime))
