@@ -44,9 +44,9 @@ var child = require("child_process")
 
 try {
 	Object.assign(conf, require(path.resolve("package.json")))
-	console.log("# Build %s@%s with %s@%s", conf.name, conf.version, cli.name, cli.version)
+	console.error("# Build %s@%s with %s@%s", conf.name, conf.version, cli.name, cli.version)
 } catch(e) {
-	console.log(e)
+	console.error(e)
 }
 
 if (linked) {
@@ -100,8 +100,9 @@ function html(opts, next) {
 	opts.outFile = out.replace(/.*\//, "")
 
 	try {
+		if (!opts.fetch) cache = require(cacheFile)
 		var age = (now - Date.parse(fs.statSync(cacheFile).mtime))
-		if (age < 36000000) cache = require(cacheFile)
+		if (age > 36000000) console.error("Cache is old, consider using --fetch")
 	} catch(e) {}
 
 	readHashes(inDir)
@@ -486,7 +487,7 @@ function updateWorker(file, opts, hashes) {
 	})
 
 	if (current != updated) {
-		console.log(log)
+		console.error(log)
 		cli.writeFile(opts.outDir + file, updated)
 	}
 }
