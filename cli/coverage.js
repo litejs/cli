@@ -61,6 +61,8 @@ function fileCoverage(name, source, v8data) {
 	, lnCounts = []
 	, lnCov = 0
 	, lnTot = lnCounts.length = lines.length
+	, ignoreNextRe = /\/\*[\s\w]*ignore next\s*\*\//
+
 
 	lnCounts.fill(v8data[0].ranges[0].count, 0, lnTot)
 
@@ -147,14 +149,15 @@ function fileCoverage(name, source, v8data) {
 				start += match[0].length
 				blockSource = blockSource.replace(/^[^{]+\{\n*|\s*}[^}]*$/g, "")
 			}
-			blockLines = blockSource.split("\n").length
 			// console.log("FILL", match, blockLines, range.count, JSON.stringify(blockSource))
 		} else {
 			brCounts[i] = "0," + i + "," + range.count
-			if (range.count > 0) brCov++
-			else brUncovered[i] = [start, end]
-			blockLines = blockSource.split("\n").length
+			if (range.count > 0 || ignoreNextRe.test(blockSource.split("\n")[0])) brCov++
+			else {
+				brUncovered[i] = [start, end]
+			}
 		}
+		blockLines = blockSource.split("\n").length
 
 
 		if (lastOffset > (lastOffset = start)) {
