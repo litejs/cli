@@ -1,6 +1,6 @@
 {
   "name": "@litejs/cli",
-  "version": "23.3.5",
+  "version": "23.3.6",
   "description": "Command line tools for LiteJS full-stack framework",
   "license": "MIT",
   "author": "Lauri Rooden <lauri@rooden.ee>",
@@ -24,7 +24,7 @@
     "test": "TZ='Europe/Tallinn' node --allow-natives-syntax --expose-gc ./index.js test test/index.js --coverage --sources='*.js,cli/*.js' --brief --no-status && jshint *.js cli/*.js"
   },
   "dependencies": {
-    "@litejs/dom": "23.2.2"
+    "@litejs/dom": "23.3.0"
   },
   "bin": {
     "lj-doc": "./cli/doc",
