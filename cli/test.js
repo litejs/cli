@@ -13,7 +13,7 @@ module.exports = function(opts) {
 	, files = cli.ls(opts.args.filter(isNaN))
 	, threads = opts.threads
 	, nums = opts.args.filter(Number)
-	, test = path.resolve(module.filename, "../../test.js")
+	, test = require.resolve("../test.js")
 	, pendingRuns = 0
 	if (!files[0]) return console.error("No files found: " + opts.args)
 
