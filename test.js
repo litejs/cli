@@ -7,7 +7,7 @@
 	, _process = _global.process || /* c8 ignore next */ { exit: This }
 	, _isArray = Array.isArray
 	, _keys = Object.keys
-	, _slice = tests.slice
+	, slice = def.call.bind(tests.slice)
 	, lineRe = /{(\w+)}/g
 	, totalCases = 0
 	, failedCases = []
@@ -137,14 +137,14 @@
 	}
 	function fakeTimeout(repeat, fn, ms) {
 		if (Date === _Date) {
-			return _setTimeout.apply(this, _slice.call(arguments, 1))
+			return _setTimeout.apply(this, slice(arguments, 1))
 		}
 		if (!isObj(repeat)) {
 			repeat = {
 				id: ++timerId,
 				repeat: repeat,
 				fn: fn,
-				args: _slice.call(arguments, 3),
+				args: slice(arguments, 3),
 				at: fakeNow + ms,
 				ms: ms
 			}
@@ -160,7 +160,7 @@
 		fakeTimeout({
 			id: ++timerId,
 			fn: fn,
-			args: _slice.call(arguments, 1),
+			args: slice(arguments, 1),
 			at: fakeNow - 1
 		})
 	}
@@ -433,7 +433,7 @@
 			return spy
 			function spy() {
 				var err, key, result
-				, args = _slice.call(arguments)
+				, args = slice(arguments)
 				if (isFn(origin)) {
 					try {
 						result = origin.apply(this, arguments)
