@@ -244,6 +244,7 @@
 				i.n = format(i.n, row, conf)
 				i.f = curry(i.f, row)
 			}, spliceData[2]))
+			splicePos += data.length - 1
 		}
 		tests.splice.apply(tests, spliceData)
 		return describe
