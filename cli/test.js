@@ -1,12 +1,14 @@
 
 var cli = require("..")
 , child = require("child_process")
+, fs = require("fs")
 , path = require("path")
 
 /* global describe */
 
 module.exports = function(opts) {
-	var subOpts = {
+	var watcher
+	, subOpts = {
 		env: Object.assign({}, process.env),
 		stdio: "inherit"
 	}
@@ -29,16 +31,15 @@ module.exports = function(opts) {
 			opts.coverage = subOpts.env.NODE_V8_COVERAGE = path.resolve(
 				opts.coverage === true ? process.env.NODE_V8_COVERAGE || "./coverage" : opts.coverage
 			)
-			cli.rmrf(opts.coverage)
+			rmrf(opts.coverage)
 			if (opts.lcov === true) opts.lcov = opts.coverage + "/lcov.info"
 		}
 		if (!threads || threads === true) threads = require("os").cpus().length
 		runAgain()
 	}
 	if (opts.watch) {
-		var watcher
 		describe.onend = function() {
-			watcher = cli.watch(getRequired(), runAgain, 100)
+			watcher = watch(getRequired(), runAgain, 100)
 		}
 	}
 	function getRequired() {
@@ -81,7 +82,7 @@ module.exports = function(opts) {
 			return this.indexOf(name) < 0
 		}, ("" + opts.ignore).split(","))
 		, fileMap = fileNames.reduce(function(map, name) {
-			map[map[name] = "file://" + path.resolve(name)] = name
+			map[map[name] = path.resolve(name)] = name
 			return map
 		}, {})
 		, good = []
@@ -90,13 +91,14 @@ module.exports = function(opts) {
 
 		cli.ls(opts.coverage + "/*.json").forEach(function(file) {
 			require(path.resolve(file)).result.forEach(function(row) {
-				if (!fileMap[row.url]) return
-				if (coverages[row.url]) {
-					var current = coverages[row.url]
+				var fileName = row.url.slice(7)
+				if (!fileMap[fileName]) return
+				if (coverages[fileName]) {
+					var current = coverages[fileName]
 					if (current.functions.length < row.functions.length) {
-						coverages[row.url] = row
+						coverages[fileName] = row
 						row = current
-						current = coverages[row.url]
+						current = coverages[fileName]
 					}
 					row.functions.forEach(function(fn, i) {
 						var current = this[i].ranges
@@ -109,12 +111,12 @@ module.exports = function(opts) {
 							this[i].count += range.count
 						}, current)
 					}, current.functions)
-				} else coverages[row.url] = row
+				} else coverages[fileName] = row
 			})
 		})
 
 		var results = fileNames.map(function(file) {
-			var source = cli.readFile(fileMap[file].slice(7))
+			var source = fs.readFileSync(fileMap[file], "utf8")
 			, result = fileCoverage(file, source, (coverages[fileMap[file]] || { functions: [{ranges:[{count:0}]}]}).functions)
 			if (result.coverage < 100) {
 				if (opts.status) process.exitCode++
@@ -126,10 +128,75 @@ module.exports = function(opts) {
 			lcov.push(result.lcov)
 			return result
 		})
-		if (opts.lcov) cli.writeFile(opts.lcov, lcov.join("\n"))
+		if (opts.lcov) writeFile(opts.lcov, lcov.join("\n"))
 		if (good[0]) console.log("# Coverage 100%:", good.join(", "))
 		if (bad[0]) console.log("\x1b[31m# " + bad.join("\n# ") + "\x1b[0m")
 		require("./coverage.js").reportTable(results)
 	}
+}
+
+function mkdirp(dir) {
+	try {
+		fs.statSync(dir)
+	} catch (e) {
+		mkdirp(path.dirname(dir))
+		fs.mkdirSync(dir)
+	}
+}
+
+function rmrf(dir) {
+	if (dir === "/") throw Error("Can not remove root")
+	try {
+		if (fs.lstatSync(dir).isDirectory()) {
+			for (var arr = fs.readdirSync(dir), i = arr.length; i--; ) {
+				rmrf(path.join(dir, arr[i]))
+			}
+			fs.rmdirSync(dir)
+		} else {
+			fs.unlinkSync(dir)
+		}
+	} catch (e) {
+		if (e.code === "ENOENT") return
+		throw e
+	}
+}
+
+function watch(paths, cb, delay) {
+	var timer
+	, watchers = {}
+	, changed = []
+
+	add(paths)
+
+	return {
+		add: add
+	}
+	function add(paths) {
+		paths.forEach(watch)
+	}
+	function run() {
+		add(changed)
+		changed.length = 0
+		cb()
+	}
+	function watch(file) {
+		if (watchers[file]) return
+		try {
+			watchers[file] = fs.watch(file, function() {
+				if (watchers[file]) {
+					changed.push(file)
+					watchers[file].close()
+					watchers[file] = null
+				}
+				clearTimeout(timer)
+				timer = setTimeout(run, delay)
+			})
+		} catch (e) {}
+	}
+}
+
+function writeFile(name, content) {
+	mkdirp(path.dirname(name))
+	fs.writeFileSync(name, content, "utf8")
 }
 
