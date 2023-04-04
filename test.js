@@ -103,7 +103,7 @@
 		total: 0
 	}
 	, toStr = conf.toString
-	, hasOwn = conf.hasOwnProperty
+	, hasOwn = def.call.bind(conf.hasOwnProperty)
 	, argv = _process.argv && _process.argv.slice(2) || /* c8 ignore next */ []
 	, arg, argi = argv.length
 	/*** mockTime ***/
@@ -445,7 +445,7 @@
 					result = origin[spy.called % origin.length]
 				} else if (isObj(origin)) {
 					key = JSON.stringify(args).slice(1, -1)
-					result = hasOwn.call(origin, key) ? origin[key] : origin["*"]
+					result = hasOwn(origin, key) ? origin[key] : origin["*"]
 				} else result = origin
 				spy.called++
 				spy.results.push(result)
@@ -472,7 +472,7 @@
 				return
 			}
 			var existing = obj[name]
-			this._r.push(obj, name, hasOwn.call(obj, name) && existing)
+			this._r.push(obj, name, hasOwn(obj, name) && existing)
 			obj[name] = fn
 			if (fn === fn && obj[name] !== fn) throw _Error("Unable to swap " + stringify(name))
 			return existing
@@ -571,7 +571,7 @@
 			for (; len--; ) {
 				key = aKeys[len]
 				if (
-					!hasOwn.call(expected, key) ||
+					!hasOwn(expected, key) ||
 					!_deepEqual(actual[key], expected[key], circ)
 				) return false
 			}
@@ -606,8 +606,8 @@
 		if (a === b) {
 			own.lastMsg = "Can not be strictEqual"
 		} else if (a) {
-			for (var k in b) if (hasOwn.call(b, k)) {
-				if (!hasOwn.call(a, k) || (
+			for (var k in b) if (hasOwn(b, k)) {
+				if (!hasOwn(a, k) || (
 					isObj(b[k]) ? !own(a[k], b[k]) :
 					_isArray(b[k]) ? b[k].some(itemNotOwn, a[k]) :
 					a[k] !== b[k]
@@ -629,7 +629,7 @@
 	function each(arr, fn) {
 		if (arr) {
 			if (isStr(arr)) arr = arr.split(",")
-			for (var i in arr) if (hasOwn.call(arr, i)) fn(i, arr[i])
+			for (var i in arr) if (hasOwn(arr, i)) fn(i, arr[i])
 		}
 	}
 
@@ -654,7 +654,7 @@
 			if (circ.indexOf(str) > -1) return "Circular"
 			circ.push(str)
 			tmp = []
-			for (i in str) if (hasOwn.call(str, i)) {
+			for (i in str) if (hasOwn(str, i)) {
 				i = (t === "object" ? _stringify(i, left) + ":" : "") + _stringify(str[i], left, circ)
 				tmp.push(i)
 				left -= i.length
