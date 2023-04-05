@@ -7,8 +7,9 @@
 	, _process = _global.process || /* c8 ignore next */ { exit: This }
 	, _isArray = Array.isArray
 	, _keys = Object.keys
-	, slice = def.call.bind(tests.slice)
-	, push = def.call.bind(tests.push)
+	, call = def.bind.bind(def.call)
+	, slice = call(tests.slice)
+	, push = call(tests.push)
 	, lineRe = /{(\w+)}/g
 	, totalCases = 0
 	, failedCases = []
@@ -104,7 +105,7 @@
 		total: 0
 	}
 	, toStr = conf.toString
-	, hasOwn = def.call.bind(conf.hasOwnProperty)
+	, hasOwn = call(conf.hasOwnProperty)
 	, argv = _process.argv && _process.argv.slice(2) || /* c8 ignore next */ []
 	, arg, argi = argv.length
 	/*** mockTime ***/
