@@ -101,9 +101,10 @@ function html(opts, next) {
 	opts.outFile = out.replace(/.*\//, "")
 
 	try {
-		if (!opts.fetch) cache = require(cacheFile)
-		var age = (now - Date.parse(fs.statSync(cacheFile).mtime))
-		if (age > 36000000) console.error("Cache is old, consider using --fetch")
+		if (!opts.fetch) {
+			cache = require(cacheFile)
+			if (now - cache.time > 36000000) console.error("Cache is old, consider using --fetch")
+		}
 	} catch(e) {}
 
 	readHashes(inDir)
@@ -177,7 +178,10 @@ function html(opts, next) {
 		remove(el)
 	})
 
-	if (Object.keys(cache)[0]) write("", cacheFile, JSON.stringify(cache, null, 2), {})
+	if (!cache.time && Object.keys(cache)[0]) {
+		cache.time = +now
+		write("", cacheFile, JSON.stringify(cache, null, 2), {})
+	}
 
 	next(doc.toString(true))
 
