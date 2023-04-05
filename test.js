@@ -8,6 +8,7 @@
 	, _isArray = Array.isArray
 	, _keys = Object.keys
 	, slice = def.call.bind(tests.slice)
+	, push = def.call.bind(tests.push)
 	, lineRe = /{(\w+)}/g
 	, totalCases = 0
 	, failedCases = []
@@ -322,8 +323,8 @@
 				err = [ err ].concat(stack.slice(start, i)).join("\n")
 			}
 
-			if (testCase.errors.push(err) == 1) {
-				failedCases.push(testCase)
+			if (push(testCase.errors, err) == 1) {
+				push(failedCases, testCase)
 			}
 			if (describe.result) printResult()
 			return testCase
@@ -448,8 +449,8 @@
 					result = hasOwn(origin, key) ? origin[key] : origin["*"]
 				} else result = origin
 				spy.called++
-				spy.results.push(result)
-				spy.calls.push({
+				push(spy.results, result)
+				push(spy.calls, {
 					scope: this,
 					args: args,
 					error: err,
@@ -472,7 +473,7 @@
 				return
 			}
 			var existing = obj[name]
-			this._r.push(obj, name, hasOwn(obj, name) && existing)
+			push(this._r, obj, name, hasOwn(obj, name) && existing)
 			obj[name] = fn
 			if (fn === fn && obj[name] !== fn) throw _Error("Unable to swap " + stringify(name))
 			return existing
@@ -556,7 +557,7 @@
 
 		key = circ.indexOf(actual)
 		if (key > -1) return true
-		circ.push(actual)
+		push(circ, actual)
 
 		if (aType == "array" || aType == "arguments") {
 			len = actual.length
@@ -652,11 +653,11 @@
 
 		if (!isStr(str)) {
 			if (circ.indexOf(str) > -1) return "Circular"
-			circ.push(str)
+			push(circ, str)
 			tmp = []
 			for (i in str) if (hasOwn(str, i)) {
 				i = (t === "object" ? _stringify(i, left) + ":" : "") + _stringify(str[i], left, circ)
-				tmp.push(i)
+				push(tmp, i)
 				left -= i.length
 				if (left < 0) break
 			}
