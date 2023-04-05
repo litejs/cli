@@ -74,11 +74,12 @@ module.exports = function(opts) {
 }
 
 function write(dir, name, content, el) {
-	var hash, outFile = path.resolve(dir, name.split("?")[0])
+	var hash, outFile = path.join(dir, name.split("?")[0])
 	if (name.indexOf("{h}") > -1) {
 		hash = child.execSync("git hash-object -w --stdin", { input: content }).toString("utf8")
-		hash = fileHashes[outFile] = child.execSync("git rev-parse --short=1 " + hash).toString("utf8").trim()
-		name = name.replace("{h}", hash)
+		hash = child.execSync("git rev-parse --short=1 " + hash).toString("utf8").trim()
+		outFile = outFile.replace("{h}", hash)
+		name = name.replace("{h}", fileHashes[outFile] = hash)
 	}
 	if (el) el[el.src ? "src" : "href"] = name
 	cli.writeFile(outFile, content)
@@ -176,7 +177,7 @@ function html(opts, next) {
 		remove(el)
 	})
 
-	if (Object.keys(cache)[0]) write(inDir, cacheFile, JSON.stringify(cache, null, 2), {})
+	if (Object.keys(cache)[0]) write("", cacheFile, JSON.stringify(cache, null, 2), {})
 
 	next(doc.toString(true))
 
