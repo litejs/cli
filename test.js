@@ -76,7 +76,8 @@
 			)
 		}
 	}
-	, conf = describe.conf = {
+	, argv = _process.argv && _process.argv.slice(2) || /* c8 ignore next */ []
+	, conf = describe.conf = opts(argv, {
 		// process.platform === 'win32' -> √×.
 		file: (_Error().stack + " /cli/test.js:").match(/\S+?:(?=[:\d)]*$)/m)[0],
 		global: "describe,it",
@@ -103,11 +104,9 @@
 		time: 1,
 		timeout: 999,
 		total: 0
-	}
+	})
 	, toStr = conf.toString
 	, hasOwn = call(conf.hasOwnProperty)
-	, argv = _process.argv && _process.argv.slice(2) || /* c8 ignore next */ []
-	, arg, argi = argv.length
 	/*** mockTime ***/
 	, fakeNow
 	, timers = []
@@ -184,16 +183,9 @@
 	describe.output = ""
 
 	describe.format = format
+	describe.opts = opts
 	describe.print = print
 	describe.stringify = stringify
-
-	for (; argi; ) {
-		arg = argv[--argi].split(/=|--(no-)?/)
-		if (arg[0] === "") {
-			conf[arg[2]] = arg[4] || !arg[1]
-			argv.splice(argi, 1)
-		}
-	}
 
 	each(conf.global, function(_i, value) {
 		_global[value] = describe[value]
@@ -409,6 +401,16 @@
 	}
 	function line(name, map) {
 		return print(format(conf[name], map, conf))
+	}
+	function opts(argv, defaults) {
+		for (var arg, conf = Object.assign({}, defaults), i = argv.length; i; ) {
+			arg = argv[--i].split(/=|--(no-)?/)
+			if (arg[0] === "") {
+				conf[arg[2]] = arg[4] || !arg[1]
+				argv.splice(i, 1)
+			}
+		}
+		return conf
 	}
 	function print(str) {
 		if (!str) return
