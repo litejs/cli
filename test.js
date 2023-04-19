@@ -243,8 +243,8 @@
 		if (data !== fn) {
 			each(data, curry(function(item, i, row) {
 				i = spliceData[i - 0 + 2] = Object.create(item)
+				i.f = curry(i.f, _isArray(row) ? row : (row = [row]))
 				i.n = format(i.n, row, conf)
-				i.f = curry(i.f, row)
 			}, spliceData[2]))
 			splicePos += data.length - 1
 		}
