@@ -3,7 +3,8 @@
 !function(exports, _setTimeout, _clearTimeout, _Date, _Error, _Infinity) {
 	var started, testSuite, timerType, inSuite
 	, tests = []
-	, _global = exports.window || global
+	, describe = exports.describe = curry(def, 1)
+	, _global = describe.global = exports.window || global
 	, _process = _global.process || /* c8 ignore next */ { exit: This }
 	, _isArray = Array.isArray
 	, _keys = Object.keys
@@ -18,7 +19,6 @@
 	, skipped = 0
 	, runPos = 0
 	, splicePos = 0
-	, describe = exports.describe = curry(def, 1)
 	, assert = describe.assert = {
 		notOk: function(value, message) {
 			return this(!value, message, value, "!=", "falsy")
