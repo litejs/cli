@@ -549,7 +549,7 @@
 			actual == null || // jshint ignore:line
 			aType !== typeof expected ||
 			(aType = type(actual)) != type(expected) ||
-			actual.constructor !== expected.constructor ||
+			(actual.constructor && actual.constructor !== expected.constructor) ||
 			(aType == "date" && actual.getTime() !== expected.getTime()) ||
 			(aType == "regexp" && "" + actual !== "" + expected)
 		) {
