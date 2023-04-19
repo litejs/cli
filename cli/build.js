@@ -112,6 +112,7 @@ function html(opts, next) {
 	$$("[exclude]").forEach(remove)
 
 	following("cat", function(el, siblings) {
+		if (opts.cat === false) return console.error("CAT DISABLED", getSrc(el))
 		setLastEl(el, el.cat.match(/[^,\s]+/g) || [], siblings)
 		write(inDir, getSrc(el), el._txt, el)
 	})
