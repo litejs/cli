@@ -146,7 +146,7 @@ function html(opts, next) {
 		delete el._txt
 	})
 
-	$$("[inline]").forEach(function(el) {
+	$$("[inline],[min]").forEach(function(el) {
 		if (el.defer === "" || el.if) throw "'defer' and 'if' can not combined with 'inline'"
 		var newEl
 		, content = el._txt || read.call(el)
@@ -173,7 +173,7 @@ function html(opts, next) {
 			content = content.replace(loadRewriteRe, JSON.stringify(rewriteMap).slice(1, -1))
 			delete el.rewrite
 		}
-		if (el._min) content = minimize(el, { input: content })
+		if (el._min || el.min === "") content = minimize(el, { input: content })
 		el.parentNode.insertBefore(newEl = doc.createElement(el.tagName === "SCRIPT" ? "script" : "style"), el).textContent = "\n" + content.trim() + "\n"
 		if (el.type) newEl.type = el.type
 		remove(el)
@@ -259,7 +259,7 @@ function html(opts, next) {
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
-		, ext = getExt(el._min || el)
+		, ext = el.tagName === "SCRIPT" ? "js" : el.tagName === "STYLE" ? "css" : getExt(el._min || el)
 		if (ext === "json") {
 			return JSON.stringify(JSON.parse(content))
 		}
