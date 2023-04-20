@@ -259,7 +259,7 @@ function html(opts, next) {
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
-		, ext = el.tagName === "SCRIPT" ? "js" : el.tagName === "STYLE" ? "css" : getExt(el._min || el)
+		, ext = el.min !== "" ? getExt(el._min || el) : el.tagName === "SCRIPT" ? "js" : "css"
 		if (ext === "json") {
 			return JSON.stringify(JSON.parse(content))
 		}
