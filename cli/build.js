@@ -130,7 +130,7 @@ function html(opts, next) {
 		if (name.indexOf("{h}") > -1) {
 			el[el.src ? "src" : "href"] = name.replace("{h}", fileHashes[inName] || now.getTime())
 		}
-		if (inDir !== outDir) {
+		if (inDir !== outDir && !httpRe.test(name)) {
 			cli.cp(inName, path.join(outDir, cleanName))
 		}
 	})
