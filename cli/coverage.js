@@ -154,7 +154,7 @@ function fileCoverage(name, source, v8data) {
 			brCounts[i] = "0," + i + "," + range.count
 			if (range.count > 0 || ignoreNextRe.test(blockSource.split("\n")[0])) brCov++
 			else {
-				brUncovered[i] = [start, end]
+				brUncovered.push([start, end, source.slice(start, end)])
 			}
 		}
 		blockLines = blockSource.split("\n").length

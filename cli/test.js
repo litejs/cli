@@ -119,6 +119,7 @@ module.exports = function(opts) {
 			if (result.coverage < 100) {
 				if (opts.status) process.exitCode++
 				bad.push(file + " coverage " + result.text)
+				if (opts.uncovered) bad.push(result.branches.uncovered)
 			} else {
 				good.push(file)
 			}
