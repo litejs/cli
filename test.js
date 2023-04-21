@@ -245,7 +245,7 @@
 				i = spliceData[i - 0 + 2] = Object.create(item)
 				i.f = curry(i.f, i.r = _isArray(row) ? row : isObj(row) ? Object.entries(row) : (row = [row]))
 				i.n = format(i.n, row, conf)
-				if (i.r.length !== spliceData[2].r.length) throw "Different data size: " + i.n
+				if (item.f.length > i.r.length + 2 || i.r.length !== spliceData[2].r.length) throw "Invalid data for: " + i.n
 			}, spliceData[2]))
 			splicePos += data.length - 1
 		}
