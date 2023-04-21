@@ -243,7 +243,7 @@
 		if (data !== fn) {
 			each(data, curry(function(item, i, row) {
 				i = spliceData[i - 0 + 2] = Object.create(item)
-				i.f = curry(i.f, i.r = _isArray(row) ? row : (row = [row]))
+				i.f = curry(i.f, i.r = _isArray(row) ? row : isObj(row) ? Object.entries(row) : (row = [row]))
 				i.n = format(i.n, row, conf)
 				if (i.r.length !== spliceData[2].r.length) throw "Different data size: " + i.n
 			}, spliceData[2]))
