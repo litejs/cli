@@ -21,7 +21,7 @@ TestSuite 3 env.2
 TestSuite 4
   ✔ 10. it should run chained test 4.1 [1/1]
   ∅ 11. it supports a pending test 4.2
-  ∅ 12. it _should skip test by name 4.3
+  ∅ 12. it should skip test by data 4.3
 1..12
 # pass  12/12 [18/18]
 # skip  2

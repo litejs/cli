@@ -56,7 +56,7 @@ describe("TestSuite 4")
 	assert.ok(true)
 })
 .it("supports a pending test 4.2")
-.it("_should skip test by name 4.3", function(assert) {
+.it("should skip test by data 4.3", false, function(assert) {
 	assert.fail()
 	assert.end()
 })

@@ -227,7 +227,7 @@
 		var spliceData = [++splicePos, 0, {
 			p: inSuite,
 			indent: inSuite ? inSuite.indent + (t > 1 ? "" : conf.indent) : "",
-			s: t > 1 && !isFn(fn) ? "pending" : name.charAt(0) === "_" ? "by name" : 0,
+			s: t > 1 && !isFn(fn) ? "pending" : data === false ? "by data" : 0,
 			t: t,
 			n: name,
 			f: fn
