@@ -496,7 +496,7 @@ function updateWorker(file, opts, hashes) {
 	.replace(re, function(_, a, q) {
 		return a + q + now.toISOString() + q
 	})
-	.replace(/ FILES = (\[[^\]]+\])/, function(all, files) {
+	.replace(/(\t*), FILES = (\[[^\]]+\])/, function(all, indent, files) {
 		files = JSON.parse(files)
 		.map(function(line) {
 			var name = line.replace(/\?.*/, "")
@@ -509,7 +509,7 @@ function updateWorker(file, opts, hashes) {
 			}
 			return line
 		})
-		return " FILES = " + JSON.stringify(files, null, "\t")
+		return indent + ", FILES = " + JSON.stringify(files, null, "\t").replace(/\n/g, "\n" + indent)
 	})
 
 	if (current != updated) {
