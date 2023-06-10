@@ -514,7 +514,10 @@ function updateWorker(file, opts, hashes) {
 
 	if (current != updated) {
 		console.error(log)
-		cli.writeFile(opts.outDir + file, updated)
+		cli.writeFile(opts.inDir + file, updated)
+		if (opts.inDir !== opts.outDir) {
+			cli.cp(opts.inDir + file, path.join(opts.outDir, file))
+		}
 	}
 }
 
