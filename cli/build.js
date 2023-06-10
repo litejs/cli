@@ -486,7 +486,7 @@ function format(str) {
 
 function updateWorker(file, opts, hashes) {
 	var root = opts.inDir + file.replace(/[^\/]+$/, "")
-	, re = /(\s+VERSION\s*=\s*)("|').*?\2/
+	, re = /(\b(?:VERSION|BUILD)\s*=\s*)("|').*?\2/
 	, current = cli.readFile(opts.inDir + file)
 	, log = "# Update worker: " + file
 
