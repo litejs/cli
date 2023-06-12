@@ -23,6 +23,7 @@
 //  - await 7.6.0
 
 var child = require("child_process")
+, crypto = require("crypto")
 , fs = require("fs")
 , path = require("path")
 , dom = require("@litejs/dom")
@@ -179,6 +180,13 @@ function html(opts, next) {
 		remove(el)
 	})
 
+	$$("[integrity='']").forEach(function(el) {
+		var src = getSrc(el)
+		if (httpRe.test(src)) {
+			curl(src, el)
+		}
+	})
+
 	if (!cache.time && Object.keys(cache)[0]) {
 		cache.time = +now
 		write("", cacheFile, JSON.stringify(cache, null, 2), {})
@@ -227,13 +235,25 @@ function html(opts, next) {
 		//var ext = el.tagName === "SCRIPT" ? "js" : el.tagName === "STYLE" ? "css" : getSrc(el).split("?")[0].split(".").pop()
 		return ext === "tpl" ? "view" : ext
 	}
+	function curl(name, el) {
+		var data = cache[name] || (cache[name] = {})
+		if (!data.body) {
+			data.body = child.execSync("curl " + name + "|uglifyjs --beautify").toString("utf8")
+		}
+		data.sha256 = crypto.createHash("sha256").update(data.body).digest("base64")
+
+		if ((el && el.integrity) === "") {
+			el.integrity = "sha256-" + data.sha256
+		}
+		return data.body
+	}
 	function read(_name) {
 		var el = this
 		, name = getSrc(_name || el)
 		if (name.nodeType) return name.parentNode ? name._txt || name.textContent : ""
 		var fullPath = path.resolve(inDir, name.split("?")[0])
 		, content = httpRe.test(name) ?
-			cache[name] || (cache[name] = child.execSync("curl " + name + "|uglifyjs --beautify").toString("utf8")) :
+			curl(name, el) :
 			cli.readFile(name = fs.existsSync(fullPath) ? fullPath : require.resolve(defMap(name)))
 		, ext = getExt(name)
 		, extTo = getExt(el) || ext
