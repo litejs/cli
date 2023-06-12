@@ -24,7 +24,7 @@
     "test": "TZ='Europe/Tallinn' node --allow-natives-syntax --expose-gc ./index.js test test/index.js --coverage --sources='*.js,cli/*.js' --brief --no-status && jshint *.js cli/*.js"
   },
   "dependencies": {
-    "@litejs/dom": "23.3.0"
+    "@litejs/dom": "23.4.0"
   },
   "bin": {
     "lj-doc": "./cli/doc",
