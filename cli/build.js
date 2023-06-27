@@ -9,7 +9,7 @@
 //-    --worker        Replace readme tags in file
 //-
 //-  Examples
-//-    lj b --readme=README.md --out=ui/index.html ui/dev.html
+//-    lj b --out=ui/index.html ui/dev.html
 //-
 //
 // $ git hash-object -w -- README.md
@@ -60,20 +60,54 @@ if (linked) {
 module.exports = function(opts) {
 	if (opts.ver) conf.version = opts.ver
 
-	html(opts, function(output) {
+	var ext = getExt(opts.out)
+	, outDir = opts.out.replace(/[^\/]+$/, "")
+	, outFile = opts.out.replace(/.*\//, "")
+
+	readHashes()
+
+	if (ext === "js") {
+		var output = jsMin({files: opts.args.map(resolve)})
+		writeResult(output)
+	}
+	if (ext === "html") {
+		html(opts, writeResult)
+	}
+
+	function writeResult(output) {
 		if (opts.readme !== false) {
 			output = format(output)
 		}
-		if (opts.out) write(opts.outDir, opts.outFile+"?{h}", output)
+		if (opts.banner) {
+			output = banner[ext].replace(/\{0\}/g, opts.banner) + output
+		}
+		if (opts.out) write(outDir, outFile+"?{h}", output)
 		else process.stdout.write(output)
 
 		if (opts.worker) {
 			updateWorker(opts.worker, opts, {})
 		}
 		child.execSync("git add -u")
-	})
+	}
 }
 
+function getSrc(el) {
+	return (el.src || el.href || el)
+}
+function getExt(el) {
+	var ext = getSrc(el).split("?")[0].split(".").pop()
+	return ext === "tpl" ? "view" : ext
+}
+function resolve(name) {
+	return fs.existsSync(name) ? name : require.resolve(defMap(name))
+}
+function drop(flags, content) {
+	return flags ? content.replace(
+		RegExp("\\/(\\*\\*+)\\s*(" + flags.replace(/[^\w.:]+/g, "|") + ")\\s*\\1\\/", "g"), "/$1 $2 $1"
+	).replace(
+		RegExp("/(?=\\*\\* (" + flags.replace(/[^\w.:]+/g, "|") + "))$", "mg"), ""
+	) : content
+}
 function write(dir, name, content, el) {
 	var hash, outFile = path.join(dir, name.split("?")[0])
 	if (name.indexOf("{h}") > -1) {
@@ -108,12 +142,14 @@ function html(opts, next) {
 		}
 	} catch(e) {}
 
-	readHashes(inDir)
 
 	$$("[exclude]").forEach(remove)
 
 	following("cat", function(el, siblings) {
-		if (opts.cat === false) return console.error("CAT DISABLED", getSrc(el))
+		if (opts.cat === false) {
+			el.removeAttribute("banner")
+			return console.error("CAT DISABLED", getSrc(el))
+		}
 		setLastEl(el, el.cat.match(/[^,\s]+/g) || [], siblings)
 		write(inDir, getSrc(el), el._txt, el)
 	})
@@ -200,6 +236,10 @@ function html(opts, next) {
 		if ((el.min || el.inline === "" && el.min === "") && !el.if) {
 			lastMinEl[ext] = el
 		}
+		if (el.banner && banner[ext]) {
+			content = banner[ext].replace(/\{0\}/g, el.banner) + content
+			el.removeAttribute("banner")
+		}
 		el._txt = content
 		if (ext === "js" || ext === "css" || ext === "view") {
 			if (el.inline !== "" && el.defer !== "" && loadFiles.indexOf(el) < 0) loadFiles.push(el)
@@ -226,14 +266,6 @@ function html(opts, next) {
 			if (el.previousSibling.nodeType === doc.TEXT_NODE) el.parentNode.removeChild(el.previousSibling)
 			el.parentNode.removeChild(el)
 		}
-	}
-	function getSrc(el) {
-		return (el.src || el.href || el)
-	}
-	function getExt(el) {
-		var ext = getSrc(el).split("?")[0].split(".").pop()
-		//var ext = el.tagName === "SCRIPT" ? "js" : el.tagName === "STYLE" ? "css" : getSrc(el).split("?")[0].split(".").pop()
-		return ext === "tpl" ? "view" : ext
 	}
 	function curl(name, el) {
 		var data = cache[name] || (cache[name] = {})
@@ -266,16 +298,7 @@ function html(opts, next) {
 				content = css2js(content)
 			}
 		}
-		if (el.drop) content = content.replace(
-			RegExp("\\/(\\*\\*+)\\s*(" + el.drop.replace(/[^\w.:]+/g, "|") + ")\\s*\\1\\/", "g"), "/$1 $2 $1"
-		).replace(
-			RegExp("/(?=\\*\\* (" + el.drop.replace(/[^\w.:]+/g, "|") + "))$", "mg"), ""
-		)
-		if (el.banner && banner[extTo]) {
-			content = banner[extTo].replace(/\{0\}/g, el.banner) + content
-			el.removeAttribute("banner")
-		}
-		return content
+		return drop(el.drop, content)
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
