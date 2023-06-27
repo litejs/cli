@@ -19,10 +19,14 @@ require("./cli/patch-node.js")
 var fs = require("fs")
 , child = require("child_process")
 , path = require("path")
+, now = new Date()
 , cli = Object.assign(exports, require("./package.json"), {
 	cols: +process.env.COLUMNS || process.stdout.columns || 80,
 	rows: +process.env.ROWS || process.stdout.rows || 24,
 	command: command,
+	conf: {
+		date: now.toISOString().split("T")[0]
+	},
 	cp: cp,
 	debounce: debounce,
 	hold: hold,
@@ -68,6 +72,9 @@ var fs = require("fs")
 
 try {
 	Object.assign(defaults, require(path.resolve("./package.json")).litejs)
+} catch(e) {}
+try {
+	Object.assign(defaults.conf, require(path.resolve("package.json")))
 } catch(e) {}
 
 

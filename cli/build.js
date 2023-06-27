@@ -29,6 +29,7 @@ var child = require("child_process")
 , dom = require("@litejs/dom")
 , parser = new dom.DOMParser()
 , cli = require("..")
+, conf = cli.conf
 , now = new Date()
 , lastStr = ""
 , banner = {
@@ -38,13 +39,9 @@ var child = require("child_process")
 	view: "/{0}\n"
 }
 , fileHashes
-, conf = {
-	date: now.toISOString().split("T")[0]
-}
 , linked = module.filename.indexOf(process.cwd()) !== 0
 
 try {
-	Object.assign(conf, require(path.resolve("package.json")))
 	console.error("# Build %s@%s with %s@%s", conf.name, conf.version, cli.name, cli.version)
 } catch(e) {
 	console.error(e)
