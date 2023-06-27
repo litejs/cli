@@ -449,15 +449,15 @@ function parseView(content, extTo, lastMinEl) {
 	var out = ""
 	if ((line = map["%css"])) {
 		if (lastMinEl.css) lastMinEl.css._txt += line
-		else out += extTo === "js" ? css2js(line) : "%css " + line
-	}
-	if ((line = map["%js"])) {
-		if (lastMinEl.js && extTo !== "js") lastMinEl.js._txt += line
-		else out += extTo === "js" ? line : "%js " + line
+		else out += extTo === "js" ? css2js(line) : "%css\n " + cssMin(line, {}).split("\n").join("\n ")
 	}
 	if ((line = arr.join("\n"))) {
 		if (lastMinEl.view && extTo !== "view") lastMinEl.view._txt += line
 		else out += extTo === "js" ? view2js(line) : line
+	}
+	if ((line = map["%js"])) {
+		if (lastMinEl.js && extTo !== "js") lastMinEl.js._txt += line
+		else out += extTo === "js" ? line : "%js\n " + jsMin({input:line}).split("\n").join("\n ")
 	}
 	return out
 }
