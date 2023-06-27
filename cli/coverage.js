@@ -61,7 +61,7 @@ function fileCoverage(name, source, v8data) {
 	, lnCounts = []
 	, lnCov = 0
 	, lnTot = lnCounts.length = lines.length
-	, ignoreNextRe = /\/\*[\s\w]*ignore next\s*\*\//
+	, ignoreNextRe = /^[&|\s]*\/\*[\s\w]*ignore next\s*\*\//
 
 
 	lnCounts.fill(v8data[0].ranges[0].count, 0, lnTot)
@@ -139,11 +139,12 @@ function fileCoverage(name, source, v8data) {
 		, start = range.startOffset
 		, end = range.endOffset
 		, blockSource = source.slice(start, end).replace(/\s*$/, "")
+		, count = range.count || +ignoreNextRe.test(blockSource)
 
 		if (isBlock) {
-			fnCounts[i] = range.count
+			fnCounts[i] = count
 			fnNames[i] = v8data[i + 1].functionName || "<anon>"
-			if (range.count > 0) fnCov++
+			if (count > 0) fnCov++
 			match = blockSource.match(/^[^{]+\{\n*/)
 			if (match) {
 				start += match[0].length
@@ -151,8 +152,8 @@ function fileCoverage(name, source, v8data) {
 			}
 			// console.log("FILL", match, blockLines, range.count, JSON.stringify(blockSource))
 		} else {
-			brCounts[i] = "0," + i + "," + range.count
-			if (range.count > 0 || ignoreNextRe.test(blockSource.split("\n")[0])) brCov++
+			brCounts[i] = "0," + i + "," + count
+			if (count > 0 || ignoreNextRe.test(blockSource)) brCov++
 			else {
 				brUncovered.push([start, end, source.slice(start, end)])
 			}
@@ -166,7 +167,7 @@ function fileCoverage(name, source, v8data) {
 		for (; offset < lastOffset; offset += lines[j++].length + 1);
 		inLine[i] = j
 		if (isBlock === true || blockLines > 1) {
-			lnCounts.fill(range.count, j, j + blockLines)
+			lnCounts.fill(count, j, j + blockLines)
 		}
 	}
 
