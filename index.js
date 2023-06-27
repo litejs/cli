@@ -89,10 +89,10 @@ if (!module.parent) {
 	execute(getopts(process.argv.slice(2)))
 }
 
-function run(opt, cmd) {
+function run(opt, cmd, addOpts) {
 	if (cmd) try {
 		;(Array.isArray(cmd) ? cmd : [cmd]).forEach(function(cmd) {
-			child.execSync(cmd, { stdio: "inherit" })
+			child.execSync(cmd + (addOpts ? " " + addOpts : ""), { stdio: "inherit" })
 		})
 	} catch (e) {
 		console.error("\n%s\nIgnore with --no-%s option.", e.message, opt)
@@ -111,8 +111,8 @@ function execute(opts) {
 	case "bench":
 	case "build":
 	case "test":
-		if (opts.args.length < 1 && opts[cmd]) {
-			return run(cmd, opts[cmd] + (opts.opts.length ? " " + opts.opts.join(" ") : ""))
+		if (opts.args.length < 1) {
+			return run(cmd, opts[cmd], opts.opts.join(" "))
 		}
 		/* falls through */
 	case "init":
@@ -120,7 +120,7 @@ function execute(opts) {
 		require("./cli/" + cmd)(opts)
 		break;
 	case "lint":
-		run("lint", opts[cmd])
+		run(cmd, opts[cmd])
 		break;
 	case "help":
 		sub = shortcut[opts.args[0]] || opts.args[0]
