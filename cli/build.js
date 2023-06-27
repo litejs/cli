@@ -291,15 +291,19 @@ function html(opts, next) {
 			return viewMin(parseView(content, ext, lastMinEl), {})
 		}
 		if (ext === "js") {
-			var cmd = [
-				"uglifyjs --warn --ie8 -c 'evaluate=false,properties=false'",
-				"-m eval --comments '/^\\s*[@!]/'",
-				"--beautify 'beautify=false,semicolons=false,keep_quoted_props=true' --"
-			].concat(_opts.files || []).join(" ")
-			return child.execSync(cmd, _opts).toString("utf8").replace(/\\x0B/g, "\\v")
+			return jsMin(_opts)
 		}
 		throw "Invalid file ext " + ext
 	}
+}
+
+function jsMin(opts) {
+	var cmd = [
+		"uglifyjs --warn --ie8 -c 'evaluate=false,passes=2,properties=false'",
+		"-m eval --comments '/^\\s*[@!]/'",
+		"--beautify 'beautify=false,semicolons=false,keep_quoted_props=true' --"
+	].concat(opts.files || []).join(" ")
+	return child.execSync(cmd, opts).toString("utf8").replace(/\\x0B/g, "\\v")
 }
 
 function defMap(str) {
