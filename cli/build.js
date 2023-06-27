@@ -302,7 +302,7 @@ function html(opts, next) {
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
-		, ext = el.min !== "" ? getExt(el._min || el) : el.tagName === "SCRIPT" ? "js" : "css"
+		, ext = el.min !== "" ? getExt(el._min || el) : el.tagName === "STYLE" ? "css" : el.type === "litejs/view" ? "view" : "js"
 		if (ext === "json") {
 			return JSON.stringify(JSON.parse(content))
 		}
