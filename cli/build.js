@@ -56,16 +56,19 @@ if (linked) {
 
 module.exports = function(opts) {
 	if (opts.ver) conf.version = opts.ver
-
-	var ext = getExt(opts.out)
-	, outDir = opts.out.replace(/[^\/]+$/, "")
-	, outFile = opts.out.replace(/.*\//, "")
-
 	readHashes()
+
+	var out = opts.min || opts.out
+	, ext = getExt(out)
 
 	if (ext === "js") {
 		var output = jsMin({files: opts.args.map(resolve)})
 		writeResult(output)
+		if (opts.src) {
+			opts.src.split(",").forEach(function(out) {
+				cli.cp(opts.args[0], out)
+			})
+		}
 	}
 	if (ext === "html") {
 		html(opts, writeResult)
@@ -78,8 +81,11 @@ module.exports = function(opts) {
 		if (opts.banner) {
 			output = banner[ext].replace(/\{0\}/g, opts.banner) + output
 		}
-		if (opts.out) write(outDir, outFile+"?{h}", output)
-		else process.stdout.write(output)
+		out.split(",").forEach(function(out) {
+			var outDir = out.replace(/[^\/]+$/, "")
+			, outFile = out.replace(/.*\//, "")
+			write(outDir, outFile+"?{h}", output)
+		})
 
 		if (opts.worker) {
 			updateWorker(opts.worker, opts, {})

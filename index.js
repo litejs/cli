@@ -71,12 +71,10 @@ var fs = require("fs")
 , nodeArgs = /^(allow-natives-syntax)$/
 
 try {
-	Object.assign(defaults, require(path.resolve("./package.json")).litejs)
+	var userPackage = require(path.resolve("package.json"))
+	Object.assign(cli.conf, userPackage)
+	Object.assign(defaults, userPackage.litejs)
 } catch(e) {}
-try {
-	Object.assign(defaults.conf, require(path.resolve("package.json")))
-} catch(e) {}
-
 
 function getopts(argv) {
 	var opts = Object.assign({}, defaults, {args: argv, opts: [], nodeArgs: []})
@@ -99,12 +97,20 @@ if (!module.parent) {
 function run(opt, cmd, addOpts) {
 	if (cmd) try {
 		;(Array.isArray(cmd) ? cmd : [cmd]).forEach(function(cmd) {
-			child.execSync(cmd + (addOpts ? " " + addOpts : ""), { stdio: "inherit" })
+			cmd += addOpts ? " " + addOpts : ""
+			child.execSync(replaceVersion(cmd), { stdio: "inherit" })
 		})
 	} catch (e) {
 		console.error("\n%s\nIgnore with --no-%s option.", e.message, opt)
 		process.exit(1)
 	}
+}
+function replaceVersion(cmd) {
+	var re = /{v(\d)}/g
+	, ver = (cli.conf.version || "0.0.0").split(".")
+	return cmd.replace(re, function(all, num) {
+		return ver[num]
+	})
 }
 
 function execute(opts) {
