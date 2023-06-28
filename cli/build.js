@@ -219,6 +219,11 @@ function html(opts, next) {
 		remove(el)
 	})
 
+	$$("[_src]").forEach(function(el) {
+		el.src = el._src
+		delete el._src
+	})
+
 	$$("[integrity='']").forEach(function(el) {
 		var src = getSrc(el)
 		if (httpRe.test(src)) {
