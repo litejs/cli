@@ -169,7 +169,7 @@ function html(opts, next) {
 		}
 	})
 
-	$$("[_min][type='litejs/view']").forEach(function(el) {
+	$$("[_min][type='litejs/view'],[_min][type=ui]").forEach(function(el) {
 		el._txt = minimize(el, { input: el._txt })
 		delete el._min
 	})
@@ -299,7 +299,7 @@ function html(opts, next) {
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
-		, ext = el.min !== "" ? getExt(el._min || el) : el.tagName === "STYLE" ? "css" : el.type === "litejs/view" ? "view" : "js"
+		, ext = el.min !== "" ? getExt(el._min || el) : el.tagName === "STYLE" ? "css" : el.type === "litejs/view" || el.type === "ui" ? "view" : "js"
 		if (ext === "json") {
 			return JSON.stringify(JSON.parse(content))
 		}
