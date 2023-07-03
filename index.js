@@ -28,6 +28,7 @@ var fs = require("fs")
 		date: now.toISOString().split("T")[0]
 	},
 	cp: cp,
+	dom: require("@litejs/dom"),
 	debounce: debounce,
 	hold: hold,
 	ls: ls,
