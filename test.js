@@ -234,6 +234,7 @@
 		}]
 		if (data !== fn) {
 			each(data, curry(function(item, i, row) {
+				conf.i = i
 				i = spliceData[i - 0 + 2] = Object.create(item)
 				i.f = curry(i.f, i.r = _isArray(row) ? row : isObj(row) ? Object.entries(row) : (row = [row]))
 				i.n = format(i.n, row, conf)
