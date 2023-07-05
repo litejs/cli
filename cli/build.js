@@ -152,13 +152,13 @@ function html(opts, next) {
 			el.removeAttribute("banner")
 			return console.error("CAT DISABLED", getSrc(el))
 		}
-		setLastEl(el, el.cat.match(/[^,\s]+/g) || [], siblings)
+		setLastEl(el, el.getAttribute("cat").match(/[^,\s]+/g) || [], siblings)
 		write(inDir, getSrc(el), el._txt, el)
 	})
 
 	following("min", function(el, siblings) {
 		setLastEl(el, [el], siblings)
-		el[el.src ? "src" : el.href ? "href" : "_min"] = el._min = getSrc(el.min || el)
+		el.setAttribute("_min", el[el.src ? "src" : el.href ? "href" : "_min"] = el._min = getSrc(el.getAttribute("min") || el))
 	})
 
 	$$("[src]:not([src^='data:']),[href]:not([href^='data:'])").forEach(function(el) {
@@ -176,27 +176,28 @@ function html(opts, next) {
 
 	$$("[_min][type='litejs/view'],[_min][type=ui]").forEach(function(el) {
 		el._txt = minimize(el, { input: el._txt })
-		delete el._min
+		el.removeAttribute("_min")
 	})
 
 	$$("[_min]:not([inline])").forEach(function(el) {
 		write(outDir, el._min, minimize(el, { input: el._txt }), el)
-		delete el._min
+		el.removeAttribute("_min")
 		delete el._txt
 	})
 
 	$$("[inline],[min]").forEach(function(el) {
-		if (el.defer === "" || el.if) throw "'defer' and 'if' can not combined with 'inline'"
+		if (el.hasAttribute("defer") || el.hasAttribute("if")) throw "'defer' and 'if' can not combined with 'inline'"
 		var newEl
 		, content = el._txt || read.call(el)
 		if (loadFilesRe.test(content)) {
 			content = content.replace(loadFilesRe, "" + loadFiles.map(function(el) {
-				return (el.if ? "(" + el.if + ")&&" : "") + JSON.stringify(getSrc(el))
+				var elIf = el.getAttribute("if")
+				return (elIf ? "(" + elIf + ")&&" : "") + JSON.stringify(getSrc(el))
 			}))
 			loadFiles.forEach(remove)
 		}
-		if (el.rewrite && loadRewriteRe.test(content)) {
-			var rewriteMap = (el.rewrite.match(/[^,\s]+/g) || []).reduce(function(map, rule) {
+		if (el.hasAttribute("rewrite") && loadRewriteRe.test(content)) {
+			var rewriteMap = (el.getAttribute("rewrite").match(/[^,\s]+/g) || []).reduce(function(map, rule) {
 				var junks = rule.split(":")
 				cli.ls(path.join(inDir, junks[0])).forEach(function(file) {
 					var inName = defMap(path.relative(inDir, file))
@@ -210,17 +211,17 @@ function html(opts, next) {
 				return map
 			}, {})
 			content = content.replace(loadRewriteRe, JSON.stringify(rewriteMap).slice(1, -1))
-			delete el.rewrite
+			el.removeAttribute("rewrite")
 		}
-		if (el._min || el.min === "") content = minimize(el, { input: content })
+		if (el._min || el.getAttribute("min") === "") content = minimize(el, { input: content })
 		el.parentNode.insertBefore(newEl = doc.createElement(el.tagName === "SCRIPT" ? "script" : "style"), el).textContent = "\n" + content.trim() + "\n"
 		if (el.type) newEl.type = el.type
 		remove(el)
 	})
 
 	$$("[_src]").forEach(function(el) {
-		el.src = el._src
-		delete el._src
+		el.src = el.getAttribute("_src")
+		el.removeAttribute("_src")
 	})
 
 	$$("[integrity='']").forEach(function(el) {
@@ -238,18 +239,19 @@ function html(opts, next) {
 	next(doc.toString(true))
 
 	function setLastEl(el, els, siblings) {
-		var ext = getExt(el.min || el)
+		var min = el.getAttribute("min")
+		, ext = getExt(min || el)
 		, content = els.concat(siblings).map(read, el).join("\n")
-		if ((el.min || el.inline === "" && el.min === "") && !el.if) {
+		if ((min || el.hasAttribute("inline") && min === "") && !el.getAttribute("if")) {
 			lastMinEl[ext] = el
 		}
-		if (el.banner && banner[ext]) {
-			content = banner[ext].replace(/\{0\}/g, el.banner) + content
+		if (el.hasAttribute("banner") && banner[ext]) {
+			content = banner[ext].replace(/\{0\}/g, el.getAttribute("banner")) + content
 			el.removeAttribute("banner")
 		}
 		el._txt = content
 		if (ext === "js" || ext === "css" || ext === "view") {
-			if (el.inline !== "" && el.defer !== "" && loadFiles.indexOf(el) < 0) loadFiles.push(el)
+			if (!el.hasAttribute("inline") && !el.hasAttribute("defer") && loadFiles.indexOf(el) < 0) loadFiles.push(el)
 		}
 	}
 
@@ -281,7 +283,7 @@ function html(opts, next) {
 		}
 		data.sha256 = crypto.createHash("sha256").update(data.body).digest("base64")
 
-		if ((el && el.integrity) === "") {
+		if (el && el.integrity === "") {
 			el.integrity = "sha256-" + data.sha256
 		}
 		return data.body
@@ -305,11 +307,11 @@ function html(opts, next) {
 				content = css2js(content)
 			}
 		}
-		return drop(el.drop, content)
+		return drop(el.getAttribute("drop"), content)
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")
-		, ext = el.min !== "" ? getExt(el._min || el) : el.tagName === "STYLE" ? "css" : el.type === "litejs/view" || el.type === "ui" ? "view" : "js"
+		, ext = !el.hasAttribute("min") ? getExt(el._min || el) : el.tagName === "STYLE" ? "css" : el.type === "litejs/view" || el.type === "ui" ? "view" : "js"
 		if (ext === "json") {
 			return JSON.stringify(JSON.parse(content))
 		}
