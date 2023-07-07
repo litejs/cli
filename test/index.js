@@ -42,6 +42,7 @@ describe("cli", function() {
 		comp("test/**/a*.js")
 		assert.end()
 	})
+	require("./opts.js")
 	require("./build.js")
 })
 
