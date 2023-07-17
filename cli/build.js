@@ -118,7 +118,12 @@ function write(dir, name, content, el) {
 		outFile = outFile.replace("{h}", hash)
 		name = name.replace("{h}", fileHashes[outFile] = hash)
 	}
-	if (el) el[el.src ? "src" : "href"] = name
+	if (el) {
+		el[el.src ? "src" : "href"] = name
+		if (el.hasAttribute("integrity")) {
+			el.integrity = "sha256-" + crypto.createHash("sha256").update(content).digest("base64")
+		}
+	}
 	cli.writeFile(outFile, content)
 }
 
@@ -224,7 +229,7 @@ function html(opts, next) {
 		el.removeAttribute("_src")
 	})
 
-	$$("[integrity='']").forEach(function(el) {
+	$$("[integrity]").forEach(function(el) {
 		var src = getSrc(el)
 		if (httpRe.test(src)) {
 			curl(src, el)
@@ -233,7 +238,7 @@ function html(opts, next) {
 
 	if (!cache.time && Object.keys(cache)[0]) {
 		cache.time = +now
-		write("", cacheFile, JSON.stringify(cache, null, 2), {})
+		write("", cacheFile, JSON.stringify(cache, null, 2))
 	}
 
 	next(doc.toString(true))
@@ -283,7 +288,7 @@ function html(opts, next) {
 		}
 		data.sha256 = crypto.createHash("sha256").update(data.body).digest("base64")
 
-		if (el && el.integrity === "") {
+		if (el && el.hasAttribute("integrity")) {
 			el.integrity = "sha256-" + data.sha256
 		}
 		return data.body
