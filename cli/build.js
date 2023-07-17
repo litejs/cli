@@ -98,7 +98,7 @@ function getSrc(el) {
 }
 function getExt(el) {
 	var ext = getSrc(el).split("?")[0].split(".").pop()
-	return ext === "tpl" ? "view" : ext
+	return ext === "tpl" || ext === "ui" ? "view" : ext
 }
 function resolve(name) {
 	return fs.existsSync(name) ? name : require.resolve(defMap(name))
