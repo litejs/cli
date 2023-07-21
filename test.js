@@ -182,6 +182,7 @@
 	describe.failed = 0
 	describe.output = ""
 
+	describe.diff = diff
 	describe.format = format
 	describe.opts = opts
 	describe.print = print
@@ -394,6 +395,39 @@
 
 	function This() {
 		return this
+	}
+	function diff(a, b, sep) {
+		sep = sep || ""
+		a = a.split(sep)
+		b = b.split(sep)
+		var del, ins, pre
+		, aLen = a.length
+		, bLen = b.length
+		, aPos = 0
+		, bPos = 0
+		, out = []
+		for (; aPos < aLen || bPos < bLen; aPos++, bPos++) {
+			if (a[aPos] !== b[bPos]) {
+				for (pre = bPos; b[pre] !== a[aPos] && pre < bLen; pre++);
+				pre -= bPos;
+
+				for (del = 0, ins = 0; a[aPos] !== b[bPos] && (aPos < aLen || bPos < bLen); ) {
+					if (aPos < aLen) { del++; aPos++; }
+					if (bPos < bLen && a[aPos] !== b[bPos]) { ins++; bPos++; }
+				}
+
+				if (ins > 0 || del > 0) {
+					if (pre > 0 && pre < ins + del) {
+						aPos -= del
+						bPos -= ins - pre
+						del = 0
+						ins = pre
+					}
+					out.push([aPos - del, del, b.slice(bPos - ins, bPos).join(sep)]);
+				}
+			}
+		}
+		return out
 	}
 	function format(str, map, fallback) {
 		return str.replace(lineRe, function(_, field) {

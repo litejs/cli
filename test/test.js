@@ -186,6 +186,25 @@ describe("test.js", function() {
 		assert.end()
 	})
 
+	it("should diff '{0}' vs '{1}'", [
+		[ "", "", [] ],
+		[ "", "a", [[0,0,"a"]] ],
+		[ "a", "", [[0,1,""]] ],
+		[ "a", "ba", [[0,0,"b"]] ],
+		[ "a", "ab", [[1,0,"b"]] ],
+		[ "hello", "Helo world", [[0,1,"H"],[3,1,""],[5,0," world"]] ],
+		[ "hello!", "Helo world!", [[0,1,"H"],[3,1,""],[5,0," world"]] ]
+	], function(a, b, expected, assert) {
+		var revert = a.split("")
+		expected.forEach(function(p) { revert.splice(p[0], p[1], p[2]) })
+		revert = revert.join("")
+
+		assert
+		.equal(describe.diff(a, b), expected)
+		.equal(revert, b)
+		.end()
+	})
+
 	describe("format", function() {
 		var formatData = {
 			who: "World"
