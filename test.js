@@ -80,7 +80,7 @@
 	, conf = describe.conf = opts(argv, {
 		// process.platform === 'win32' -> √×.
 		file: (_Error().stack + " /cli/test.js:").match(/\S+?:(?=[:\d)]*$)/m)[0],
-		global: "describe,it",
+		global: "describe,it,test",
 		head: "",
 		indent: "  ",
 		suite: "{indent}{n}", //➜✺✽❖❣❢•※⁕∅
