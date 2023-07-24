@@ -21,31 +21,31 @@
 	, splicePos = 0
 	, assert = describe.assert = {
 		notOk: function(value, message) {
-			return this(!value, message, value, "!=", "falsy")
+			return this(!value, message || "!=", value, "falsy")
 		},
 		equal: function(actual, expected, message) {
 			return this(
 				arguments.length > 1 && _deepEqual(actual, expected, []),
-				message, actual, "equal", expected
+				message || "equal", actual, expected
 			)
 		},
 		notEqual: function(actual, expected, message) {
 			return this(
 				arguments.length > 1 && !_deepEqual(actual, expected, []),
-				message, actual, "notEqual", expected
+				message || "notEqual", actual, expected
 			)
 		},
 		skip: This,
 		strictEqual: function(actual, expected, message) {
 			return this(
 				arguments.length > 1 && actual === expected,
-				message, actual, "===", expected
+				message || "===", actual, expected
 			)
 		},
 		notStrictEqual: function(actual, expected, message) {
 			return this(
 				arguments.length > 1 && actual !== expected,
-				message, actual, "!==", expected
+				message || "!==", actual, expected
 			)
 		},
 		own: function(actual, expected, message) {
@@ -63,16 +63,16 @@
 			} catch(e) {
 				actual = true
 			}
-			return this(actual, message || "throws")
+			return this(actual, message || "throws", actual, true)
 		},
-		type: function(thing, expected) {
+		type: function(thing, expected, message) {
 			var actual = type(thing)
-			return this(actual === expected, 0, actual, "type", expected)
+			return this(actual === expected, message || "type", actual, expected)
 		},
-		anyOf: function(a, b) {
+		anyOf: function(a, b, message) {
 			return this(
 				_isArray(b) && b.indexOf(a) > -1,
-				"should be one from " + stringify(b) + ", got " + a
+				message || "anyOf", a, b
 			)
 		}
 	}
@@ -287,7 +287,7 @@
 				end(e)
 			}
 		}
-		function testCase(value, message, actual, op, expected) {
+		function testCase(value, message, actual, expected) {
 			testCase.total++
 			if (testCase.ended) {
 				fail("assertion after end")
@@ -295,12 +295,10 @@
 			if (value) {
 				testCase.passed++
 			} else {
-				fail("Assertion:" + testCase.total + ": " + (message || (
-					op ? op +
-					"\nexpected: " + stringify(expected) +
-					"\nactual:   " + stringify(actual)
-					: stringify(value) + " is truthy"
-				)))
+				fail("Assertion:" + testCase.total + ": " + (message ?
+					message + "\nexpected: " + stringify(expected) + "\nactual:   " + stringify(actual) :
+					stringify(value) + " is truthy"
+				))
 			}
 			return testCase.plan(testCase.planned)
 		}

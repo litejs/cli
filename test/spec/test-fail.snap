@@ -36,12 +36,14 @@ expected: /1/m
 actual:   /1/
 Error: Assertion:4: equal
 expected: []
-actual:   arguments[testCase(value,message,actual,op,expected),false]
+actual:   arguments[testCase(value,message,actual,expected),false]
 Error: Assertion:5: equal
 expected: [/1/,B(),{"a":Circular,"toJSON":()}]
 actual:   [/1/,B{},<null>{"a":Circular,"toJSON":()}]
 Error: Assertion:6: 0 is truthy
 Error: Assertion:7: throws
+expected: true
+actual:   false
 ---
   ✘ 9. it should fail on invalid test [0/0]
 ReferenceError: SOME_UNDEFINED_VALIABLE is not defined
