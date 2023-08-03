@@ -365,7 +365,7 @@ function css2js(content) {
 	return content ? ";xhr.css('" + cssMin(content, {}).replace(/\n+/g, "").replace(/['\\]/g, "\\$&") + "');" : ""
 }
 function view2js(content) {
-	return content ? ";xhr.view('" + viewMin(content, {}).replace(/\n+/g, "\x1f").replace(/['\\]/g, "\\$&") + "');" : ""
+	return content ? ";xhr.ui('" + viewMin(content, {}).replace(/\n+/g, "\x1f").replace(/['\\]/g, "\\$&") + "');" : ""
 }
 
 function cssImport(str, attrs) {
