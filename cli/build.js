@@ -55,10 +55,12 @@ if (linked) {
 
 module.exports = function(opts) {
 	if (opts.ver) conf.version = opts.ver
-	readHashes()
 
 	var out = opts.min || opts.out
+	, outDir = out.replace(/[^\/]+$/, "")
 	, ext = getExt(out)
+
+	readHashes(outDir)
 
 	if (ext === "js") {
 		var output = jsMin({files: opts.args.map(resolve)})
@@ -530,8 +532,6 @@ function updateWorker(file, opts, hashes) {
 	, re = /(\b(?:VERSION|BUILD)\s*=\s*)("|').*?\2/
 	, current = cli.readFile(opts.inDir + file)
 	, log = "# Update worker: " + file
-
-	readHashes(root)
 
 	var updated = current
 	.replace(re, function(_, a, q) {
