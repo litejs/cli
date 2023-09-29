@@ -181,11 +181,6 @@ function html(opts, next) {
 		}
 	})
 
-	$$("[_min][type='litejs/view'],[_min][type=ui]").forEach(function(el) {
-		el._txt = minimize(el, { input: el._txt })
-		el.removeAttribute("_min")
-	})
-
 	$$("[_min]:not([inline])").forEach(function(el) {
 		write(outDir, el._min, minimize(el, { input: el._txt }), el)
 		el.removeAttribute("_min")
@@ -193,7 +188,7 @@ function html(opts, next) {
 	})
 
 	$$("[inline],[min]").forEach(function(el) {
-		if (el.hasAttribute("defer") || el.hasAttribute("if")) throw "'defer' and 'if' can not combined with 'inline'"
+		if (el.hasAttribute("defer") || el.hasAttribute("if")) throw "'defer' and 'if' can not be 'inline'"
 		var newEl
 		, content = el._txt || read.call(el)
 		if (loadFilesRe.test(content)) {
