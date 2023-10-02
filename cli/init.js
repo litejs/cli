@@ -52,16 +52,11 @@ module.exports = function(opts) {
 
 	child.spawnSync("git", ["init"], stdio)
 	add("litejs", "prod")
+	add("@litejs/cli", "dev")
 	add("@litejs/ui", "dev")
-	if (opts.template) {
-		add(tmp = "@litejs/template-" + opts.template, "dev")
-		if (opts.ui !== false) {
-			cli.cp(path.join("node_modules", tmp + "/ui"), (opts.ui || "ui"))
-		}
-		if (opts.server !== false) {
-			cli.cp(path.join("node_modules", tmp + "/server"), (opts.server || "server"))
-		}
-	}
+
+	addTemplate("ui")
+	addTemplate("server")
 
 	package.litejs = opts
 	cli.writePackage(package)
@@ -72,6 +67,14 @@ module.exports = function(opts) {
 		child.spawnSync("npm", [
 			opts.link ? "link" : "install", "--save-exact", "--save-" + dep, name
 		], stdio)
+	}
+	function addTemplate(type) {
+		if (opts[type]) {
+			var name = (opts[type].name || opts[type]).match(/^(?:@\w+\/)?\w+/)[0]
+			, source = opts[type].source || opts[type].slice(name.length + 1) || "src"
+			add(name, "dev")
+			cli.cp(path.join("node_modules", name, source), opts[type].target || type)
+		}
 	}
 }
 

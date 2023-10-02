@@ -49,7 +49,6 @@ var fs = require("fs")
 	"sources": "./*.js",
 	"status": 1,
 	"tag": true,
-	"template": "default",
 	"test": "lj test ./test/index.js",
 	"threads": 0,
 	"update": true
