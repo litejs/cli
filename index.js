@@ -73,8 +73,23 @@ var fs = require("fs")
 try {
 	var userPackage = require(path.resolve("package.json"))
 	Object.assign(cli.conf, userPackage)
-	Object.assign(defaults, userPackage.litejs)
 } catch(e) {}
+
+readConf([
+	"package.json", "litejs",
+	".github/litejs.json", null
+])
+
+function readConf(opts) {
+	var file = opts.shift()
+	, key = opts.shift()
+	if (file) try {
+		var conf = require(path.resolve(file))
+		if (key) conf = conf[key]
+		if (conf) return Object.assign(defaults, conf)
+	} catch(e) {}
+	if (opts[0]) readConf(opts)
+}
 
 function getopts(argv) {
 	var opts = Object.assign({}, defaults, {args: argv, opts: [], nodeArgs: []})
