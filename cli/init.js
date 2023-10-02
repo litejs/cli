@@ -50,7 +50,7 @@ module.exports = function(opts) {
 		cli.cp(path.resolve(module.filename, "../../.gitignore"), ".gitignore")
 	}
 
-	child.spawnSync("git", ["init"], stdio)
+	child.spawnSync("git", ["init", "-b", "main"], stdio)
 	add("litejs", "prod")
 	add("@litejs/cli", "dev")
 	add("@litejs/ui", "dev")
