@@ -13,8 +13,6 @@
   ],
   "homepage": "https://litejs.com",
   "repository": "github:litejs/cli",
-  "bugs": "https://github.com/litejs/cli/issues",
-  "main": "index.js",
   "files": [
     ".gitignore",
     "*.js",
@@ -24,36 +22,18 @@
     "test": "TZ='Europe/Tallinn' node --allow-natives-syntax --expose-gc ./index.js test test/index.js --coverage --sources='*.js,cli/*.js' --brief --no-status && jshint *.js cli/*.js"
   },
   "dependencies": {
-    "@litejs/dom": "23.8.0"
+    "@litejs/dom": "23.11.0"
+  },
+  "devDependencies": {
+    "jshint": "2.13.6",
+    "uglify-js": "3.17.4"
   },
   "bin": {
     "lj-doc": "./cli/doc",
     "lj-stat": "./cli/stat",
     "lj": "./index.js"
   },
-  "devDependencies": {
-    "jshint": "2.13.6",
-    "uglify-js": "3.17.4"
-  },
   "workspaces": [
     "test/dummy"
-  ],
-  "litejs": {
-    "build": false,
-    "install": false,
-    "lint": false,
-    "test": "node -r ./test.js --allow-natives-syntax --expose-gc test/index.js"
-  },
-  "jshintConfig": {
-    "esversion": 5,
-    "asi": true,
-    "evil": true,
-    "laxcomma": true,
-    "maxdepth": 6,
-    "node": true,
-    "nonbsp": true,
-    "undef": true,
-    "unused": true,
-    "quotmark": "double"
-  }
+  ]
 }
