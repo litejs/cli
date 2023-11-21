@@ -1,6 +1,6 @@
 {
-    "name": "@litejs/cli",
-  "version": "23.9.0",
+  "name": "@litejs/cli",
+  "version": "23.11.0",
   "description": "Command line tools for LiteJS full-stack framework",
   "license": "MIT",
   "author": "Lauri Rooden <lauri@rooden.ee>",
@@ -22,7 +22,7 @@
     "test": "TZ='Europe/Tallinn' node --allow-natives-syntax --expose-gc ./index.js test test/index.js --coverage --sources='*.js,cli/*.js' --brief --no-status && jshint --config=.github/jshint.json *.js cli/*.js"
   },
   "dependencies": {
-    "@litejs/dom": "23.11.0"
+    "@litejs/dom": "23.11.1"
   },
   "devDependencies": {
     "jshint": "2.13.6",
@@ -36,5 +36,6 @@
   },
   "workspaces": [
     "test/dummy"
-  ]
+  ],
+  "litejs": {}
 }
