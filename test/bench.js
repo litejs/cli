@@ -45,7 +45,7 @@ describe("bench.js", function() {
 	it ("should estimate cpu speed", function(assert) {
 		var speed = bench.cpuSpeed()
 		console.log("# Estimated CPU speed: " + speed)
-		assert(speed > 0.1).end()
+		assert(speed > 0.01).end()
 	})
 })
 

@@ -161,6 +161,7 @@ function html(opts, next) {
 		}
 		setLastEl(el, el.getAttribute("cat").match(/[^,\s]+/g) || [], siblings)
 		write(inDir, getSrc(el), el._txt, el)
+		cpOut(el)
 	})
 
 	following("min", function(el, siblings) {
@@ -170,15 +171,7 @@ function html(opts, next) {
 
 	$$("[src]:not([src^='data:']),[href]:not([href^='data:'])").forEach(function(el) {
 		if (el._txt) return
-		var name = getSrc(el)
-		, cleanName = name.split("?")[0]
-		, inName = path.join(inDir, cleanName)
-		if (name.indexOf("{h}") > -1) {
-			el[el.src ? "src" : "href"] = name.replace("{h}", fileHashes[inName] || now.getTime())
-		}
-		if (inDir !== outDir && !httpRe.test(name)) {
-			cli.cp(inName, path.join(outDir, cleanName))
-		}
+		cpOut(el)
 	})
 
 	$$("[_min]:not([inline])").forEach(function(el) {
@@ -240,6 +233,17 @@ function html(opts, next) {
 
 	next(doc.toString(true))
 
+	function cpOut(el) {
+		var name = getSrc(el)
+		, cleanName = name.split("?")[0]
+		, inName = path.join(inDir, cleanName)
+		if (name.indexOf("{h}") > -1) {
+			el[el.src ? "src" : "href"] = name.replace("{h}", fileHashes[inName] || now.getTime())
+		}
+		if (inDir !== outDir && !httpRe.test(name) && !el.matches("[inline],[min]")) {
+			cli.cp(inName, path.join(outDir, cleanName))
+		}
+	}
 	function setLastEl(el, els, siblings) {
 		var min = el.getAttribute("min")
 		, ext = getExt(min || el)

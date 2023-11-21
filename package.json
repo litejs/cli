@@ -1,5 +1,5 @@
 {
-  "name": "@litejs/cli",
+    "name": "@litejs/cli",
   "version": "23.9.0",
   "description": "Command line tools for LiteJS full-stack framework",
   "license": "MIT",
