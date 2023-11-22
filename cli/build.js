@@ -105,7 +105,8 @@ function getExt(el) {
 function resolve(name) {
 	return fs.existsSync(name) ? name : require.resolve(defMap(name))
 }
-function drop(flags, content) {
+function drop(el, content) {
+	var flags = el.getAttribute && el.getAttribute("drop")
 	return flags ? content.replace(
 		RegExp("\\/(\\*\\*+)\\s*(" + flags.replace(/[^\w.:]+/g, "|") + ")\\s*\\1\\/", "g"), "/$1 $2 $1"
 	).replace(
@@ -313,7 +314,7 @@ function html(opts, next) {
 				content = css2js(content)
 			}
 		}
-		return drop(el.getAttribute("drop"), content)
+		return drop(_name, drop(el, content))
 	}
 	function minimize(el, _opts) {
 		var content = (_opts.input || "") + (_opts.files || []).map(read, _opts).join("\n")

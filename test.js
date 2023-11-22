@@ -1,4 +1,5 @@
 
+/* litejs.com/MIT-LICENSE.txt */
 
 !function(exports, _setTimeout, _clearTimeout, _Date, _Error, _Infinity) {
 	var started, testSuite, timerType, inSuite
