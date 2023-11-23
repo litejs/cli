@@ -30,16 +30,16 @@ expected: undefined
 actual:   undefined
 Error: Assertion:2: equal
 expected: "2"
-actual:   <null>{"a":Circular,"toJSON":()}
+actual:   <null>{..}
 Error: Assertion:3: equal
 expected: /1/m
 actual:   /1/
 Error: Assertion:4: equal
 expected: []
-actual:   arguments[testCase(value,message,actual,expected),false]
+actual:   argumen..]
 Error: Assertion:5: equal
-expected: [/1/,B(),{"a":Circular,"toJSON":()}]
-actual:   [/1/,B{},<null>{"a":Circular,"toJSON":()}]
+expected: [/1/,B(..]
+actual:   [/1/,B{..]
 Error: Assertion:6: 0 is truthy
 Error: Assertion:7: throws
 expected: true
@@ -66,8 +66,8 @@ Error: TIMEOUT: 1ms
 ---
   ✘ 1. it should fail [0/1]
 Error: Assertion:1: equal
-expected: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-actual:   ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
+expected: "aaaaaa.."
+actual:   ["aaaaa..]
 ...
 # FAIL  tests 1, 2, 3, 6, 4, 8, 9, 10, 11, 12, 13
 1..13

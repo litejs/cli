@@ -1,0 +1,9 @@
+Error: Command failed: node -r ./test.js test/test-fail-table.js
+
+/home/lauri/code/litejs/cli/test.js:243
+				if (item.f.length > i.r.length + 2 || i.r.length !== spliceData[2].r.length) throw "Invalid data for: " + i.n
+				                                                                             ^
+Invalid data for: should fail on invalid table
+(Use `node --trace-uncaught ...` to show where the exception was thrown)
+
+Node.js v21.2.0

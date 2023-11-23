@@ -8,7 +8,7 @@ describe("snapshot.js", function() {
 			"./test/spec/test-structure"
 		)
 		assert.cmdSnapshot(
-			"node --allow-natives-syntax -r ./test.js test/v8.js --no-v8 --no-time",
+			"node -r ./test.js test/v8.js --no-v8 --no-time",
 			"./test/spec/test-v8"
 		)
 		assert.cmdSnapshot(
@@ -16,8 +16,13 @@ describe("snapshot.js", function() {
 			"./test/spec/test-v8"
 		)
 		assert.cmdSnapshot(
-			"node -r ./test.js test/test-fail.js --no-status --no-color --no-time --no-stack",
+			"node -r ./test.js test/test-fail.js --no-status --no-color --no-time --no-stack --cut=10",
 			"./test/spec/test-fail"
+		)
+		assert.cmdSnapshot(
+			"node -r ./test.js test/test-fail-table.js",
+			"./test/spec/test-fail-table",
+			{ expectFail: true }
 		)
 		assert.cmdSnapshot(
 			"node -r ./test.js test/test-fail.js --no-status --color --no-time --stack=4 --no-cut 1",
