@@ -66,6 +66,8 @@ function fileCoverage(name, source, v8data) {
 
 	lnCounts.fill(v8data[0].ranges[0].count, 0, lnTot)
 
+	var br, branches = {}
+
 	for (; i < l; ) {
 		ranges = v8data[i++].ranges
 
@@ -74,9 +76,19 @@ function fileCoverage(name, source, v8data) {
 		}
 
 		for (k = 1, ll = ranges.length; k < ll; ) {
-			fillLines(ranges[k++], false, brLines, brTot++)
+			br = ranges[k++]
+			if (!branches[br.startOffset]) {
+				branches[br.startOffset] = br
+				br.num = brTot++
+			} else {
+				branches[br.startOffset].count += br.count
+			}
 		}
 	}
+	Object.keys(branches).forEach(function(start) {
+		var br = branches[start]
+		fillLines(br, false, brLines, br.num)
+	})
 
 	for (j = 0; j < lnTot; ) if (lnCounts[j++] > 0) lnCov++
 
@@ -140,6 +152,9 @@ function fileCoverage(name, source, v8data) {
 		, end = range.endOffset
 		, blockSource = source.slice(start, end).replace(/\s*$/, "")
 		, count = range.count || +ignoreNextRe.test(blockSource)
+		if (count === 0) {
+			count = +(source.slice(start - 50, start).replace(/^[^\/]+/, "").replace(ignoreNextRe, "").trim() === "")
+		}
 
 		if (isBlock) {
 			fnCounts[i] = count
