@@ -22,10 +22,15 @@ var v8 = {
 try {
 	// chrome --js-flags="--allow-natives-syntax" test.html
 	// node --allow-natives-syntax test.js
-	if (describe.conf.v8 !== false) [ "GetOptimizationStatus", "HasFastProperties", "OptimizeFunctionOnNextCall"].map(function(name) {
-		v8[name] = Function("fn", "return %" + name+ "(fn)")
-	})
-} catch(e) {}
+	if (describe.conf.v8 !== false) {
+		try {
+			require("v8").setFlagsFromString("--allow_natives_syntax")
+		} /* c8 ignore next */ catch(e) {}
+		;[ "GetOptimizationStatus", "HasFastProperties", "OptimizeFunctionOnNextCall"].map(function(name) {
+			v8[name] = Function("fn", "return %" + name+ "(fn)")
+		})
+	}
+} /* c8 ignore next */ catch(e) {}
 
 assert.isFast = v8.HasFastProperties ? function(obj) {
 	return this(v8.HasFastProperties(obj), "Should have fast properties")
@@ -39,7 +44,7 @@ assert.isOptimized = v8.GetOptimizationStatus ? function(fn, args, scope) {
 	fn.apply(scope, args)
 	fn.apply(scope, args)
 	v8.OptimizeFunctionOnNextCall(fn)
-	fn.apply(scope, args)
+	for (var i = 0; i++ < 10000 && !(v8.GetOptimizationStatus(fn) & (16|32));) fn.apply(scope, args)
 	var status = v8.GetOptimizationStatus(fn)
 	, statusText = v8.statusTexts.filter(function(val, i) {
 		return status & (1<<i)

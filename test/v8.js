@@ -1,6 +1,8 @@
 
+require("../test.js")
+require("../v8.js")
+
 describe("v8.js", function() {
-	require("../v8.js")
 
 	var fastObj = {a:1, b:2}
 	fastObj.c = 1

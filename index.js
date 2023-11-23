@@ -73,7 +73,7 @@ var fs = require("fs")
 try {
 	var userPackage = require(path.resolve("package.json"))
 	Object.assign(cli.conf, userPackage)
-} catch(e) {}
+} /* c8 ignore next */ catch(e) {}
 
 readConf([
 	"package.json", "litejs",
@@ -87,7 +87,7 @@ function readConf(opts) {
 		var conf = require(path.resolve(file))
 		if (key) conf = conf[key]
 		if (conf) return Object.assign(defaults, conf)
-	} catch(e) {}
+	} /* c8 ignore next */ catch(e) {}
 	if (opts[0]) readConf(opts)
 }
 
