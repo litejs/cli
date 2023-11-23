@@ -648,7 +648,6 @@
 			for (var k in b) if (hasOwn(b, k)) {
 				if (!hasOwn(a, k) || (
 					isObj(b[k]) ? !own(a[k], b[k]) :
-					_isArray(b[k]) ? b[k].some(itemNotOwn, a[k]) :
 					a[k] !== b[k]
 				)) {
 					own.lastMsg = own.lastMsg || k + " " + stringify(a[k]) + " != " + stringify(b[k])
@@ -656,9 +655,6 @@
 				}
 			}
 			return true
-		}
-		function itemNotOwn(val, idx) {
-			return isObj(val) ? !own(this[idx], val) : this[idx] !== val
 		}
 	}
 	function curry(fn, arg, scope) {

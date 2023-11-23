@@ -329,6 +329,8 @@ describe("test.js", function() {
 
 		mock.time()
 
+		var fakeTimeout = setTimeout
+
 		mock.tick() // noop without timers and ms
 		assert.equal(Date.now(), now)
 
@@ -343,7 +345,10 @@ describe("test.js", function() {
 		mock.tick(1)
 		assert.equal(Date.now(), now + 2)
 
-		assert.end()
+		mock.restore()
+
+		assert.notStrictEqual(fakeTimeout, setTimeout)
+		fakeTimeout(assert.end, 0)
 	})
 
 	it("should mock time", function(test, mock) {
