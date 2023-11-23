@@ -165,6 +165,7 @@ function command(name) {
 	try {
 		return !!child.execSync((process.platform === "win32" ? "where " : "command -v ") + name)
 	} catch (e) {}
+	return false
 }
 
 function cp(src, dest) {
