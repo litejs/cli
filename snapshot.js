@@ -12,14 +12,18 @@ describe.assert.cmdSnapshot = function(cmd, file, opts) {
 	try {
 		actual = child.execSync(cmd, opts).toString("utf8").replace(relPathRe, relPathFn)
 	} catch(e) {
-		return this(0, "Snapshot command failed: " + cmd + "\n---\n" + e.stdout.toString("utf8"))
+		if (opts.expectFail) {
+			actual = e.toString()
+		} else {
+			return this(0, "Snapshot command failed: " + cmd + "\n---\n" + e.toString())
+		}
 	}
 	return this.matchSnapshot(file, actual)
 }
 
 describe.assert.matchSnapshot = function(file, transform) {
 	var expected
-	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform || cli.readFile(file)
+	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform || (describe.conf.up ? "" : cli.readFile(file))
 	, snapFile = file + ".snap" + (seen[file] || "")
 
 	seen[file] = (seen[file] || 0) + 1

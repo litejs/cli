@@ -69,8 +69,7 @@ function measure(fn, time) {
 	var i, hr
 	, count = 0
 	, ms = 0
-	/* c8 ignore next */
-	if (global.gc) global.gc()
+	if (global.gc) /* c8 ignore next */ global.gc()
 	for (; ms < time; ) {
 		count++
 		hr = process.hrtime()

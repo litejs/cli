@@ -34,17 +34,20 @@ describe("tools", function() {
 		assert.end()
 	})
 
-	it ("should list files", function(assert) {
-		function comp(glob) {
-			assert.equal(
-				cli.ls(glob).join(" "),
-				child.execSync("bash -c 'shopt -s globstar;echo " + glob + "'").toString("utf8").trim()
-			)
-		}
-		comp("test/index.js")
-		comp("*.js")
-		comp("test/[ab]*.js")
-		comp("test/**/a*.js")
+	it ("should list files: {0}", [
+		"test/index.js",
+		"*.js",
+		"test/[ab]*.js",
+		"test/**/a*.js",
+	], function(glob, assert) {
+		assert.equal(
+			cli.ls(glob).join(" "),
+			child.execSync("bash -c 'shopt -s globstar;echo " + glob + "'").toString("utf8").trim()
+		)
+		assert.end()
+	})
+
+	it ("should list .dot files", function(assert) {
 		cli.mkdirp(".github/.dot")
 		cli.cp("package.json", ".github/.dot/p.json")
 		cli.cp(".github/.dot", ".github/.dot2")

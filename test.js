@@ -572,8 +572,6 @@
 	function _deepEqual(actual, expected, circ) {
 		if (
 			actual === expected ||
-			// null == undefined
-			expected === null && actual == expected ||
 			// make NaN equal to NaN
 			actual !== actual && expected !== expected
 		) return true
