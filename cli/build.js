@@ -37,6 +37,7 @@ var child = require("child_process")
 	js: "/*! {0} */\n",
 	view: "/{0}\n"
 }
+, httpRe = /^https?(?=:)/
 , fileHashes
 , linked = module.filename.indexOf(process.cwd()) !== 0
 
@@ -106,7 +107,7 @@ function resolve(name) {
 	return fs.existsSync(name) ? name : require.resolve(defMap(name))
 }
 function drop(el, content) {
-	var flags = el.getAttribute && el.getAttribute("drop")
+	var flags = el && el.getAttribute && el.getAttribute("drop")
 	return flags ? content.replace(
 		RegExp("\\/(\\*\\*+)\\s*(" + flags.replace(/[^\w.:]+/g, "|") + ")\\s*\\1\\/", "g"), "/$1 $2 $1"
 	).replace(
@@ -132,7 +133,6 @@ function write(dir, name, content, el) {
 
 function html(opts, next) {
 	var doc = parser.parseFromString(cli.readFile(opts.args[0]))
-	, httpRe = /^https?(?=:)/
 	, out = opts.out || opts.args[0]
 	, inDir = opts.inDir = opts.args[0].replace(/[^\/]+$/, "")
 	, outDir = opts.outDir = out.replace(/[^\/]+$/, "")
@@ -379,9 +379,14 @@ function cssImport(str, attrs) {
 
 	if (inDir !== outDir) {
 		str = str.replace(/\/\*(?!!)[^]*?\*\/|url\((['"]?)(?!data:)(.+?)\1\)/ig, function(_, q, name) {
-			return name ?
-			"url(\"" + path.relative(outDir, path.resolve(inDir + name)) + "\")" :
-			_
+			if (name && !httpRe.test(name)) {
+				try {
+					cli.cp(inDir + name, path.join(outDir, name))
+				} catch (e) {
+					console.error("CAN NOT COPY %s in CSS to outDir", name)
+				}
+			}
+			return _
 		})
 	}
 
