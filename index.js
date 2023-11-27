@@ -273,7 +273,7 @@ function writeFile(fileName, content) {
 
 function writePackage(obj) {
 	var undef
-	obj.litejs = Object.assign(obj.litejs || {}, { cmd:undef, name:undef })
+	Object.assign(obj.litejs || {}, { cmd:undef, name:undef })
 	writeFile("package.json", JSON.stringify(obj, null, "  ") + "\n")
 }
 

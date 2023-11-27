@@ -2,5 +2,5 @@
   "build": false,
   "install": false,
   "lint": false,
-  "test": "node -r ./test.js --allow-natives-syntax --expose-gc test/index.js"
+  "test": "node -r ./test.js --expose-gc test/index.js"
 }
