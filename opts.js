@@ -6,19 +6,21 @@ function opts(defaults, argv) {
 	var UNDEF, key, val, expect
 	, i = 0
 	, commands = {}
-	, out = {_: [], _unknown: []}
+	, out = {_: [], _used: [], _unknown: []}
 	, hasOwn = out.hasOwnProperty
 	, isElectronBinary = process.versions.electron && !process.defaultApp
 
 	if (!argv) argv = process.argv.slice(isElectronBinary ? 1 : 2)
 
 	for (key in defaults) if (isObj(defaults[key])) {
-		commands[key.replace("_", "")] = commands[key.replace(/_.+/, "")] = Object.assign({_cmd: key.replace("_", "")}, defaults[key])
+		val = key.split(/[,_]/)
+		commands[val[0]] = Object.assign({_cmd: val[0]}, defaults[key])
+		for (i = val.length; --i; ) commands[val[i]] = commands[val[0]]
 	} else {
 		out[key] = defaults[key]
 	}
 
-	for (; i < argv.length; i++) {
+	for (i = 0; i < argv.length; i++) {
 		val = argv[i]
 		if (val.charAt(0) !== "-") {
 			if (isObj(commands[val])) {
@@ -48,6 +50,7 @@ function opts(defaults, argv) {
 					expect === "number" ? +val :
 					castError()
 				)
+				out._used.push(argv[i])
 				argv.splice(i--, 1)
 			} else {
 				out._unknown.push(key)

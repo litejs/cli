@@ -22,7 +22,7 @@
     "test": "TZ='Europe/Tallinn' node --expose-gc ./index.js test test/index.js --coverage --sources='*.js' --brief --no-status && jshint --config=.github/jshint.json *.js cli/*.js"
   },
   "dependencies": {
-    "@litejs/dom": "23.11.1"
+    "@litejs/dom": "23.12.1"
   },
   "devDependencies": {
     "jshint": "2.13.6",
