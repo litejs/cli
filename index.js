@@ -46,39 +46,18 @@ var fs = require("fs")
 	"commit": true,
 	"launch": "node",
 	"lcov": true,
-	"sources": "./*.js",
 	"status": 1,
 	"tag": true,
 	"test": "lj test ./test/index.js",
-	"threads": 0,
 	"update": true
 }
-, shortcut = {
-	b: "build",
-	h: "help",
-	r: "release",
-	t: "test"
-}
-, commands = {
-	build: 1,
-	init: 1,
-	bench: 1,
-	release: 1,
-	test: 1
-}
-, hasOwn = commands.hasOwnProperty
-, intArgs = /^(samples|sample-time|warmup)$/
-, nodeArgs = /^(allow-natives-syntax)$/
+, hasOwn = {}.hasOwnProperty
 
 try {
 	var userPackage = require(path.resolve("package.json"))
 	Object.assign(cli.conf, userPackage)
 } /* c8 ignore next */ catch(e) {}
 
-readConf([
-	"package.json", "litejs",
-	".github/litejs.json", null
-])
 
 function readConf(opts) {
 	var file = opts.shift()
@@ -91,22 +70,49 @@ function readConf(opts) {
 	if (opts[0]) readConf(opts)
 }
 
-function getopts(argv) {
-	var opts = Object.assign({}, defaults, {args: argv, opts: [], nodeArgs: []})
-	for (var arg, i = argv.length; i; ) {
-		arg = argv[--i].split(/^--(no-)?|=/)
-		if (arg[0] === "") {
-			opts[nodeArgs.test(arg[2]) ? "nodeArgs" : "opts"].push(argv[i])
-			opts[arg[2]] = intArgs.test(opts[arg[2]]) ? 0|(arg[4] || !arg[1]) : arg[4] || !arg[1]
-			argv.splice(i, 1)
-		}
-	}
-	opts.cmd = argv.shift()
-	return opts
+if (!module.parent) {
+	readConf([
+		"package.json", "litejs",
+		".github/litejs.json", null
+	])
+	execute(require("./opts.js").opts({
+		bench: {},
+		build_b: {
+			out: ""
+		},
+		init: {},
+		lint: {},
+		release_r: {
+			commit: true,
+			tag: true,
+		},
+		test_t: {
+			up: false,
+			coverage: false,
+			lcov: "",
+			status: true,
+			sources: "./*.js",
+			threads: 1,
+			watch: false
+		},
+		help: false,
+		version: false
+	}))
 }
 
-if (!module.parent) {
-	execute(getopts(process.argv.slice(2)))
+function execute(opts) {
+	if (opts._unknown.length) throw "Unknown options: " + opts._unknown
+
+	if (opts.version) console.log("%s v%s", cli.name, cli.version)
+
+	if (opts.help || !opts._cmd) {
+		console.log(readFile(
+			opts._cmd ? path.resolve(module.filename, "..", "cli", opts._cmd + ".js") : module.filename
+		).match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
+		process.exit()
+	} else {
+		require("./cli/" + opts._cmd + ".js")(opts)
+	}
 }
 
 function run(opt, cmd, addOpts) {
@@ -126,39 +132,6 @@ function replaceVersion(cmd) {
 	return cmd.replace(re, function(all, num) {
 		return ver[num]
 	})
-}
-
-function execute(opts) {
-	var sub
-	, cmd = shortcut[opts.cmd] || opts.cmd
-	, helpFile = module.filename
-
-	if (opts.version) console.log("%s v%s", cli.name, cli.version)
-
-	if (!opts.version || cmd) switch (cmd) {
-	case "bench":
-	case "build":
-	case "test":
-		if (opts.args.length < 1) {
-			return run(cmd, opts[cmd], opts.opts.join(" "))
-		}
-		/* falls through */
-	case "init":
-	case "release":
-		require("./cli/" + cmd)(opts)
-		break;
-	case "lint":
-		run(cmd, opts[cmd])
-		break;
-	case "help":
-		sub = shortcut[opts.args[0]] || opts.args[0]
-		if (hasOwn.call(commands, sub)) {
-			helpFile = path.join(path.dirname(module.filename), "cli", sub + ".js")
-		}
-		/* falls through */
-	default:
-		console.log(readFile(helpFile).match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
-	}
 }
 
 function command(name) {

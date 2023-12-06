@@ -1,3 +1,12 @@
+//-  Usage
+//-    lj test
+//-
+//-  test options
+//-    --no-status     Exit always with 0
+//-
+//-  Examples
+//-    lj test
+//-
 
 var cli = require("..")
 , child = require("child_process")
@@ -12,31 +21,23 @@ module.exports = function(opts) {
 		env: Object.assign({}, process.env),
 		stdio: "inherit"
 	}
-	, files = cli.ls(opts.args.filter(isNaN))
+	, files = cli.ls(opts._.filter(isNaN))
 	, threads = opts.threads
-	, nums = opts.args.filter(Number)
+	, nums = opts._.filter(Number)
 	, test = require.resolve("../test.js")
 	, pendingRuns = 0
-	if (!files[0]) return console.error("No files found: " + opts.args)
+	if (!files[0]) return console.error("No files found: " + opts._)
 
 	process.exitCode = 0
 
-	if (!opts.threads && !opts.coverage && files.length < 10 && opts.nodeArgs.length < 1) {
-		process.argv.length = 2
-		nums.push.apply(process.argv, nums.concat(opts.opts))
-		require(test)
-		files.forEach(function(file) { require(path.resolve(file)) })
-	} else {
-		if (opts.coverage) {
-			opts.coverage = subOpts.env.NODE_V8_COVERAGE = path.resolve(
-				opts.coverage === true ? process.env.NODE_V8_COVERAGE || "./coverage" : opts.coverage
-			)
-			rmrf(opts.coverage)
-			if (opts.lcov === true) opts.lcov = opts.coverage + "/lcov.info"
-		}
-		if (!threads || threads === true) threads = require("os").cpus().length
-		runAgain()
+	if (opts.coverage) {
+		opts.coverage = subOpts.env.NODE_V8_COVERAGE = path.resolve(process.env.NODE_V8_COVERAGE || "./coverage")
+		rmrf(opts.coverage)
+		if (opts.lcov === true) opts.lcov = opts.coverage + "/lcov.info"
 	}
+	if (!threads) threads = require("os").cpus().length
+	runAgain()
+
 	if (opts.watch) {
 		describe.onend = function() {
 			watcher = watch(getRequired(), runAgain, 100)
@@ -56,8 +57,8 @@ module.exports = function(opts) {
 		runFiles.forEach(function(file) {
 			args.push("-r", "./" + file)
 		})
-		child.spawn(process.argv[0], opts.nodeArgs.concat(
-			args, last, opts.opts
+		child.spawn(process.argv[0], args.concat(
+			last, opts._used
 		), subOpts)
 		.on("close", runDone)
 	}
