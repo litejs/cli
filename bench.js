@@ -2,7 +2,6 @@
 
 
 module.exports = bench
-bench.cpuSpeed = cpuSpeed
 
 function bench(tests, opts, next) {
 	var i, test
@@ -100,11 +99,5 @@ function stat(arr) {
 		se: se,
 		text: ((0|mean) + "").replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " ± " + se + "%"
 	}
-}
-
-function cpuSpeed() {
-	for (var i = 1e8, time = Date.now(); i--; );
-	time = Date.now() - time
-	return Math.round(1850 / time) / 10
 }
 
