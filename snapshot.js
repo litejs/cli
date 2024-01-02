@@ -1,6 +1,7 @@
 
 var cli = require(".")
 , child = require("child_process")
+, fs = require("fs")
 , path = require("path")
 , relPathRe = /[^(]+(?=:\d+:\d+\))/gm
 , relPathFn = path.relative.bind(path, process.cwd())
@@ -31,7 +32,9 @@ describe.assert.matchSnapshot = function(file, actual) {
 	seen[file] = (seen[file] || 0) + 1
 
 	try {
-		expected = cli.readFile(snapFile).replace(relPathRe, relPathFn)
+		expected = fs.readFileSync(path.resolve(snapFile), enc)
+		if (actual && actual.constructor === Uint8Array) expected = new Uint8Array(expected)
+		if (typeof expected === "string") expected = expected.replace(relPathRe, relPathFn)
 	} catch(e) {}
 	if (actual === expected) {
 		this.ok(1)
@@ -56,4 +59,5 @@ describe.assert.matchSnapshot = function(file, actual) {
 
 	return this
 }
+
 
