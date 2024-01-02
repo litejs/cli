@@ -184,10 +184,14 @@
 	describe.output = ""
 
 	describe.diff = diff
+	describe.equal = function(actual, expected) {
+		return _deepEqual(actual, expected, [])
+	}
 	describe.format = format
 	describe.opts = opts
 	describe.print = print
 	describe.stringify = stringify
+	describe.type = type
 
 	each(conf.global, function(_i, value) {
 		_global[value] = describe[value]
