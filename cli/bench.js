@@ -12,6 +12,7 @@ var cli = require("..")
 , bench = require("../bench.js")
 
 global.requireGit = requireGit
+if (!global.gc) global.gc = require("vm").runInNewContext("gc")
 
 module.exports = function(opts) {
 	var files = cli.ls(opts.args)
