@@ -19,7 +19,8 @@
     "cli"
   ],
   "scripts": {
-    "test": "TZ='Europe/Tallinn' node ./index.js test test/index.js --coverage --sources='*.js' --brief --no-status && jshint --config=.github/jshint.json *.js cli/*.js"
+    "test": "TZ='Europe/Tallinn' node ./index.js test test/index.js --coverage --sources='*.js' --brief --no-status",
+    "lint": "jshint --config=.github/jshint.json *.js cli/*.js"
   },
   "dependencies": {
     "@litejs/dom": "23.12.1"
