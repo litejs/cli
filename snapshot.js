@@ -36,28 +36,16 @@ describe.assert.matchSnapshot = function(file, actual) {
 		if (actual && actual.constructor === Uint8Array) expected = new Uint8Array(expected)
 		if (typeof expected === "string") expected = expected.replace(relPathRe, relPathFn)
 	} catch(e) {}
-	if (actual === expected) {
-		this.ok(1)
-	} else if (describe.conf.up) {
-		console.error("# Update snapshot %s", file)
-		cli.writeFile(snapFile, actual)
-		this.ok(1)
-	} else {
-		try {
-			child.execSync("git diff --no-index --color -- " + snapFile + " -", {
-				input: actual,
-				encoding: "utf8"
-			})
-		/* c8 ignore next */
-		} catch(e) {
-			return this(0, e.stdout ?
-				"Snapshot " + file + "\n---\n" + e.stdout :
-				"Snapshot diff failed, add --up to update snapshot\n---\n" + e.stderr
-			)
+
+	if (describe.conf.up) {
+		if (!describe.equal(actual, expected)) {
+			console.error("# Update snapshot %s", snapFile)
+			cli.writeFile(path.resolve(snapFile), actual)
 		}
+		return this.ok(1)
 	}
 
-	return this
+	return this.equal(actual, expected)
 }
 
 

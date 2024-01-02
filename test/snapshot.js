@@ -20,7 +20,7 @@ describe("snapshot.js", function() {
 			"./test/spec/test-fail"
 		)
 		assert.cmdSnapshot(
-			"node -r ./test.js test/test-fail-table.js",
+			"node --no-extra-info-on-fatal-exception -r ./test.js test/test-fail-table.js",
 			"./test/spec/test-fail-table",
 			{ expectFail: true }
 		)
