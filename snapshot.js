@@ -24,7 +24,9 @@ describe.assert.cmdSnapshot = function(cmd, file, opts) {
 describe.assert.matchSnapshot = function(file, actual) {
 	if (!actual) actual = fs.readFileSync(path.resolve(file), "utf8")
 	var expected
-	, snapFile = file + ".snap" + (seen[file] || "")
+	, snapExt = ".snap" + (seen[file] || "")
+	, snapFile = file.indexOf(".") < 1 ? file + snapExt : file.replace(/\.(?!\.)/, snapExt + ".")
+	, enc = typeof actual === "string" ? "utf8" : null
 
 	seen[file] = (seen[file] || 0) + 1
 
