@@ -21,9 +21,9 @@ describe.assert.cmdSnapshot = function(cmd, file, opts) {
 	return this.matchSnapshot(file, actual)
 }
 
-describe.assert.matchSnapshot = function(file, transform) {
+describe.assert.matchSnapshot = function(file, actual) {
+	if (!actual) actual = fs.readFileSync(path.resolve(file), "utf8")
 	var expected
-	, actual = typeof transform === "function" ? transform(cli.readFile(file)) : transform || (describe.conf.up ? "" : cli.readFile(file))
 	, snapFile = file + ".snap" + (seen[file] || "")
 
 	seen[file] = (seen[file] || 0) + 1

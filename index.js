@@ -268,7 +268,7 @@ function rmrf(dir) {
 function writeFile(fileName, content) {
 	var name = path.resolve(fileName.split("?")[0])
 	mkdirp(path.dirname(name))
-	fs.writeFileSync(name, content, "utf8")
+	fs.writeFileSync(name, content)
 }
 
 function writePackage(obj) {

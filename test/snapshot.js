@@ -44,15 +44,6 @@ describe("snapshot.js", function() {
 		assert.end()
 	})
 
-	it("should test transformed snapshots", function(assert) {
-		assert.matchSnapshot(
-			"./test/spec/test-transform",
-			function(str) {
-				return str.replace(/\\/g, "/")
-			}
-		)
-		assert.end()
-	})
 	it("should test failing snapshots", function(assert) {
 		try {
 			require("child_process").execSync("node -r ./test.js test/snapshot-fail.js", { stdio: "ignore" })
