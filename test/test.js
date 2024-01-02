@@ -273,6 +273,32 @@ describe("test.js", function() {
 		assert.end()
 	})
 
+	var behaviorTable = [
+		[ 1, null, 1 ],
+		[ function() { throw 2 }, 2, undefined ],
+	]
+
+	it("should mock async fn", behaviorTable, function(origin, err, result, assert, mock) {
+		var fn = mock.fn(origin, true)
+		fn()
+		.then(function(result_) {
+			assert.equal(result_, result).end()
+		})
+		.catch(function(err_) {
+			assert.equal(err_, err).end()
+		})
+	})
+
+	it("should mock callback fn", behaviorTable, function(origin, err, result, assert, mock) {
+		var fn = mock.fn(origin, 0)
+		fn(function(err_, result_) {
+			assert
+			.equal(err_, err)
+			.equal(result_, result_)
+			.end()
+		})
+	})
+
 	it("should recover mocks", function(assert) {
 		assert.equal(dog.bark, Dog$bark)
 		assert.equal(dog.woof, Dog$woof)
@@ -304,7 +330,7 @@ describe("test.js", function() {
 		assert.equal(dog.bark.calls[0], {
 			args: [1],
 			scope: dog,
-			error: undefined,
+			error: null,
 			result: 11
 		})
 

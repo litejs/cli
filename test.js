@@ -468,28 +468,26 @@
 		this._r = []
 	}
 	Mock.prototype = describe.mock = {
-		fn: function(origin) {
+		fn: function(origin, behavior) {
 			spy.called = 0
 			spy.calls = []
 			spy.errors = 0
 			spy.results = []
 			return spy
 			function spy() {
-				var err, key, result
+				var err = null, key, result
 				, args = slice(arguments)
 				if (isFn(origin)) {
 					try {
-						result = origin.apply(this, arguments)
+						result = origin.apply(this, args)
 					} catch(e) {
 						spy.errors++
 						err = e
 					}
-				} else if (_isArray(origin)) {
-					result = origin[spy.called % origin.length]
 				} else if (isObj(origin)) {
-					key = JSON.stringify(args).slice(1, -1)
+					key = JSON.stringify(args  ).slice(1, -1)
 					result = hasOwn(origin, key) ? origin[key] : origin["*"]
-				} else result = origin
+				} else result = _isArray(origin) ? origin[spy.called % origin.length] : origin
 				spy.called++
 				push(spy.results, result)
 				push(spy.calls, {
@@ -498,7 +496,8 @@
 					error: err,
 					result: result
 				})
-				return result
+				if (type(behavior) === "number") args[behavior].call(this, err, result)
+				else return behavior === true ? (err ? Promise.reject(err) : Promise.resolve(result)) : result
 			}
 		},
 		rand: function(seed_) {
