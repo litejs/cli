@@ -25,10 +25,6 @@
   "dependencies": {
     "@litejs/dom": "23.12.1"
   },
-  "devDependencies": {
-    "jshint": "2.13.6",
-    "uglify-js": "3.17.4"
-  },
   "bin": {
     "lj-doc": "./bin/doc",
     "lj-lint-json": "./bin/lint-json.js",
