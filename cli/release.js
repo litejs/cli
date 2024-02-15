@@ -23,8 +23,6 @@
 
 module.exports = function(opts) {
 	var g, i
-	, TAG_MSG = ".git/TAG_MSG"
-	, COMMIT_EDITMSG = ".git/COMMIT_EDITMSG"
 	, child = require("child_process")
 	, path = require("path")
 	, cli = require("../")
@@ -75,7 +73,7 @@ module.exports = function(opts) {
 	run("build", "lj build")
 	run("test", "lj test --brief test/index.js")
 
-	cli.writeFile(COMMIT_EDITMSG, "Release v" + cur.version + "\n" + msg)
+	cli.writeFile(".git/COMMIT_EDITMSG", "Release v" + cur.version + "\n" + msg)
 
 	msg = "# All commits:\n"
 	child.execSync("git log --pretty='format:%s (%aN)' " + logRange + (opts.rewrite ? "~1" : ""))
@@ -95,12 +93,12 @@ module.exports = function(opts) {
 		}
 	}
 
-	cli.writeFile(TAG_MSG, msg)
+	cli.writeFile(".git/TAG_MSG", msg)
 
-	child.spawn(process.env.EDITOR || "vim", [TAG_MSG], { stdio: "inherit" })
+	child.spawn(process.env.EDITOR || "vim", [".git/TAG_MSG"], { stdio: "inherit" })
 	.on("exit", function(e, code) {
-		run("commit", "git commit -a -F " + COMMIT_EDITMSG + (opts.rewrite ? " --amend" : " --"))
-		run("tag", "git tag -a v" + cur.version + " -F " + TAG_MSG + (opts.rewrite ? " -f" : ""), "git tag failed", "--rewrite")
+		run("commit", "git commit -a -F .git/COMMIT_EDITMSG" + (opts.rewrite ? " --amend" : " --"))
+		run("tag", "git tag -a v" + cur.version + " -F .git/TAG_MSG" + (opts.rewrite ? " -f" : ""), "git tag failed", "--rewrite")
 
 		console.log("\nVERSION: %s (editor exit %s)", cur.version, code)
 		if (!cur.private) {
