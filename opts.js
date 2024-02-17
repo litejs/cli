@@ -25,8 +25,7 @@ function opts(defaults, argv) {
 		if (val.charAt(0) !== "-") {
 			if (isObj(commands[val])) {
 				argv.splice(i, 1)
-				Object.assign(out, commands[val])
-				defaults = Object.assign({}, out)
+				defaults = Object.assign({}, Object.assign(out, commands[val]))
 			}
 			break
 		}
@@ -39,15 +38,15 @@ function opts(defaults, argv) {
 			if (key === "") {
 				argv.push.apply(out._, argv.splice(i).slice(1))
 				break
-			} else if (hasOwn.call(defaults, key)) {
-				expect = Array.isArray(defaults[key]) ? "array" : typeof defaults[key]
+			}
+			if (hasOwn.call(out, key)) {
+				expect = Array.isArray(out[key]) ? "array" : typeof out[key]
 				val = val[1] ? 0 : val[4]
 				out[key] = (
 					expect === "boolean" ? val !== 0 && (val === UNDEF || val === "true" || val !== "false" && castError()) :
 					expect === "array" ? (out[key] === defaults[key] ? [] : out[key]).concat(val ? val.split(",") : []) :
 					expect === "string" ? val || "" :
-					val === 0 ? castError() :
-					expect === "number" ? +val :
+					expect === "number" && val !== UNDEF ? +val :
 					castError()
 				)
 				out._used.push(argv[i])
@@ -69,7 +68,7 @@ function opts(defaults, argv) {
 		throw "Invalid value for option '" + key + "' - expected " + expect
 	}
 	function isObj(obj) {
-		return !!obj && obj.constructor === Object
+		return obj && obj.constructor === Object
 	}
 }
 

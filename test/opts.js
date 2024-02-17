@@ -24,9 +24,9 @@ describe("opts", function() {
 			{ ab: [ "foo", "bar", "qux" ], _used: ["--ab=foo", "--ab=bar,qux"], _unknown: [], _: [] }, []
 		],
 		[
-			["--n1=12"],
-			{ n1: 0 },
-			{ n1: 12, _used: ["--n1=12"], _unknown: [], _: [] }, []
+			["--n1=12", "--n2=0", "--no-n3"],
+			{ n1: 0, n2: 1, n3: 2 },
+			{ n1: 12, n2: 0, n3: 0, _used: ["--n1=12", "--n2=0", "--no-n3"], _unknown: [], _: [] }, []
 		],
 		[
 			["--s1=", "--s2=1", "--s3=a", "--no-s4"],
@@ -135,7 +135,7 @@ describe("opts", function() {
 	it("should throw on invalid options: {0}", [
 		[ ["--bool1=foo"], { bool1: true } ],
 		[ ["--bool2="], { bool2: true } ],
-		[ ["--no-num1"], { num1: 0 } ],
+		[ ["--num1"], { num1: 0 } ],
 		[ ["--nan"], { nan: null } ],
 	], function(argv, defaults, assert) {
 		assert
