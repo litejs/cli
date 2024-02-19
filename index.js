@@ -14,6 +14,22 @@
 //-    lj r
 //-
 
+exports.command = command
+exports.cp = cp
+exports.debounce = debounce
+exports.hold = hold
+exports.ls = ls
+exports.mkdirp = mkdirp
+exports.readFile = readFile
+exports.rmrf = rmrf
+exports.wait = wait
+exports.watch = watch
+exports.writeFile = writeFile
+
+exports.cols = +process.env.COLUMNS || process.stdout.columns || 80
+exports.rows = +process.env.ROWS || process.stdout.rows || 24
+
+
 require("./cli/patch-node.js")
 
 var fs = require("fs")
@@ -21,23 +37,10 @@ var fs = require("fs")
 , path = require("path")
 , now = new Date()
 , cli = Object.assign(exports, require("./package.json"), {
-	cols: +process.env.COLUMNS || process.stdout.columns || 80,
-	rows: +process.env.ROWS || process.stdout.rows || 24,
-	command: command,
 	conf: {
 		date: now.toISOString().split("T")[0]
 	},
-	cp: cp,
 	dom: require("@litejs/dom"),
-	debounce: debounce,
-	hold: hold,
-	ls: ls,
-	mkdirp: mkdirp,
-	readFile: readFile,
-	rmrf: rmrf,
-	wait: wait,
-	watch: watch,
-	writeFile: writeFile,
 	writePackage: writePackage
 })
 , defaults = {
