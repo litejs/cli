@@ -30,10 +30,11 @@ exports.cols = +process.env.COLUMNS || process.stdout.columns || 80
 exports.rows = +process.env.ROWS || process.stdout.rows || 24
 
 
-require("./cli/patch-node.js")
+if (parseInt(process.version.slice(1), 10) < 15) require("./lib/shim.js")
 
-var fs = require("fs")
-, child = require("child_process")
+
+var child = require("child_process")
+, fs = require("fs")
 , path = require("path")
 , now = new Date()
 , cli = Object.assign(exports, require("./package.json"), {
@@ -72,6 +73,9 @@ var fs = require("fs")
 , hasOwn = commands.hasOwnProperty
 , intArgs = /^(samples|sample-time|warmup)$/
 , nodeArgs = /^(allow-natives-syntax)$/
+
+
+
 
 try {
 	var userPackage = require(path.resolve("package.json"))
@@ -342,11 +346,7 @@ function hold(ignore) {
 		}
 	}
 
-	/**
-	 * `wait` is already in hooked array,
-	 * so override hooked method
-	 * that will be cleared on resume.
-	 */
+	// `wait` is already in hooked array, overrided method will be cleared on resume
 	obj.wait = _resume.wait
 
 	return _resume
