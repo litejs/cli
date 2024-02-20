@@ -1,6 +1,2 @@
 {
-  "build": false,
-  "install": false,
-  "lint": false,
-  "test": "node -r ./test.js --expose-gc test/index.js"
 }

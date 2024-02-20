@@ -1,23 +1,10 @@
-#!/usr/bin/env node
-//-
-//-  Usage
-//-    lj [init|bench|build|help|test]
-//-
-//-  build options
-//-    --banner, -b    Add comment banner to output
-//-    --input,  -i    Input file
-//-    --output, -o    Output file
-//-    --readme, -r    Replase readme tags in file
-//-
-//-  Examples
-//-    lj b -r README.md -i ui/dev.html -o ui/index.html
-//-    lj r
-//-
 
 exports.command = command
 exports.cp = cp
 exports.debounce = debounce
+exports.deepAssign = deepAssign
 exports.hold = hold
+exports.isObj = isObj
 exports.ls = ls
 exports.mkdirp = mkdirp
 exports.readFile = readFile
@@ -25,6 +12,7 @@ exports.rmrf = rmrf
 exports.wait = wait
 exports.watch = watch
 exports.writeFile = writeFile
+exports.writePackage = writePackage
 
 exports.cols = +process.env.COLUMNS || process.stdout.columns || 80
 exports.rows = +process.env.ROWS || process.stdout.rows || 24
@@ -36,137 +24,8 @@ if (parseInt(process.version.slice(1), 10) < 15) require("./lib/shim.js")
 var child = require("child_process")
 , fs = require("fs")
 , path = require("path")
-, now = new Date()
-, cli = Object.assign(exports, require("./package.json"), {
-	conf: {
-		date: now.toISOString().split("T")[0]
-	},
-	dom: require("@litejs/dom"),
-	writePackage: writePackage
-})
-, defaults = {
-	"bench": "lj bench ./test/bench/*.js",
-	"build": "lj build --out=ui/index.html ui/dev.html",
-	"commit": true,
-	"launch": "node",
-	"lcov": true,
-	"sources": "./*.js",
-	"status": 1,
-	"tag": true,
-	"test": "lj test ./test/index.js",
-	"threads": 0,
-	"update": true
-}
-, shortcut = {
-	b: "build",
-	h: "help",
-	r: "release",
-	t: "test"
-}
-, commands = {
-	build: 1,
-	init: 1,
-	bench: 1,
-	release: 1,
-	test: 1
-}
-, hasOwn = commands.hasOwnProperty
-, intArgs = /^(samples|sample-time|warmup)$/
-, nodeArgs = /^(allow-natives-syntax)$/
+, hasOwn = {}.hasOwnProperty
 
-
-
-
-try {
-	var userPackage = require(path.resolve("package.json"))
-	Object.assign(cli.conf, userPackage)
-} /* c8 ignore next */ catch(e) {}
-
-readConf([
-	"package.json", "litejs",
-	".github/litejs.json", null
-])
-
-function readConf(opts) {
-	var file = opts.shift()
-	, key = opts.shift()
-	if (file) try {
-		var conf = require(path.resolve(file))
-		if (key) conf = conf[key]
-		if (conf) return Object.assign(defaults, conf)
-	} /* c8 ignore next */ catch(e) {}
-	if (opts[0]) readConf(opts)
-}
-
-function getopts(argv) {
-	var opts = Object.assign({}, defaults, {args: argv, opts: [], nodeArgs: []})
-	for (var arg, i = argv.length; i; ) {
-		arg = argv[--i].split(/^--(no-)?|=/)
-		if (arg[0] === "") {
-			opts[nodeArgs.test(arg[2]) ? "nodeArgs" : "opts"].push(argv[i])
-			opts[arg[2]] = intArgs.test(opts[arg[2]]) ? 0|(arg[4] || !arg[1]) : arg[4] || !arg[1]
-			argv.splice(i, 1)
-		}
-	}
-	opts.cmd = argv.shift()
-	return opts
-}
-
-if (!module.parent) {
-	execute(getopts(process.argv.slice(2)))
-}
-
-function run(opt, cmd, addOpts) {
-	if (cmd) try {
-		;(Array.isArray(cmd) ? cmd : [cmd]).forEach(function(cmd) {
-			cmd += addOpts ? " " + addOpts : ""
-			child.execSync(replaceVersion(cmd), { stdio: "inherit" })
-		})
-	} catch (e) {
-		console.error("\n%s\nIgnore with --no-%s option.", e.message, opt)
-		process.exit(1)
-	}
-}
-function replaceVersion(cmd) {
-	var re = /{v(\d)}/g
-	, ver = (cli.conf.version || "0.0.0").split(".")
-	return cmd.replace(re, function(all, num) {
-		return ver[num]
-	})
-}
-
-function execute(opts) {
-	var sub
-	, cmd = shortcut[opts.cmd] || opts.cmd
-	, helpFile = module.filename
-
-	if (opts.version) console.log("%s v%s", cli.name, cli.version)
-
-	if (!opts.version || cmd) switch (cmd) {
-	case "bench":
-	case "build":
-	case "test":
-		if (opts.args.length < 1) {
-			return run(cmd, opts[cmd], opts.opts.join(" "))
-		}
-		/* falls through */
-	case "init":
-	case "release":
-		require("./cli/" + cmd)(opts)
-		break;
-	case "lint":
-		run(cmd, opts[cmd])
-		break;
-	case "help":
-		sub = shortcut[opts.args[0]] || opts.args[0]
-		if (hasOwn.call(commands, sub)) {
-			helpFile = path.join(path.dirname(module.filename), "cli", sub + ".js")
-		}
-		/* falls through */
-	default:
-		console.log(readFile(helpFile).match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
-	}
-}
 
 function command(name) {
 	try {
@@ -198,9 +57,27 @@ function debounce(fn, time) {
 	}
 }
 
+function deepAssign(to) {
+	if (to !== Object.prototype) for (var key, from, a = arguments, i = 1, len = a.length; i < len; ) {
+		if ((from = a[i++])) for (key in from) if (hasOwn.call(from, key)) {
+			if (from[key] === null) delete to[key]
+			else to[key] = (
+				isObj(from[key]) ?
+				deepAssign(isObj(to[key]) ? to[key] : {}, from[key]) :
+				from[key]
+			)
+		}
+	}
+	return to
+}
+
 function flat(arr) {
 	var out = []
 	return out.concat.apply(out, arr)
+}
+
+function isObj(obj) {
+	return !!obj && obj.constructor === Object
 }
 
 function ls() {
@@ -283,7 +160,6 @@ function writePackage(obj) {
 	Object.assign(obj.litejs || {}, { cmd:undef, name:undef })
 	writeFile("package.json", JSON.stringify(obj, null, "  ") + "\n")
 }
-
 
 function wait(fn) {
 	var pending = 1

@@ -2,7 +2,7 @@
 
 describe("build", function() {
 	require("../snapshot.js")
-	var build = require("../cli/build.js")
+	var build = require("../lib/build.js")
 
 	var table = [
 		["test/ui/dev.html", "test/ui/index.html", [
@@ -17,7 +17,7 @@ describe("build", function() {
 
 	it ("should minimize html", table, function(inFile, outFile, arr, assert) {
 		assert.planned = arr.length + 2
-		build({ args: [inFile], out: outFile })
+		build({ _: [inFile], out: outFile })
 		assert.matchSnapshot(inFile)
 		assert.matchSnapshot(outFile)
 		arr.forEach(function(name) {

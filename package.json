@@ -19,8 +19,8 @@
     "cli"
   ],
   "scripts": {
-    "test": "TZ='Europe/Tallinn' node ./index.js test test/index.js --coverage --sources='*.js' --brief --no-status",
-    "lint": "jshint --config=.github/jshint.json *.js cli/*.js"
+    "test": "node ./cli.js test test/index.js --tz='Europe/Tallinn' --coverage --sources='*.js' --brief --no-status",
+    "lint": "jshint --config=.github/jshint.json *.js lib/*.js"
   },
   "dependencies": {
     "@litejs/dom": "23.12.1"
@@ -29,7 +29,7 @@
     "lj-doc": "./bin/doc",
     "lj-lint-json": "./bin/lint-json.js",
     "lj-stat": "./bin/stat",
-    "lj": "./index.js"
+    "lj": "./cli.js"
   },
   "workspaces": [
     "test/dummy"
