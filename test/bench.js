@@ -22,7 +22,7 @@ describe("bench.js", function() {
 	it ("should compare fn and nop", function(assert) {
 		bench({
 			b: nop,
-			a: function() { new Date() / Date.now() }
+			a: function() { return new Date() / Date.now() }
 		}, {warmup:10,"sample-time":10}, function(err, result) {
 			assert.notEqual(result.a.rel, "fastest")
 			assert.equal(result.b.rel, "fastest")

@@ -42,7 +42,7 @@ describe("test.js", function() {
 			"error",     'Error',                           Error(""),
 			"regexp",    '/re/',                            re,
 			"null",      'null',                            null,
-			"nan",       'NaN',                             +"a",
+			"nan",       'NaN',                             NaN,
 			"object",    '{}',                              {},
 			"object",    '<null>{}',                        Object.create(null),
 			"object",    '{"a":1}',                         {a:1},

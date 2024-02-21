@@ -26,7 +26,7 @@ try {
 		try {
 			require("v8").setFlagsFromString("--allow_natives_syntax")
 		} /* c8 ignore next */ catch(e) {}
-		;[ "GetOptimizationStatus", "HasFastProperties", "OptimizeFunctionOnNextCall"].map(function(name) {
+		;[ "GetOptimizationStatus", "HasFastProperties", "OptimizeFunctionOnNextCall"].forEach(function(name) {
 			v8[name] = Function("fn", "return %" + name+ "(fn)")
 		})
 	}

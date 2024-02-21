@@ -3,7 +3,6 @@ describe("coverage", function() {
 	require("../../snapshot.js")
 
 	var cli = require("../..")
-	, coverage = require("../../cli/coverage.js")
 	, path = require("path")
 	, coverageTests = [
 		[ "./test/coverage/run1.js" ]

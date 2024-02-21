@@ -50,7 +50,7 @@
 		, count = 30
 		, resume = testCase.wait()
 
-		if (options.timeout) {
+		if (options && options.timeout) {
 			count = 0 | (options.timeout / 50)
 		}
 
