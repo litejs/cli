@@ -106,11 +106,11 @@ function ls() {
 	}
 	return out.sort()
 	function scan(name) {
-		if (outRe.test(name)) {
-			out.push(path.relative(process.cwd(), name))
-		} else if (dirRe.test(name)) try {
+		try {
 			var stat = fs.statSync(name)
-			if (stat.isDirectory()) {
+			if (outRe.test(name)) {
+				out.push(path.relative(process.cwd(), name))
+			} else if (stat.isDirectory() && dirRe.test(name)) {
 				fs.readdirSync(name).forEach(function(file) {
 					scan(path.resolve(name, file))
 				})
