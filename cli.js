@@ -17,6 +17,7 @@
 var fs = require("fs")
 , path = require("path")
 , opts = require("./opts.js").opts(mergeOpts({
+	bench: {},
 	build_b: {
 		banner: "",
 		cat: true,
@@ -26,7 +27,9 @@ var fs = require("fs")
 		worker: ""
 	},
 	init_i: {},
-	bench: {},
+	lint: {
+		fix: false
+	},
 	release_r: {
 		build: true,
 		commit: true,

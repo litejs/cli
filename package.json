@@ -16,7 +16,7 @@
   "files": [
     ".gitignore",
     "*.js",
-    "cli"
+    "lib"
   ],
   "scripts": {
     "test": "node ./cli.js test test/index.js --tz='Europe/Tallinn' --coverage --sources='*.js' --brief --no-status",
@@ -26,9 +26,6 @@
     "@litejs/dom": "23.12.1"
   },
   "bin": {
-    "lj-doc": "./bin/doc",
-    "lj-lint-json": "./bin/lint-json.js",
-    "lj-stat": "./bin/stat",
     "lj": "./cli.js"
   },
   "workspaces": [
