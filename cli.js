@@ -17,7 +17,11 @@
 var fs = require("fs")
 , path = require("path")
 , opts = require("./opts.js").opts(mergeOpts({
-	bench: {},
+	bench: {
+		samples: 10,
+		sampleTime: 500,
+		warmup: 2000
+	},
 	build_b: {
 		banner: "",
 		cat: true,

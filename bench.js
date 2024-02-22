@@ -37,7 +37,7 @@ function bench(tests, opts, next) {
 
 	function runSync() {
 		if (i-->0 || samples-->0 && (i = len - 1)) {
-			times[i][samples] = measure(tests[keys[i]], opts["sample-time"] || /* c8 ignore next */ 500)
+			times[i][samples] = measure(tests[keys[i]], opts.sampleTime || /* c8 ignore next */ 500)
 			process.nextTick(runSync)
 		} else {
 			respond()
