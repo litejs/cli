@@ -19,7 +19,7 @@
     "lib"
   ],
   "scripts": {
-    "test": "node ./cli.js test test/index.js --tz='Europe/Tallinn' --coverage --sources='*.js' --brief --no-status",
+    "test": "node ./cli.js test test/index.js --tz='Europe/Tallinn' --brief",
     "lint": "jshint --config=.github/jshint.json *.js lib/*.js"
   },
   "dependencies": {
