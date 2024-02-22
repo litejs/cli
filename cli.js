@@ -42,6 +42,9 @@ var fs = require("fs")
 		update: true,
 		upstream: true
 	},
+	serve: {
+		port: 8080
+	},
 	test_t: {
 		brief: false,
 		coverage: false,
