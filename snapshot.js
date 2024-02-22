@@ -3,23 +3,23 @@ var cli = require(".")
 , child = require("child_process")
 , fs = require("fs")
 , path = require("path")
-, relPathRe = /[^(]+(?=:\d+:\d+\))/gm
+, relPathRe = /[^(]+(?=:\d+:\d+\))|^\/[\w/.]+(?=:\d)/gm
 , relPathFn = path.relative.bind(path, process.cwd())
 , seen = {}
 
 /* globals describe */
 describe.assert.cmdSnapshot = function(cmd, file, opts) {
 	var actual
+	opts = Object.assign({stdio: "pipe"}, opts)
 	try {
-		actual = child.execSync(cmd, opts).toString("utf8").replace(relPathRe, relPathFn)
+		actual = child.execSync(cmd, opts)
 	} catch(e) {
-		if (opts.expectFail) {
-			actual = e.toString()
-		} else {
-			return this(0, "Snapshot command failed: " + cmd + "\n---\n" + e.toString())
+		actual = e
+		if (!opts.expectFail) {
+			return this(0, "Snapshot command failed: " + cmd + "\n---\n" + actual)
 		}
 	}
-	return this.matchSnapshot(file, actual)
+	return this.matchSnapshot(file, actual.toString("utf8").replace(relPathRe, relPathFn))
 }
 
 describe.assert.matchSnapshot = function(file, actual) {

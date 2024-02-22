@@ -1,6 +1,6 @@
 Error: Command failed: node --no-extra-info-on-fatal-exception -r ./test.js test/test-fail-table.js
 
-/home/lauri/code/litejs/cli/test.js:247
+test.js:247
 				if (item.f.length > i.r.length + 2 || i.r.length !== spliceData[2].r.length) throw "Invalid data for: " + i.n
 				                                                                             ^
 Invalid data for: should fail on invalid table
