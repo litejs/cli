@@ -50,7 +50,6 @@ var fs = require("fs")
 		port: 8080
 	},
 	test_t: {
-		brief: false,
 		coverage: false,
 		lcov: true,
 		sources: "./*.js",
