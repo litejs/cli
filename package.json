@@ -23,7 +23,7 @@
     "lint": "jshint --config=.github/jshint.json *.js lib/*.js"
   },
   "dependencies": {
-    "@litejs/dom": "23.12.1"
+    "@litejs/dom": "24.6.0"
   },
   "bin": {
     "lj": "./cli.js"
