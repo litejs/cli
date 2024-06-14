@@ -22,12 +22,13 @@ describe.assert.cmdSnapshot = function(cmd, file, opts) {
 	return this.matchSnapshot(file, actual.toString("utf8").replace(relPathRe, relPathFn))
 }
 
-describe.assert.matchSnapshot = function(file, actual) {
+describe.assert.matchSnapshot = function(file, actual, snapFile) {
 	if (!actual) actual = fs.readFileSync(path.resolve(file), "utf8")
 	var expected
-	, snapExt = ".snap" + (seen[file] || "")
-	, snapFile = file.indexOf(".") < 1 ? file + snapExt : file.replace(/\.(?!\.)/, snapExt + ".")
 	, enc = typeof actual === "string" ? "utf8" : null
+	, snapExt = ".snap" + (seen[file] || "")
+
+	if (!snapFile) snapFile = file.indexOf(".") < 1 ? file + snapExt : file.replace(/\.(?!\.)/, snapExt + ".")
 
 	seen[file] = (seen[file] || 0) + 1
 
