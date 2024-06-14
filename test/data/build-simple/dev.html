@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Replace hash in min -->
+		<link rel="a" href=a.json>
+		<link rel="b" href=a.json min="b.json?{h}">
+		<link rel="c" href=a.json min="c-{h}.json">
+	</head>
+<body>
+<style>
+.a {
+	top: 1px;
+}
+</style>
+<style min>
+.b {
+	top: 2px;
+}
+</style>
+<script>
+var a = 1
+</script>
+<script min>
+var b = 2
+</script>
+
+<script type="ui">
+%el a
+	div
+		;title!"b" ;n "N"; m "M"
+		;txt "a", "c"
+		@click [ 1, 2 ], "bo"
+	p {hi}
+		;txt "a"
+</script>
+<script type="ui" min>
+%el b
+	div
+		;title!"b" ;n "N"; m "M"
+		;txt "a", "c"
+		@click [ 1, 2 ], "bo"
+	p {hi}
+		;txt "a"
+</script>
+</body >
+</html>
+

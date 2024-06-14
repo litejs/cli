@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="lib1.css" cat="
+			dummy/base.css
+			%/grid.css
+		" inline>
+		<link rel="stylesheet" href="a.css" cat drop="demo">
+		<style cat>
+		.b {
+			background: red;
+			/*url("data:image/svg+xml;base64,[data]");*/
+		}
+		</style>
+		<style>
+		.c {
+			background: blue;
+		}
+		</style>
+
+		<link rel="stylesheet" href="lib2.css" cat="
+			dummy/base.css
+			%/grid.css
+		" inline min>
+		<link rel="stylesheet" href="a.css" cat drop="demo">
+		<style cat>
+		.b {
+			background: red;
+			/*url("data:image/svg+xml;base64,[data]");*/
+		}
+		</style>
+		<style min>
+		.c {
+			background: blue;
+		}
+		</style>
+	</head>
+	<body >
+		<script src="lib1.js" cat="dummy/load.js" inline></script>
+		<script src="a.js" cat></script>
+		<script cat>var b = 2</script>
+		<script src="lib1.js" cat="dummy/load.js" inline min></script>
+		<script src="a.js" cat></script>
+		<script cat>var b = 2</script>
+	</body >
+</html>
+

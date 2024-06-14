@@ -1,10 +1,9 @@
 
-require("../test.js")
 
 describe("cli", function() {
+	require("./build.js")
 	require("./tools.js")
 	require("./opts.js")
-	require("./build.js")
 })
 
 describe("Test", function() {

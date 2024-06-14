@@ -1,7 +1,0 @@
-
-%js
-	var c = "C"
-
-%el Hello
-	h1 Hello world
-
