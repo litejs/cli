@@ -49,6 +49,12 @@ var fs = require("fs")
 	serve: {
 		port: 8080
 	},
+	static: {
+		base: "",
+		min: true,
+		script: true,
+		out: "_site/",
+	},
 	test_t: {
 		coverage: false,
 		lcov: true,
