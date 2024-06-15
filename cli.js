@@ -75,8 +75,8 @@ try {
 if (opts.tz) process.env.TZ = opts.tz
 
 if (opts._unknown[0] && opts._cmd !== "test") {
-	console.error("Unknown option: " + opts._unknown)
-	usage()
+	console.error("\nError: Unknown option: " + opts._unknown)
+	usage(true)
 	process.exit(1)
 } else if (libFile && !opts.help) {
 	if (opts.version) console.error("# %s %s@%s with %s@%s", opts._cmd, userPackage.name, userPackage.version, package.name, package.version)
@@ -85,8 +85,8 @@ if (opts._unknown[0] && opts._cmd !== "test") {
 	usage()
 }
 
-function usage() {
-	if (opts.version) console.log("%s v%s", package.name, package.version)
+function usage(err) {
+	if (!err && opts.version) console.log("%s v%s", package.name, package.version)
 	var helpFile = libFile ? path.resolve(module.filename, "." + libFile) : module.filename
 	console.log(fs.readFileSync(helpFile, "utf8").match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
 }
