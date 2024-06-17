@@ -117,7 +117,8 @@ function ls() {
 					opts.stat ? stat :
 					path.relative(process.cwd(), name)
 				)
-			} else if (stat.isDirectory() && dirRe.test(name)) {
+			}
+			if (stat.isDirectory() && dirRe.test(name)) {
 				fs.readdirSync(name).forEach(function(file) {
 					scan(path.resolve(name, file))
 				})

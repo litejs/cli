@@ -37,6 +37,7 @@ describe("tools", function() {
 	it ("should list files: {0}", [
 		"test/index.js",
 		"*.js",
+		"test/data/**/*",
 		"test/[ab]*.js",
 		"test/**/a*.js",
 	], function(glob, assert) {
