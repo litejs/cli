@@ -2,6 +2,7 @@
 describe("tools", function() {
 	var fs = require("fs")
 	, child = require("child_process")
+	, path = require("path")
 	, cli = require("..")
 
 	it ("should check command exists", [
@@ -59,7 +60,14 @@ describe("tools", function() {
 		// Assert options
 		assert.equal(cli.ls(".github/*", { dir: false }).join(" "), ".github/jshint.json .github/litejs.json")
 		assert.equal(cli.ls("*", { cwd: ".github", dir: false }).join(" "), "jshint.json litejs.json")
+		assert.own(cli.ls("*", { cwd: ".github", stat: true }), [
+			{ size: 225,  name: "jshint.json" },
+			{ size: 4,    name: "litejs.json" },
+			{ size: 4096, name: "workflows" }
+		])
 		assert.equal(cli.ls(".github/*", { file: false }).join(" "), ".github/workflows")
+		assert.equal(cli.ls(".github/*", { file: false, root: "/www/" }).join(" "), "/www/.github/workflows")
+		assert.equal(cli.ls(".github/*", { file: false, absolute: true }).join(" "), path.join(process.cwd(), ".github/workflows"))
 		assert.equal(cli.ls(".github/*", { dot: true }).join(" "), ".github/.dot .github/.dot2 .github/jshint.json .github/litejs.json .github/workflows")
 		cli.rmrf(".github/.dot")
 		cli.rmrf(".github/.dot2")

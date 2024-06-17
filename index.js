@@ -88,7 +88,7 @@ function ls() {
 	, out = []
 	, paths = {}
 	, reEscRe = /[*.+^=:${}()|\/\\]/g
-	, opts = { cwd: process.cwd(), dir: true, dot: false, file: true, stat: false }
+	, opts = { absolute: false, cwd: process.cwd(), dir: true, dot: false, file: true, root: "", stat: false }
 	for (; i > 0; ) {
 		key = arr[--i]
 		if (isObj(key)) Object.assign(opts, key)
@@ -114,8 +114,9 @@ function ls() {
 			var stat = fs.statSync(name)
 			if (outRe.test(name)) {
 				if (stat.isDirectory() ? opts.dir : opts.file) out.push(
-					opts.stat ? stat :
-					path.relative(opts.cwd, name)
+					opts.stat ? Object.assign(stat, { name: opts.absolute ? name : opts.root + path.relative(opts.cwd, name) }) :
+					opts.absolute ? name :
+					opts.root + path.relative(opts.cwd, name)
 				)
 			}
 			if (stat.isDirectory() && dirRe.test(name)) {
