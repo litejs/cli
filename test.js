@@ -408,20 +408,20 @@
 		return this
 	}
 	function diff(a, b, sep, r1, r2, g1, g2) {
-		sep = sep || ""
-		if (_isArray(sep)) {
-			for (del = 0; (ins = sep[del++]) && (pre = a.split(ins)).length < 3; );
-			sep = ins || ""
-		}
-		a = a.split(sep)
-		b = b.split(sep)
-		var del, ins, pre
-		, aLen = a.length
-		, bLen = b.length
+		var del, ins, pre, aLen, bLen
 		, aPos = 0
 		, bPos = 0
 		, out = []
-		for (; aPos < aLen || bPos < bLen; aPos++, bPos++) {
+
+		if (_isArray(sep)) {
+			for (del = 0; (ins = sep[del++]) && a.split(ins).length < 3; );
+			sep = ins
+		}
+		sep = sep || ""
+		a = a.split(sep)
+		b = b.split(sep)
+
+		for (aLen = a.length, bLen = b.length; aPos < aLen || bPos < bLen; aPos++, bPos++) {
 			if (a[aPos] !== b[bPos]) {
 				for (pre = bPos; b[pre] !== a[aPos] && pre < bLen; pre++);
 				pre -= bPos;
