@@ -88,7 +88,7 @@ function ls() {
 	, out = []
 	, paths = {}
 	, reEscRe = /[*.+^=:${}()|\/\\]/g
-	, opts = { dir: true, file: true, stat: false }
+	, opts = { dir: true, dot: false, file: true, stat: false }
 	for (; i > 0; ) {
 		key = arr[--i]
 		if (isObj(key)) Object.assign(opts, key)
@@ -129,7 +129,7 @@ function ls() {
 		return s.indexOf("/") > -1 && path.dirname(s)
 	}
 	function esc(s) {
-		return (s.charAt(0) === "." ? "" : "(?!\\.)") +
+		return (opts.dot || s.charAt(0) === "." ? "" : "(?!\\.)") +
 		s
 		.replace(reEscRe, "\\$&")
 		.replace(/\?/g, "[^\/]")

@@ -48,12 +48,6 @@ describe("tools", function() {
 		assert.end()
 	})
 
-	it ("should list files with options", [
-		[ "*", { dir: false }, "README.md bench.js browser.js cli.js index.js opts.js package.json snapshot.js test.js v8.js watch.js" ],
-	], function(glob, opts, expected, assert) {
-		assert.equal(cli.ls(glob, opts).join(" "), expected).end()
-	})
-
 	it ("should list .dot files", function(assert) {
 		cli.mkdirp(".github/.dot")
 		cli.cp("package.json", ".github/.dot/p.json")
@@ -62,6 +56,10 @@ describe("tools", function() {
 			cli.ls(".*/.d*", null, ".github").join(" "),
 			child.execSync("bash -c 'shopt -s globstar;echo .github .*/.d*'").toString("utf8").trim()
 		)
+		// Assert options
+		assert.equal(cli.ls(".github/*", { dir: false }).join(" "), ".github/jshint.json .github/litejs.json")
+		assert.equal(cli.ls(".github/*", { file: false }).join(" "), ".github/workflows")
+		assert.equal(cli.ls(".github/*", { dot: true }).join(" "), ".github/.dot .github/.dot2 .github/jshint.json .github/litejs.json .github/workflows")
 		cli.rmrf(".github/.dot")
 		cli.rmrf(".github/.dot2")
 		assert.end()
