@@ -88,12 +88,12 @@ function ls() {
 	, out = []
 	, paths = {}
 	, reEscRe = /[*.+^=:${}()|\/\\]/g
-	, opts = { dir: true, dot: false, file: true, stat: false }
+	, opts = { cwd: process.cwd(), dir: true, dot: false, file: true, stat: false }
 	for (; i > 0; ) {
 		key = arr[--i]
 		if (isObj(key)) Object.assign(opts, key)
 		else if (typeof key === "string") {
-			tmp = path.resolve(tmp2 = key.replace(/[^\/]*\*.*/, ""))
+			tmp = path.resolve(opts.cwd, tmp2 = key.replace(/[^\/]*\*.*/, ""))
 			tmp = paths[tmp] || (paths[tmp] = [])
 			if (key !== tmp2) tmp.push(key.slice(tmp2.length))
 		}
@@ -115,7 +115,7 @@ function ls() {
 			if (outRe.test(name)) {
 				if (stat.isDirectory() ? opts.dir : opts.file) out.push(
 					opts.stat ? stat :
-					path.relative(process.cwd(), name)
+					path.relative(opts.cwd, name)
 				)
 			}
 			if (stat.isDirectory() && dirRe.test(name)) {

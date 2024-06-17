@@ -58,6 +58,7 @@ describe("tools", function() {
 		)
 		// Assert options
 		assert.equal(cli.ls(".github/*", { dir: false }).join(" "), ".github/jshint.json .github/litejs.json")
+		assert.equal(cli.ls("*", { cwd: ".github", dir: false }).join(" "), "jshint.json litejs.json")
 		assert.equal(cli.ls(".github/*", { file: false }).join(" "), ".github/workflows")
 		assert.equal(cli.ls(".github/*", { dot: true }).join(" "), ".github/.dot .github/.dot2 .github/jshint.json .github/litejs.json .github/workflows")
 		cli.rmrf(".github/.dot")
