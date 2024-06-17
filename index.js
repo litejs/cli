@@ -88,12 +88,15 @@ function ls() {
 	, out = []
 	, paths = {}
 	, reEscRe = /[*.+^=:${}()|\/\\]/g
+	, opts = { dir: true, file: true, stat: false }
 	for (; i > 0; ) {
 		key = arr[--i]
-		if (typeof key !== "string") continue
-		tmp = path.resolve(tmp2 = key.replace(/[^\/]*\*.*/, ""))
-		tmp = paths[tmp] || (paths[tmp] = [])
-		if (key !== tmp2) tmp.push(key.slice(tmp2.length))
+		if (isObj(key)) Object.assign(opts, key)
+		else if (typeof key === "string") {
+			tmp = path.resolve(tmp2 = key.replace(/[^\/]*\*.*/, ""))
+			tmp = paths[tmp] || (paths[tmp] = [])
+			if (key !== tmp2) tmp.push(key.slice(tmp2.length))
+		}
 	}
 	for (key in paths) {
 		outRe = RegExp("^" + esc(key) + (
@@ -110,7 +113,10 @@ function ls() {
 		try {
 			var stat = fs.statSync(name)
 			if (outRe.test(name)) {
-				out.push(path.relative(process.cwd(), name))
+				if (stat.isDirectory() ? opts.dir : opts.file) out.push(
+					opts.stat ? stat :
+					path.relative(process.cwd(), name)
+				)
 			} else if (stat.isDirectory() && dirRe.test(name)) {
 				fs.readdirSync(name).forEach(function(file) {
 					scan(path.resolve(name, file))

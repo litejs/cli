@@ -47,6 +47,12 @@ describe("tools", function() {
 		assert.end()
 	})
 
+	it ("should list files with options", [
+		[ "*", { dir: false }, "README.md bench.js browser.js cli.js index.js opts.js package.json snapshot.js test.js v8.js watch.js" ],
+	], function(glob, opts, expected, assert) {
+		assert.equal(cli.ls(glob, opts).join(" "), expected).end()
+	})
+
 	it ("should list .dot files", function(assert) {
 		cli.mkdirp(".github/.dot")
 		cli.cp("package.json", ".github/.dot/p.json")
