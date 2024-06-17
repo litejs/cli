@@ -97,7 +97,7 @@
 		yellow: "\x1b[33m",
 		reset: "\x1b[0m",
 		color: (_process.stdout || /* c8 ignore next */ _process).isTTY,
-		cut: 1500,
+		cut: 15000,
 		delay: 1,
 		seed: (Math.random() * 1e5)|0,
 		stack: 9,
@@ -300,10 +300,18 @@
 			if (value) {
 				testCase.passed++
 			} else {
-				fail("Assertion:" + testCase.total + ": " + (message ?
-					message + "\nexpected: " + stringify(expected) + "\nactual:   " + stringify(actual) :
-					stringify(value) + " is truthy"
-				))
+				if (message) {
+					expected = "expected: " + stringify(expected)
+					actual   = "actual:   " + stringify(actual)
+					if (conf.color && expected.length > 80) {
+						message += "\n" + diff(expected, actual, ["\n", " ", ","], conf.red, conf.reset, conf.green, conf.reset)
+					} else {
+						message += "\n" + expected + "\n" + actual
+					}
+				} else {
+					message = stringify(value) + " is truthy"
+				}
+				fail("Assertion:" + testCase.total + ": " + message)
 			}
 			return testCase.plan(testCase.planned)
 		}
@@ -399,8 +407,12 @@
 	function This() {
 		return this
 	}
-	function diff(a, b, sep) {
+	function diff(a, b, sep, r1, r2, g1, g2) {
 		sep = sep || ""
+		if (_isArray(sep)) {
+			for (del = 0; (ins = sep[del++]) && (pre = a.split(ins)).length < 3; );
+			sep = ins || ""
+		}
 		a = a.split(sep)
 		b = b.split(sep)
 		var del, ins, pre
@@ -426,9 +438,18 @@
 						del = 0
 						ins = pre
 					}
-					out.push([aPos - del, del, b.slice(bPos - ins, bPos).join(sep)]);
+					out.push([aPos - del, del, b.slice(bPos - ins, bPos).join(sep)])
 				}
 			}
+		}
+		if (r1) {
+			for (bPos = 0; (b = out[bPos++]); ) {
+				a.splice(b[0], b[1],
+					(b[1] ? r1 + a.slice(b[0], b[0] + b[1]).join(sep) + r2 : "") +
+					(b[2] ? g1 + b[2] + g2 : "")
+				)
+			}
+			out = a.join(sep)
 		}
 		return out
 	}
