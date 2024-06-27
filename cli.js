@@ -51,6 +51,8 @@ var fs = require("fs")
 	},
 	static: {
 		base: "",
+		cat: true,
+		fetch: true,
 		min: true,
 		script: true,
 		out: "_site/",
