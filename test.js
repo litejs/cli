@@ -12,7 +12,7 @@
 	, call = def.bind.bind(def.call)
 	, slice = call(tests.slice)
 	, push = call(tests.push)
-	, lineRe = /{(\w+)}/g
+	, lineRe = /{([.\w]+)}/g
 	, totalCases = 0
 	, failedCases = []
 	, totalAsserts = 0
@@ -453,9 +453,11 @@
 		}
 		return out
 	}
-	function format(str, map, fallback) {
-		return str.replace(lineRe, function(_, field) {
-			return map[field] != null ? map[field] : fallback[field]
+	function format(str, obj, fallback) {
+		return str.replace(lineRe, function(_, path) {
+			return obj[path] != null ? obj[path] :
+				(_ = path.split("."))[1] && (obj = obj[_[0]]) && obj[_[1]] != null ? obj[_[1]] :
+				fallback[path]
 		})
 	}
 	function line(name, map) {
