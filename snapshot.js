@@ -23,6 +23,7 @@ describe.assert.cmdSnapshot = function(cmd, file, opts) {
 }
 
 describe.assert.matchSnapshot = function(file, actual, snapFile) {
+	if (typeof actual === "function") actual = actual(fs.readFileSync(path.resolve(file), "utf8"))
 	if (!actual) actual = fs.readFileSync(path.resolve(file), "utf8")
 	var expected
 	, enc = typeof actual === "string" ? "utf8" : null

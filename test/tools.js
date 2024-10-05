@@ -73,5 +73,11 @@ describe("tools", function() {
 		cli.rmrf(".github/.dot2")
 		assert.end()
 	})
+
+	it ("should deepAssign", function(assert) {
+		cli.deepAssign({}, JSON.parse('{"__proto__": {"devMode": true}}'))
+		assert.notOk({}.devMode)
+		assert.end()
+	})
 })
 

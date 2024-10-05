@@ -15,6 +15,16 @@ describe("snapshot.js", function() {
 		assert.cmdSnapshot(cmd, file, opts).end()
 	})
 
+	it("should test transformed snapshots", function(assert) {
+		assert.matchSnapshot(
+			"./test/spec/test-transform",
+			function(str) {
+				return str.replace(/\\/g, "/")
+			}
+		)
+		assert.end()
+	})
+
 	it("should test status code", [
 		["node -r ./test.js test/test-fail.js", 12],
 		["node -r ./test.js test/snapshot-fail.js", 3],
