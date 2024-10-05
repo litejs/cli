@@ -1,6 +1,6 @@
 {
   "name": "@litejs/cli",
-  "version": "24.6.2",
+  "version": "24.10.0",
   "description": "Command line tools for LiteJS framework",
   "license": "MIT",
   "author": "Lauri Rooden <lauri@rooden.ee>",
@@ -23,7 +23,7 @@
     "lint": "npx jshint --config=.github/jshint.json *.js lib/*.js"
   },
   "dependencies": {
-    "@litejs/dom": "24.6.0"
+    "@litejs/dom": "24.8.0"
   },
   "bin": {
     "lj": "./cli.js"
