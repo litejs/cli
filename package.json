@@ -23,7 +23,7 @@
     "lint": "npx jshint --config=.github/jshint.json *.js lib/*.js"
   },
   "dependencies": {
-    "@litejs/dom": "24.8.0"
+    "@litejs/dom": "24.12.0"
   },
   "bin": {
     "lj": "./cli.js"
