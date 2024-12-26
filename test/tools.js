@@ -62,7 +62,7 @@ describe("tools", function() {
 		assert.equal(cli.ls("*", { cwd: ".github", dir: false }).join(" "), "jshint.json litejs.json")
 		assert.own(cli.ls("*", { cwd: ".github", stat: true }), [
 			{ size: 225,  name: "jshint.json" },
-			{ size: 4,    name: "litejs.json" },
+			{ size: 21,   name: "litejs.json" },
 			{ size: 4096, name: "workflows" }
 		])
 		assert.equal(cli.ls(".github/*", { file: false }).join(" "), ".github/workflows")
