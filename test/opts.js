@@ -48,7 +48,7 @@ describe("opts", function() {
 		],
 		[ [], {print:false, to:"a", x:true}, {print:false, to:"a", x:true, _valid: [], _unknown:[],_:[]} ]
 	], function(argv, defaults, expected, assert) {
-		var result = opts(defaults, argv)
+		var result = opts(defaults, null, argv)
 		assert
 		.equal(result, expected)
 		.end()
@@ -62,7 +62,7 @@ describe("opts", function() {
 		],
 		[ ["--invalid", "--no-opt"], {}, {_valid: [], _unknown:["--invalid", "--no-opt"],_:[]} ],
 	], function(argv, defaults, expected, assert) {
-		var result = opts(defaults, argv)
+		var result = opts(defaults, null, argv)
 		assert
 		.equal(result, expected)
 		.end()
@@ -85,7 +85,7 @@ describe("opts", function() {
 			{ a: true, _valid: ["--a"],  _unknown: [], _: ["--no-a"] }
 		],
 	], function(argv, defaults, expected, assert) {
-		var result = opts(defaults, argv)
+		var result = opts(defaults, null, argv)
 		assert
 		.equal(result, expected)
 		.end()
@@ -103,7 +103,57 @@ describe("opts", function() {
 			{ b1: true, _valid: ["--b1"],  _unknown: [], _: [ "a.txt", "b.txt" ] }
 		],
 	], function(argv, defaults, expected, assert) {
-		var result = opts(defaults, argv)
+		var result = opts(defaults, null, argv)
+		assert
+		.equal(result, expected)
+		.end()
+	})
+
+	it("should read defaults from file: {i}", [
+		[
+			[],
+			{ build: true },
+			"invalid.json,package.json#litejs,.github/litejs.json",
+			{ build: false, _valid: [],  _unknown: [], _: [] }
+		],
+		[
+			[],
+			{ lj: "" },
+			"package.json#bin,.github/litejs.json",
+			{ lj: "./cli.js", _valid: [],  _unknown: [], _: [] }
+		],
+		[
+			["--lj=foo"],
+			{ lj: "" },
+			"package.json#bin,.github/litejs.json",
+			{ lj: "foo", _valid: ["--lj=foo"],  _unknown: [], _: [] }
+		],
+		[
+			["b.txt"],
+			{ lint_l: { jshint: "" }, color: true },
+			"package.json#litejs,.github/litejs.json",
+			{ color: true, _valid: [],  _unknown: [], _: ["b.txt"] }
+		],
+		[
+			["lint"],
+			{ lint_l: { jshint: "" }, color: true },
+			"package.json#litejs,.github/litejs.json",
+			{ color: true, jshint: ".github/jshint.json", _valid: [],  _unknown: [], _cmd: "lint", _: ["*.json",".github/*.json", "*.js", "lib/*.js"] }
+		],
+		[
+			["lint", "--no-jshint"],
+			{ lint: { jshint: "" }, color: true },
+			[ "package.json#litejs", ".github/litejs.json" ],
+			{ color: true, jshint: "", _valid: ["--no-jshint"],  _unknown: [], _cmd: "lint", _: ["*.json",".github/*.json", "*.js", "lib/*.js"] }
+		],
+		[
+			[ "build" ],
+			{ build: { run: true }, color: true },
+			".github/litejs.json",
+			{ color: true, build: false, _valid: [],  _unknown: [], _: [ "build" ] }
+		],
+	], function(argv, defaults, files, expected, assert) {
+		var result = opts(defaults, files, argv)
 		assert
 		.equal(result, expected)
 		.end()
@@ -131,11 +181,26 @@ describe("opts", function() {
 			{ build: true, _: [], _cmd: "build", _valid: ["--build"],  _unknown: [] }
 		],
 	], function(argv, defaults, expected, assert) {
-		var result = opts(defaults, argv)
+		var result = opts(defaults, null, argv)
 		assert
 		.equal(result, expected)
 		.end()
 	})
+
+	it("should work with Electron", function(assert, mock) {
+		mock.swap(process, "argv", ["node", "--a", "--b"])
+		mock.swap(process, "defaultApp", true)
+		mock.swap(process.versions, "electron", "1")
+		assert.equal(opts({a: false, b: false}), {_:[],_valid:["--b"],_unknown:[],a:false,b:true}).end()
+	})
+
+	it("should work with ElectronBinary", function(assert, mock) {
+		mock.swap(process, "argv", ["node", "--a", "--b"])
+		mock.swap(process, "defaultApp", false)
+		mock.swap(process.versions, "electron", "1")
+		assert.equal(opts({a: false, b: false}), {_:[],_valid:["--a","--b"],_unknown:[],a:true,b:true}).end()
+	})
+
 	it("should throw on invalid options: {0}", [
 		[ ["--bool1=foo"], { bool1: true } ],
 		[ ["--bool2="], { bool2: true } ],
@@ -144,7 +209,7 @@ describe("opts", function() {
 	], function(argv, defaults, assert) {
 		assert
 		.throws(function() {
-			opts(defaults, argv)
+			opts(defaults, null, argv)
 		})
 		.end()
 	})

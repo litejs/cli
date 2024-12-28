@@ -3,9 +3,9 @@
 
 exports.opts = opts
 
-function opts(defaults, argv) {
-	var expect, key, val
-	, i = -1
+function opts(defaults, files, argv) {
+	var expect, i, key, val
+	, path = require("path")
 	, short = {}
 	, hasOwn = short.hasOwnProperty
 	, out = {_: [], _valid: [], _unknown: []}
@@ -13,7 +13,19 @@ function opts(defaults, argv) {
 
 	if (!argv) argv = process.argv.slice(isElectronBinary ? 1 : 2)
 
-	for (; (val = argv[++i]); ) if (val[0] !== "-") {
+	// Override defaults from file
+	if (files) for (files = ("" + files).split(","), i = 0; (key = files[i++]); ) try {
+		key = key.split("#")
+		val = require(path.resolve(key[0]))
+		if (key[1]) val = val[key[1]]
+		if (val) {
+			assignOpts(defaults, val)
+			break
+		}
+	} catch(e) {}
+
+	// Find command
+	for (i = -1; (val = argv[++i]); ) if (val[0] !== "-") {
 		for (key in defaults) if (isObj(defaults[key])) {
 			expect = key.split("_")
 			if (expect[0] === val || expect[1] === val) {
@@ -28,7 +40,7 @@ function opts(defaults, argv) {
 
 	for (key in defaults) if (!isObj(defaults[key])) {
 		val = key.split("_")
-		out[val[0]] = defaults[key]
+		if (val[0]) out[val[0]] = defaults[key]
 		if (val[1]) short[val[1]] = val[0]
 	}
 
@@ -68,6 +80,7 @@ function opts(defaults, argv) {
 			out._.push(argv[i])
 		}
 	}
+	if (defaults._ && !out._[0]) out._ = defaults._.slice(0)
 	return out
 
 	function camelFn(_, chr) {
@@ -78,6 +91,16 @@ function opts(defaults, argv) {
 	}
 	function isObj(obj) {
 		return obj && obj.constructor === Object
+	}
+	function assignOpts(to, from) {
+		var key, val, tmp
+		for (key in to) if (hasOwn.call(to, key)) {
+			tmp = key.split("_")
+			val = hasOwn.call(from, tmp[0]) ? from[tmp[0]] : null
+			if (val !== null) to[key] = isObj(val) ? assignOpts(to[key], val) : val
+		}
+		if (from._) to._ = from._
+		return to
 	}
 }
 
