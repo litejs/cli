@@ -60,9 +60,9 @@ describe("tools", function() {
 		// Assert options
 		assert.equal(cli.ls(".github/*", { dir: false }).join(" "), ".github/jshint.json .github/litejs.json")
 		assert.equal(cli.ls("*", { cwd: ".github", dir: false }).join(" "), "jshint.json litejs.json")
-		assert.own(cli.ls("*", { cwd: ".github", stat: true }), [
-			{ size: 225,  name: "jshint.json" },
-			{ size: 21,   name: "litejs.json" },
+		assert.own(cli.ls("*", { cwd: ".github", stat: true }).map(s=>({size: s.size, name: s.name})), [
+			{ size: 232,  name: "jshint.json" },
+			{ size: 247,  name: "litejs.json" },
 			{ size: 4096, name: "workflows" }
 		])
 		assert.equal(cli.ls(".github/*", { file: false }).join(" "), ".github/workflows")

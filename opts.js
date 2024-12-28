@@ -1,9 +1,7 @@
 
 /* litejs.com/MIT-LICENSE.txt */
 
-exports.opts = opts
-
-function opts(defaults, files, argv) {
+exports.opts = function opts(defaults, files, argv) {
 	var expect, i, key, val
 	, path = require("path")
 	, short = {}

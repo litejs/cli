@@ -8,5 +8,11 @@
       "*.js",
       "lib/*.js"
     ]
+  },
+  "test": {
+    "tz": "Europe/Tallinn",
+    "_": [
+      "test/index.js"
+    ]
   }
 }

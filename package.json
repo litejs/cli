@@ -19,8 +19,7 @@
     "lib"
   ],
   "scripts": {
-    "test": "node ./cli.js test test/index.js --tz='Europe/Tallinn'",
-    "lint": "npx jshint --config=.github/jshint.json *.js lib/*.js"
+    "test": "node ./cli.js t"
   },
   "dependencies": {
     "@litejs/dom": "24.12.0"

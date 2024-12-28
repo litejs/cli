@@ -44,7 +44,7 @@ describe("opts", function() {
 		],
 		[
 			["-abcd","-e", "f", "-g"],
-			{a_a:false, b_b:false, c_c:"",e_e:"",g_g:"h"}, {a:true, b:true, c:"d", e:"f",g:"", _valid: ["--a", "--b","--c=d", "--e=f","--g="], _unknown:[],_:[]}
+			{ax_a:false, bx_b:false, cx_c:"",ex_e:"",g_g:"h"}, {ax:true, bx:true, cx:"d", ex:"f",g:"", _valid: ["--ax", "--bx","--cx=d", "--ex=f","--g="], _unknown:[],_:[]}
 		],
 		[ [], {print:false, to:"a", x:true}, {print:false, to:"a", x:true, _valid: [], _unknown:[],_:[]} ]
 	], function(argv, defaults, expected, assert) {

@@ -9,7 +9,7 @@ jobs:
     - run: npm install --no-audit && npm install -g uglify-js
     - run: npm audit --audit-level=low
     - run: npx c8 -r lcovonly -r text npm test
-    - run: npm run lint
+    - run: npx lj lint
     - uses: coverallsapp/github-action@v2
       name: Upload to coveralls.io
       with:
