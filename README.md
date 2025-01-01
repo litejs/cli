@@ -16,7 +16,7 @@ Command line tools for [LiteJS][] full-stack framework.
 See [Quick Start Guide](https://github.com/litejs/litejs/wiki/Quick-Start)
 and [wiki](https://github.com/litejs/cli/wiki) for more.
 
-> Copyright (c) 2013-2023 Lauri Rooden &lt;lauri@rooden.ee&gt;  
+> Copyright (c) 2013-2025 Lauri Rooden &lt;lauri@rooden.ee&gt;  
 [MIT License](https://litejs.com/MIT-LICENSE.txt) |
 [GitHub repo](https://github.com/litejs/cli) |
 [npm package](https://npmjs.org/package/@litejs/cli) |
