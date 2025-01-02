@@ -508,7 +508,7 @@
 						err = e
 					}
 				} else if (isObj(origin)) {
-					key = JSON.stringify(args  ).slice(1, -1)
+					key = stringify(args).slice(1, -1)
 					result = hasOwn(origin, key) ? origin[key] : origin["*"]
 				} else result = _isArray(origin) ? origin[spy.called % origin.length] : origin
 				spy.called++
@@ -698,9 +698,8 @@
 		return str.length > max ? str.slice(0, max - 3) + ".." + str.slice(-1) : str
 	}
 
-	function _stringify(item, max, circ) {
+	function _stringify(item, left, circ) {
 		var i, t, tmp
-		, left = max
 		, str =
 			isStr(item) ? JSON.stringify(item) :
 			isFn(item) ? ("" + item).replace(/^\w+|\s+|{[\s\S]*/g, "") :

@@ -29,5 +29,10 @@
   },
   "workspaces": [
     "test/dummy"
-  ]
+  ],
+  "c8": {
+    "exclude": [
+      "test/**/*.js"
+    ]
+  }
 }

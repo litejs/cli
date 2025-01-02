@@ -192,6 +192,8 @@ describe("test.js", function() {
 		[ "a", "", [[0,1,""]] ],
 		[ "a", "ba", [[0,0,"b"]] ],
 		[ "a", "ab", [[1,0,"b"]] ],
+		[ "ba", "a", [[0,1,""]] ],
+		[ "ab", "a", [[1,1,""]] ],
 		[ "hello", "Helo world", [[0,1,"H"],[3,1,""],[5,0," world"]] ],
 		[ "hello!", "Helo world!", [[0,1,"H"],[3,1,""],[5,0," world"]] ]
 	], function(a, b, expected, assert) {
@@ -205,15 +207,23 @@ describe("test.js", function() {
 		.end()
 	})
 
-	describe("format", function() {
+	it("should color diff", function(assert) {
+		assert
+		.equal(describe.diff("abc", "acd", "", "[-", "-]", "[+", "+]"), "a[-b-]c[+d+]")
+		.end()
+	})
+
+	describe("format", function formatTest() {
 		var formatData = {
+			fn: formatTest,
 			who: "World"
 		}
 
 		it ("should format '{0}'", [
 			[ "", "" ],
 			[ "Hello", "Hello" ],
-			[ "Hello, {who}!", "Hello, World!" ]
+			[ "Hello, {who}!", "Hello, World!" ],
+			[ "{fn.name}", "formatTest" ]
 		], function(str, expected, assert) {
 			assert.equal(describe.format(str, formatData), expected).end()
 		})
@@ -249,7 +259,10 @@ describe("test.js", function() {
 		assert.equal([spy3(), spy3(), spy3(), spy3()], ["a", "b", "c", "a"])
 		assert.equal(spy3.results, ["a", "b", "c", "a"])
 
-		assert.equal([spy4(), spy4(1), spy4(1), spy4("1"), spy4(1, "1")], ["A", "B", "B", "C", "D"])
+		assert.equal(
+			[spy4(), spy4(1), spy4(1), spy4("1"), spy4(1, "1")],
+			["A",    "B",     "B",     "C",       "D"]
+		)
 
 		assert.equal(dog.bark(3), 3)
 		assert.equal(dog.barked, 3)
