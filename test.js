@@ -301,15 +301,15 @@
 				testCase.passed++
 			} else {
 				if (message) {
-					expected = "expected: " + stringify(expected)
-					actual   = "actual:   " + stringify(actual)
+					expected = "expected: " + stringify(expected, conf.cut)
+					actual   = "actual:   " + stringify(actual, conf.cut)
 					if (conf.color && expected.length > 80) {
 						message += "\n" + diff(expected, actual, ["\n", " ", ","], conf.red, conf.reset, conf.green, conf.reset)
 					} else {
 						message += "\n" + expected + "\n" + actual
 					}
 				} else {
-					message = stringify(value) + " is truthy"
+					message = stringify(value, conf.cut) + " is truthy"
 				}
 				fail("Assertion:" + testCase.total + ": " + message)
 			}
@@ -692,39 +692,40 @@
 		}
 	}
 
-	function stringify(item) {
-		var max = conf.cut > 0 ? conf.cut : _Infinity
-		, str = _stringify(item, max, [])
-		return str.length > max ? str.slice(0, max - 3) + ".." + str.slice(-1) : str
-	}
+	function stringify(item, max) {
+		var circ = []
+		, cut = max > 5 ? max : _Infinity
+		, left = cut
+		, str = _stringify(item)
+		return str.length > cut ? str.slice(0, cut - 3) + ".." + str.slice(-1) : str
+		function _stringify(item) {
+			var i, t, tmp
+			, str =
+				isStr(item) ? JSON.stringify(item) :
+				isFn(item) ? ("" + item).replace(/^\w+|\s+|{[\s\S]*/g, "") :
+				!item || item === true || typeof item === "number" ? "" + item :
+				(t = type(item)) === "error" || t === "symbol" || t === "regexp" ? item.toString() :
+				item.toJSON ? item.toJSON() :
+				item
 
-	function _stringify(item, left, circ) {
-		var i, t, tmp
-		, str =
-			isStr(item) ? JSON.stringify(item) :
-			isFn(item) ? ("" + item).replace(/^\w+|\s+|{[\s\S]*/g, "") :
-			!item || item === true || typeof item === "number" ? "" + item :
-			(t = type(item)) === "error" || t === "symbol" || t === "regexp" ? item.toString() :
-			item.toJSON ? item.toJSON() :
-			item
-
-		if (!isStr(str)) {
-			if (circ.indexOf(str) > -1) return "Circular"
-			push(circ, str)
-			tmp = []
-			for (i in str) if (hasOwn(str, i)) {
-				i = (t === "object" ? _stringify(i, left) + ":" : "") + _stringify(str[i], left, circ)
-				push(tmp, i)
-				left -= i.length
-				if (left < 0) break
+			if (!isStr(str)) {
+				if (circ.indexOf(str) > -1) return "Circular"
+				push(circ, str)
+				tmp = []
+				for (i in str) if (hasOwn(str, i)) {
+					i = (t === "object" ? _stringify(i) + ":" : "") + _stringify(str[i])
+					push(tmp, i)
+					left -= i.length
+					if (left < 0) break
+				}
+				str =
+				t === "array" ? "[" + tmp + "]" :
+				t === "arguments" ? t + "[" + tmp + "]" :
+				(t = item.constructor) === Object ? "{" + tmp + "}" :
+				(t ? t.name || /^\w+\s+([^\s(]+)|/.exec(t)[1] || "<anon>" : "<null>") + "{" + tmp + "}"
 			}
-			str =
-			t === "array" ? "[" + tmp + "]" :
-			t === "arguments" ? t + "[" + tmp + "]" :
-			(t = item.constructor) === Object ? "{" + tmp + "}" :
-			(t ? t.name || /^\w+\s+([^\s(]+)|/.exec(t)[1] || "<anon>" : "<null>") + "{" + tmp + "}"
+			return str
 		}
-		return str
 	}
 }(this, setTimeout, clearTimeout, Date, Error, Infinity) // jshint ignore:line
 

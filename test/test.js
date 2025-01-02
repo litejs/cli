@@ -156,7 +156,7 @@ describe("test.js", function() {
 			assert.equal(describe.stringify(types[i+2]), types[i+1])
 		}
 
-		//equal(describe.stringify([date0], 10), "[1970-0..]")
+		assert.equal(describe.stringify([date0], 10), "[1970-0..]")
 
 		for (len = equals.length, i = 0; i < len; i+=2) {
 			assert.equal(equals[i+1], equals[i], "equals test #" + (i>>1))
