@@ -59,9 +59,6 @@ var fs = require("fs")
 		out: "_site/",
 	},
 	test_t: {
-		coverage: false,
-		lcov: true,
-		sources: "./*.js",
 		status: true,
 		tz: "",
 		up: false,
