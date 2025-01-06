@@ -33,7 +33,8 @@ var fs = require("fs")
 	init_i: {},
 	lint: {
 		jshint: "",
-		fix: false
+		fix: false,
+		_: ["*.css", "*.json", "*.js"]
 	},
 	release_r: {
 		build: true,
@@ -62,7 +63,8 @@ var fs = require("fs")
 		status: true,
 		tz: "",
 		up: false,
-		watch: false
+		watch: false,
+		_: ["test/*.js"]
 	},
 	color: true,
 	help: false,
