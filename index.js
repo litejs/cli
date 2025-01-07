@@ -140,13 +140,7 @@ function ls() {
 }
 
 function mkdirp(dir) {
-	try {
-		fs.statSync(dir)
-	} catch (e) {
-		mkdirp(path.dirname(dir))
-		console.error("mkdir", dir)
-		fs.mkdirSync(dir)
-	}
+	fs.mkdirSync(dir, { recursive: true })
 }
 
 function readFile(fileName) {
