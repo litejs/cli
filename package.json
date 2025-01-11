@@ -1,6 +1,6 @@
 {
   "name": "@litejs/cli",
-  "version": "25.1.0",
+  "version": "25.1.1",
   "description": "Command line tools for LiteJS framework",
   "license": "MIT",
   "author": "Lauri Rooden <lauri@rooden.ee>",
@@ -22,7 +22,7 @@
     "test": "node ./cli.js t"
   },
   "dependencies": {
-    "@litejs/dom": "24.12.0"
+    "@litejs/dom": "25.1.0"
   },
   "bin": {
     "lj": "./cli.js"
