@@ -41,6 +41,7 @@ exports.opts = function opts(defaults, files, argv) {
 		val = key.split("_")
 		if (val[0]) out[val[0]] = defaults[key]
 		if (val[1]) short[val[1]] = val[0]
+		if (val[2]) short[val[2]] = "no-" + val[0]
 	}
 
 	for (i = 0; i < argv.length; i++) {
