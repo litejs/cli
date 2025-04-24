@@ -9,6 +9,11 @@ describe("opts", function() {
 			{ b1: true,  b2: false, b3: true, b4: false, _valid: ["--b1", "--no-b2", "--b3=true", "--b4=false"], _unknown: [], _: ["r"] }
 		],
 		[
+			["-ap"],
+			{ pretty_p: false, aa_a: false },
+			{ pretty: true, aa:true, _valid: ["--aa", "--pretty"], _unknown: [], _: [] }
+		],
+		[
 			["--b5", "--no-b6", "--b7=true", "r", "--b8=false"],
 			{ b5: true, b6: true,  b7: true, b8: true },
 			{ b5: true, b6: false, b7: true, b8: false, _valid: ["--b5", "--no-b6", "--b7=true", "--b8=false"], _unknown: [], _: ["r"] }

@@ -4,6 +4,7 @@
 exports.opts = function opts(defaults, files, argv) {
 	var expect, i, key, val
 	, path = require("path")
+	, camelRe = /\-([a-z])/g
 	, short = {}
 	, hasOwn = short.hasOwnProperty
 	, out = {_: [], _valid: [], _unknown: []}
@@ -45,17 +46,22 @@ exports.opts = function opts(defaults, files, argv) {
 	for (i = 0; i < argv.length; i++) {
 		val = argv[i].split(/=|--(no-)?|(^-)/)
 		if (val[0] === "" && argv[i][0] !== "=") {
-			key = val[2] && short[val[3][0]]
-			if (key) {
-				expect = val[3].slice(1)
-				if (typeof out[key] === "boolean" && expect) {
-					argv.splice(i--, 1, "--" + key, "-" + expect)
-					continue
+
+			// Expand short options
+			if ((key = val[2] && short[val[3][0]])) {
+				expect = "boolean" === typeof out[key.replace(/^no\-/, "").replace(camelRe, camelFn)]
+				val = val[3].slice(1)
+
+				// Extract first boolean from combined options: -abc -> --aa -bc
+				if (expect && val) {
+					argv.splice(i--, 1, "--" + key, "-" + val)
+				} else {
+					argv.splice(i--, 1, "--" + (expect ? key : key + "=" + (val || argv.splice(i + 2, 1))))
 				}
-				val[3] = val[6] = key
-				argv[i] = "--" + key + "=" + (expect || argv.splice(i + 1, 1))
+				continue
 			}
-			key = val[3].replace(/\-([a-z])/g, camelFn)
+
+			key = val[3].replace(camelRe, camelFn)
 			if (key === "") {
 				argv.push.apply(out._, argv.slice(i + 1))
 				break
