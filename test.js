@@ -176,6 +176,8 @@
 	}
 	/* mockTime end */
 
+	_Error.stackTraceLimit = +conf.stack + 5
+
 	describe.describe = describe
 	describe.test = curry(def, 2)
 	describe.it = curry(def, 3)
