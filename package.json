@@ -22,7 +22,7 @@
     "test": "node ./cli.js t"
   },
   "dependencies": {
-    "@litejs/dom": "25.1.0"
+    "@litejs/dom": "25.5.0"
   },
   "bin": {
     "lj": "./cli.js"
