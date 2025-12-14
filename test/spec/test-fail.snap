@@ -28,19 +28,25 @@ Error: Unable to swap "prop"
 Error: Assertion:1: equal
 expected: undefined
 actual:   undefined
+
 Error: Assertion:2: equal
 expected: "2"
 actual:   <null>{..}
+
 Error: Assertion:3: equal
 expected: /1/m
 actual:   /1/
+
 Error: Assertion:4: equal
 expected: []
 actual:   argumen..]
+
 Error: Assertion:5: equal
 expected: [/1/,B(..]
 actual:   [/1/,B{..]
+
 Error: Assertion:6: 0 is truthy
+
 Error: Assertion:7: throws
 expected: true
 actual:   false
@@ -53,6 +59,7 @@ Error: Reject
 ---
   ✘ 4. it should fail on wrong plan 2 [2/2]
 Error: assertion after end
+
 Error: ended multiple times
 ---
   ✘ 6. it should fail on assertion after end [1/1]

@@ -392,7 +392,7 @@
 				nums[failed] = testCase.i
 				print("---")
 				line("nok", testCase)
-				print(testCase.errors.join("\n"))
+				print(testCase.errors.join("\n\n"))
 			}
 			conf.failNums = nums.join(", ")
 			print("...")
