@@ -69,12 +69,12 @@ exports.opts = function opts(defaults, files, argv) {
 			}
 			if (hasOwn.call(out, key)) {
 				expect = Array.isArray(out[key]) ? "array" : typeof out[key]
-				val = val[1] ? 0 : typeof val[6] === "string" && argv[i].slice(val[3].length + 3)
+				val = val[1] ? 0 : val[6] != null && argv[i].slice(val[3].length + 3)
 				out[key] = (
 					expect === "boolean" ? val !== 0 && (val === false || val === "true" || val !== "false" && castError()) :
 					expect === "array" ? (out[key] === defaults[key] ? [] : out[key]).concat(val ? val.split(",") : []) :
 					expect === "string" ? val || "" :
-					expect === "number" && val !== false ? +val :
+					expect === "number" && val !== false && val !== "" && isFinite(val -= 0) ? val :
 					castError()
 				)
 				out._valid.push(argv[i])
@@ -108,4 +108,3 @@ exports.opts = function opts(defaults, files, argv) {
 		return to
 	}
 }
-

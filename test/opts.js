@@ -210,6 +210,9 @@ describe("opts", function() {
 		[ ["--bool1=foo"], { bool1: true } ],
 		[ ["--bool2="], { bool2: true } ],
 		[ ["--num1"], { num1: 0 } ],
+		[ ["--num1="], { num1: 0 } ],
+		[ ["--num1=foo"], { num1: 0 } ],
+		[ ["-n"], { num_n: 0 } ],
 		[ ["--nan"], { nan: null } ],
 	], function(argv, defaults, assert) {
 		assert
@@ -219,4 +222,3 @@ describe("opts", function() {
 		.end()
 	})
 })
-
