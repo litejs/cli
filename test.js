@@ -124,7 +124,7 @@
 	function fakeDate(year, month, date, hr, min, sec, ms) {
 		return (
 			arguments.length > 1 ?
-			new _Date(num(year), num(month), num(date, 1), num(hr), num(min), num(sec), num(ms)) :
+			new _Date(num(year), num(month), num(date, 1), num(hr, 0), num(min, 0), num(sec, 0), num(ms, 0)) :
 			new _Date(num(year, fakeNow))
 		)
 	}

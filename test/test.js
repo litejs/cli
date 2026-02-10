@@ -440,6 +440,8 @@ describe("test.js", function() {
 		test.equal(new Date(Date.UTC(2018,0,2,13,45,51,2)).toJSON(), "2018-01-02T13:45:51.002Z")
 		test.equal(new Date(Date.UTC(2018,0)).toJSON(), "2018-01-01T00:00:00.000Z")
 		test.equal(new Date(Date.UTC(2018)).toJSON(), "2018-01-01T00:00:00.000Z")
+		test.equal(new Date(2018,0).getMonth(), 0)
+		test.equal(new Date(2018,11,31).getDate(), 31)
 
 		test.equal(new Date().getTime(), 1514900751001)
 		test.equal(cb1.called, 0)
