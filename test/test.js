@@ -223,7 +223,8 @@ describe("test.js", function() {
 			[ "", "" ],
 			[ "Hello", "Hello" ],
 			[ "Hello, {who}!", "Hello, World!" ],
-			[ "{fn.name}", "formatTest" ]
+			[ "{fn.name}", "formatTest" ],
+		[ "{fn.name} {who}", "formatTest World" ]
 		], function(str, expected, assert) {
 			assert.equal(describe.format(str, formatData), expected).end()
 		})

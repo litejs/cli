@@ -456,9 +456,9 @@
 		return out
 	}
 	function format(str, obj, fallback) {
-		return str.replace(lineRe, function(_, path) {
+		return str.replace(lineRe, function(_, path, tmp) {
 			return obj[path] != null ? obj[path] :
-				(_ = path.split("."))[1] && (obj = obj[_[0]]) && obj[_[1]] != null ? obj[_[1]] :
+				(_ = path.split("."))[1] && (tmp = obj[_[0]]) && tmp[_[1]] != null ? tmp[_[1]] :
 				fallback[path]
 		})
 	}
