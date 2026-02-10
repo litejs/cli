@@ -670,6 +670,8 @@
 	function own(a, b) {
 		if (a === b) {
 			own.lastMsg = "Can not be strictEqual"
+		} else if (!a) {
+			own.lastMsg = "actual is " + a
 		} else if (a) {
 			for (var k in b) if (hasOwn(b, k)) {
 				if (!hasOwn(a, k) || (

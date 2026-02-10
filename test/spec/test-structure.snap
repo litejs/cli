@@ -23,5 +23,5 @@ TestSuite 4
   ∅ 11. it supports a pending test 4.2
   ∅ 12. it should skip test by data 4.3
 1..12
-# pass  12/12 [18/18]
+# pass  10/12 [18/18]
 # skip  2
