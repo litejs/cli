@@ -7,6 +7,7 @@ exports.opts = function opts(defaults, files, argv) {
 	, camelRe = /\-([a-z])/g
 	, short = {}
 	, hasOwn = short.hasOwnProperty
+	, defs = {}
 	, out = {_: [], _valid: [], _unknown: []}
 	, isElectronBinary = process.versions.electron && !process.defaultApp
 
@@ -39,7 +40,7 @@ exports.opts = function opts(defaults, files, argv) {
 
 	for (key in defaults) if (!isObj(defaults[key])) {
 		val = key.split("_")
-		if (val[0]) out[val[0]] = defaults[key]
+		if (val[0]) defs[val[0]] = out[val[0]] = defaults[key]
 		if (val[1]) short[val[1]] = val[0]
 		if (val[2]) short[val[2]] = "no-" + val[0]
 	}
@@ -72,7 +73,7 @@ exports.opts = function opts(defaults, files, argv) {
 				val = val[1] ? 0 : val[6] != null && argv[i].slice(val[3].length + 3)
 				out[key] = (
 					expect === "boolean" ? val !== 0 && (val === false || val === "true" || val !== "false" && castError()) :
-					expect === "array" ? (out[key] === defaults[key] ? [] : out[key]).concat(val ? val.split(",") : []) :
+					expect === "array" ? (out[key] === defs[key] ? [] : out[key]).concat(val ? val.split(",") : []) :
 					expect === "string" ? val || "" :
 					expect === "number" && val !== false && val !== "" && isFinite(val -= 0) ? val :
 					castError()

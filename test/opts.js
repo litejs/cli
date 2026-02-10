@@ -29,6 +29,11 @@ describe("opts", function() {
 			{ ab: [ "foo", "bar", "qux" ], _valid: ["--ab=foo", "--ab=bar,qux"], _unknown: [], _: ["=2"] }
 		],
 		[
+			["--ab=foo", "--ab=bar,qux"],
+			{ ab_a: [ 1 ] },
+			{ ab: [ "foo", "bar", "qux" ], _valid: ["--ab=foo", "--ab=bar,qux"], _unknown: [], _: [] }
+		],
+		[
 			["--n1=12", "--n2=0", "--no-n3"],
 			{ n1: 0, n2: 1, n3: 2 },
 			{ n1: 12, n2: 0, n3: 0, _valid: ["--n1=12", "--n2=0", "--no-n3"], _unknown: [], _: [] }
