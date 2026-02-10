@@ -379,7 +379,7 @@
 		, nums = []
 		, failed = failedCases.length
 		conf.fail = describe.failed += failed
-		conf.pass = totalCases - conf.fail
+		conf.pass = totalCases - conf.fail - skipped
 		conf.s = skipped
 		conf.passAsserts = passedAsserts
 		conf.totalAsserts = totalAsserts
