@@ -539,7 +539,7 @@
 				return
 			}
 			var existing = obj[name]
-			push(this._r, obj, name, hasOwn(obj, name) && existing)
+			push(this._r, obj, name, hasOwn(obj, name) && { v: existing })
 			obj[name] = fn
 			if (fn === fn && obj[name] !== fn) throw _Error("Unable to swap " + stringify(name))
 			return existing
@@ -547,7 +547,7 @@
 		restore: function() {
 			for (var arr = this._r, i = arr.length; --i > 0; i -= 2) {
 				if (arr[i]) {
-					arr[i - 2][arr[i - 1]] = arr[i]
+					arr[i - 2][arr[i - 1]] = arr[i].v
 				} else {
 					delete arr[i - 2][arr[i - 1]]
 				}

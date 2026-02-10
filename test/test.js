@@ -319,6 +319,28 @@ describe("test.js", function() {
 		assert.end()
 	})
 
+	it("should restore falsy values", function(assert, mock) {
+		var obj = { zero: 0, empty: "", no: false, nil: null }
+		mock.swap(obj, "zero", 99)
+		mock.swap(obj, "empty", "replaced")
+		mock.swap(obj, "no", true)
+		mock.swap(obj, "nil", "not null")
+
+		assert.strictEqual(obj.zero, 99)
+		assert.strictEqual(obj.empty, "replaced")
+		assert.strictEqual(obj.no, true)
+		assert.strictEqual(obj.nil, "not null")
+
+		mock.restore()
+
+		assert.strictEqual(obj.zero, 0)
+		assert.strictEqual(obj.empty, "")
+		assert.strictEqual(obj.no, false)
+		assert.strictEqual(obj.nil, null)
+		assert.own(obj, { zero: 0, empty: "", no: false, nil: null })
+		assert.end()
+	})
+
 	it("should mock swap", function(assert, mock) {
 		mock.swap(Object.prototype, "foo", function(){})
 		var count = 0
