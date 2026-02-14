@@ -128,6 +128,7 @@
 			new _Date(num(year, fakeNow))
 		)
 	}
+	fakeDate.prototype = _Date.prototype
 	fakeDate.now = function() {
 		return fakeNow
 	}

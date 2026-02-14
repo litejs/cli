@@ -436,6 +436,7 @@ describe("test.js", function() {
 		clearTimeout()
 
 		test.equal(Date.parse("2018-01-02T13:45:51.001Z"), 1514900751001)
+		test.ok(new Date(1514900751002) instanceof Date)
 		test.equal(new Date(1514900751002).toJSON(), "2018-01-02T13:45:51.002Z")
 		test.equal(new Date(2018,0,2,13,45,51,2).toJSON(), "2018-01-02T11:45:51.002Z")
 		test.equal(new Date(Date.UTC(2018,0,2,13,45,51,2)).toJSON(), "2018-01-02T13:45:51.002Z")
