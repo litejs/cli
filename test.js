@@ -99,7 +99,7 @@
 		color: (_process.stdout || /* c8 ignore next */ _process).isTTY,
 		cut: 15000,
 		delay: 1,
-		seed: (Math.random() * 1e5)|0,
+		seed: 1 + (Math.random() * 1e5)|0,
 		stack: 9,
 		status: 1,
 		time: 1,
@@ -526,8 +526,8 @@
 				else return behavior === true ? (err ? Promise.reject(err) : Promise.resolve(result)) : result
 			}
 		},
-		rand: function(seed_) {
-			var seed = seed_ || conf.seed
+		rand: function(seed) {
+			seed = 0|seed || conf.seed
 			this.txt += " #seed:" + seed
 			this.swap(Math, "random", xorshift128(seed))
 		},
@@ -594,7 +594,7 @@
 			var t = d ^ (d << 11)
 			d = c; c = b; b = a
 			a ^= t ^ (t >>> 8) ^ (a >>> 19)
-			return (a >>> 0) / 4294967295
+			return (a >>> 0) / 4294967296
 		}
 	}
 

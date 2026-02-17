@@ -566,7 +566,7 @@ describe("test.js", function() {
 	})
 
 	var randomTable = [
-		[ 12345, [ 0.7260542734819591, 0.21872897521097423, 0.9517854940965272 ]]
+		[ 12345, [ 0.7260542733129114, 0.2187289751600474, 0.9517854938749224 ]]
 	]
 
 	it("should mock Math.random() with seed {0}", randomTable, function(seed, expected, assert, mock) {
