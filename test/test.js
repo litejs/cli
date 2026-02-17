@@ -580,6 +580,14 @@ describe("test.js", function() {
 		assert.strictEqual(Math.random, _random).end()
 	})
 
+	it("should own with shared sub-objects", function(assert) {
+		var shared = {x: 1}
+		var a = {sub: shared}
+		var b = {sub: shared}
+		assert.own(a, b)
+		assert.end()
+	})
+
 	it("should take Math.random() seed from arguments", function(assert) {
 		require("child_process").execSync("node -r ./test.js test/test-random.js --seed=123456")
 		try {

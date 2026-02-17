@@ -669,11 +669,7 @@
 		return type(obj) === "object"
 	}
 	function own(a, b) {
-		if (a === b) {
-			own.lastMsg = "Can not be strictEqual"
-		} else if (!a) {
-			own.lastMsg = "actual is " + a
-		} else if (a) {
+		if (a) {
 			for (var k in b) if (hasOwn(b, k)) {
 				if (!hasOwn(a, k) || (
 					isObj(b[k]) ? !own(a[k], b[k]) :
@@ -684,6 +680,8 @@
 				}
 			}
 			return true
+		} else {
+			own.lastMsg = "actual is " + a
 		}
 	}
 	function curry(fn, arg, scope) {
