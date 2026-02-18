@@ -1,6 +1,7 @@
 .
 ./a.css
 ./a.js
+./build
 ./dev.html
 ./index.html
 ./lib1.css
