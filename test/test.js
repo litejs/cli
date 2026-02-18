@@ -174,7 +174,6 @@ describe("test.js", function() {
 
 		assert.own(obj1, {a:1})
 		assert.own(obj1, {c:{e:4}})
-		assert.notOwn(obj1, obj1)
 		assert.notOwn(obj1, {a:2})
 		assert.notOwn(obj1, {b:{c:2}})
 		assert.notOwn(obj1, {c:1})
@@ -195,7 +194,8 @@ describe("test.js", function() {
 		[ "ba", "a", [[0,1,""]] ],
 		[ "ab", "a", [[1,1,""]] ],
 		[ "hello", "Helo world", [[0,1,"H"],[3,1,""],[5,0," world"]] ],
-		[ "hello!", "Helo world!", [[0,1,"H"],[3,1,""],[5,0," world"]] ]
+		[ "hello!", "Helo world!", [[0,1,"H"],[3,1,""],[5,0," world"]] ],
+		[ "abc", "aXbYc", [[1,0,"X"],[3,0,"Y"]] ],
 	], function(a, b, expected, assert) {
 		var revert = a.split("")
 		expected.forEach(function(p) { revert.splice(p[0], p[1], p[2]) })

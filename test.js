@@ -50,12 +50,12 @@
 			)
 		},
 		own: function(actual, expected, message) {
-			own.lastMsg = ""
-			return this(own(actual, expected), message || own.lastMsg, actual, expected)
+			own.lastMsg = "Can not be strictEqual"
+			return this(actual !== expected && own(actual, expected), message || own.lastMsg, actual, expected)
 		},
 		notOwn: function(actual, expected, message) {
-			own.lastMsg = ""
-			return this(!own(actual, expected), message || own.lastMsg, actual, expected)
+			own.lastMsg = "Can not be strictEqual"
+			return this(actual !== expected && !own(actual, expected), message || own.lastMsg, actual, expected)
 		},
 		throws: function(fn, message) {
 			var actual = false
@@ -416,6 +416,7 @@
 		var del, ins, pre, aLen, bLen
 		, aPos = 0
 		, bPos = 0
+		, offset = 0
 		, out = []
 
 		if (_isArray(sep)) {
@@ -443,7 +444,8 @@
 						del = 0
 						ins = pre
 					}
-					out.push([aPos - del, del, b.slice(bPos - ins, bPos).join(sep)])
+					out.push([aPos - del + offset, del, b.slice(bPos - ins, bPos).join(sep)])
+					offset += 1 - del
 				}
 			}
 		}
@@ -677,7 +679,7 @@
 					isObj(b[k]) ? !own(a[k], b[k]) :
 					!_deepEqual(a[k], b[k], [])
 				)) {
-					own.lastMsg = own.lastMsg || k + " does not match"
+					own.lastMsg = k + " does not match"
 					return false
 				}
 			}

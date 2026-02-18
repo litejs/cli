@@ -9,7 +9,7 @@ Tests
   ✘ 8. it should fail on promise reject [0/0]
 ReferenceError: SOME_UNDEFINED_VALIABLE is not defined
   ✘ 9. it should fail on invalid test [0/0]
-  ✘ 10. it should fail on invalid assertions [0/8]
+  ✘ 10. it should fail on invalid assertions [0/10]
 Error: Unable to swap "prop"
   ✘ 11. it should fail on read-only swap [0/0]
   ✘ 12. it should handle an error without a stack [0/0]
@@ -24,7 +24,7 @@ Error
   ✘ 11. it should fail on read-only swap [0/0]
 Error: Unable to swap "prop"
 ---
-  ✘ 10. it should fail on invalid assertions [0/8]
+  ✘ 10. it should fail on invalid assertions [0/10]
 Error: Assertion:1: equal
 expected: undefined
 actual:   undefined
@@ -51,7 +51,15 @@ Error: Assertion:7: actual is null
 expected: {"a":1}
 actual:   null
 
-Error: Assertion:8: throws
+Error: Assertion:8: Can not be strictEqual
+expected: <null>{..}
+actual:   <null>{..}
+
+Error: Assertion:9: Can not be strictEqual
+expected: <null>{..}
+actual:   <null>{..}
+
+Error: Assertion:10: throws
 expected: true
 actual:   false
 ---
@@ -82,11 +90,11 @@ actual:   ["aaaaa..]
 ...
 # FAIL  tests 1, 2, 3, 6, 4, 8, 9, 10, 11, 12, 13
 1..13
-# pass  2/13 [2/11]
+# pass  2/13 [2/13]
 ---
   ✘ 5. it should fail on multiple ends [0/0]
 Error: ended multiple times
 ...
 # FAIL  tests 5
 1..13
-# pass  1/13 [2/11]
+# pass  1/13 [2/13]

@@ -58,6 +58,8 @@ it("should fail on invalid assertions", function() {
 	.equal([/1/, new B, a], [/1/, B, Object.assign({}, a)])
 	.ok(0)
 	.own(null, {a:1})
+	.has(a, a)
+	.hasNot(a, a)
 	.throws(function(){})
 	.end()
 })

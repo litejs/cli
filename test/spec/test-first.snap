@@ -2,7 +2,7 @@
 ---[0m
   [31m✘[0m 1. it should fail [0/1][0m
 Error: Assertion:1: equal
-[31mexpected:[0m[32mactual: [0m "aaaaaaa[32m [[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaa"[32m][0m
+[31mexpected:[0m[32mactual: [0m [32m [[0m"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"[32m][0m
     at testCase.<anonymous> (test/test-fail.js:7:9)
     at nextCase (test.js:293:19)
     at nextSuite (test.js:376:3)
