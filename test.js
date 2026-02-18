@@ -121,6 +121,8 @@
 		clearImmediate: fakeClear,
 		Date: fakeDate
 	}
+	assert.has = assert.own
+	assert.hasNot = assert.notOwn
 	function fakeDate(year, month, date, hr, min, sec, ms) {
 		return (
 			arguments.length > 1 ?
