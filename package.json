@@ -19,10 +19,10 @@
     "lib"
   ],
   "scripts": {
-    "test": "node ./cli.js t"
+    "test": "node ./cli.js t test/index.js"
   },
   "dependencies": {
-    "@litejs/dom": "25.5.0"
+    "@litejs/dom": "26.2.0"
   },
   "bin": {
     "lj": "./cli.js"
