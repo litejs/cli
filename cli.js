@@ -67,6 +67,11 @@ var fs = require("fs")
 		script: true,
 		out: "_site/",
 	},
+	"ui-test": {
+		port: 8091,
+		budget: 5000,
+		_: ["test/index.html"]
+	},
 	test_t: {
 		status: true,
 		tz: "",
