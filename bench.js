@@ -1,6 +1,4 @@
 
-
-
 module.exports = bench
 
 function bench(tests, opts, next) {

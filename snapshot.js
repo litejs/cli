@@ -8,6 +8,11 @@ var cli = require(".")
 , seen = {}
 
 /* globals describe */
+
+function normalize(str) {
+	return str.replace(relPathRe, relPathFn).replace(/at \w+\.<anonymous>/g, "at <anonymous>")
+}
+
 describe.assert.cmdSnapshot = function(cmd, file, opts) {
 	var actual
 	opts = Object.assign({stdio: "pipe"}, opts)
@@ -19,7 +24,7 @@ describe.assert.cmdSnapshot = function(cmd, file, opts) {
 			return this(0, "Snapshot command failed: " + cmd + "\n---\n" + actual)
 		}
 	}
-	return this.matchSnapshot(file, actual.toString("utf8").replace(relPathRe, relPathFn).replace(/at \w+\.<anonymous>/g, "at <anonymous>"))
+	return this.matchSnapshot(file, normalize(actual.toString("utf8")))
 }
 
 describe.assert.matchSnapshot = function(file, actual, snapFile) {
@@ -36,7 +41,7 @@ describe.assert.matchSnapshot = function(file, actual, snapFile) {
 	try {
 		expected = fs.readFileSync(path.resolve(snapFile), enc)
 		if (actual && actual.constructor === Uint8Array) expected = new Uint8Array(expected)
-		if (typeof expected === "string") expected = expected.replace(relPathRe, relPathFn).replace(/at \w+\.<anonymous>/g, "at <anonymous>")
+		if (typeof expected === "string") expected = normalize(expected)
 	} catch(e) {}
 
 	if (describe.conf.up) {
@@ -49,5 +54,3 @@ describe.assert.matchSnapshot = function(file, actual, snapFile) {
 
 	return this.equal(actual, expected)
 }
-
-

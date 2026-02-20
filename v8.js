@@ -1,3 +1,5 @@
+/* globals describe */
+
 var v8 = {
 	statusTexts: [
 		"IsFunction",
@@ -17,8 +19,6 @@ var v8 = {
 	]
 }
 , assert = describe.assert
-
-/* globals describe */
 try {
 	// chrome --js-flags="--allow-natives-syntax" test.html
 	// node --allow-natives-syntax test.js
