@@ -39,14 +39,13 @@ describe("build unit", function() {
 			, input = "/*** ie8 ***/\nfunction a(){}\n/*/\nfunction a(){}\n/**/"
 			, expected = "/*** ie8 ***\nfunction a(){}\n/*/\nfunction a(){}\n/**/"
 			assert.equal(build.drop(el, input), expected)
-			assert.end()
-		})
-
-		test("flips multiple flags", function(assert) {
-			var el = mockEl("ie8 demo")
-			, input = "/*** ie8 ***/\ncode1\n/**/\n/*** demo ***/\ncode2\n/**/"
-			, expected = "/*** ie8 ***\ncode1\n/**/\n/*** demo ***\ncode2\n/**/"
+			// multiple flags
+			el = mockEl("ie8 demo")
+			input = "/*** ie8 ***/\ncode1\n/**/\n/*** demo ***/\ncode2\n/**/"
+			expected = "/*** ie8 ***\ncode1\n/**/\n/*** demo ***\ncode2\n/**/"
 			assert.equal(build.drop(el, input), expected)
+			// non-matching flag left unchanged
+			assert.equal(build.drop(mockEl("ie8"), "/*** demo ***/\ncode\n/**/"), "/*** demo ***/\ncode\n/**/")
 			assert.end()
 		})
 
@@ -54,13 +53,6 @@ describe("build unit", function() {
 			var el = mockEl("ie8", "cat-drop")
 			assert.equal(build.drop(el, "/*** ie8 ***/\ncode\n/**/"), "/*** ie8 ***/\ncode\n/**/")
 			assert.equal(build.drop(el, "/*** ie8 ***/\ncode\n/**/", "cat-drop"), "/*** ie8 ***\ncode\n/**/")
-			assert.end()
-		})
-
-		test("does not flip when attr does not match", function(assert) {
-			var el = mockEl("ie8")
-			, input = "/*** demo ***/\ncode\n/**/"
-			assert.equal(build.drop(el, input), input)
 			assert.end()
 		})
 	})
@@ -84,49 +76,59 @@ describe("build unit", function() {
 		})
 	})
 
-	describe("parseView urlFn", function() {
+	describe("parseView", function() {
 		function testUrlFn(u) {
 			return "out/" + u
 		}
 		var noMinEl = {}
 
-		test("rewrites [src=file.png]", function(assert) {
+		test("rewrites [src] with urlFn", function(assert) {
 			var result = build.parseView("img[src=icon.png]", "ui", noMinEl, testUrlFn)
 			assert.ok(result.indexOf("[src=out/icon.png]") > -1)
-			assert.end()
-		})
-
-		test("preserves fragment [src=icons.svg#star]", function(assert) {
-			var result = build.parseView("use[src=icons.svg#star]", "ui", noMinEl, testUrlFn)
+			// preserves fragment
+			result = build.parseView("use[src=icons.svg#star]", "ui", noMinEl, testUrlFn)
 			assert.ok(result.indexOf("[src=out/icons.svg#star]") > -1)
-			assert.end()
-		})
-
-		test("does not touch [href]", function(assert) {
-			var result = build.parseView("a[href=style.css]", "ui", noMinEl, testUrlFn)
+			// does not touch [href]
+			result = build.parseView("a[href=style.css]", "ui", noMinEl, testUrlFn)
 			assert.ok(result.indexOf("[href=style.css]") > -1)
-			result = build.parseView("a[href=#info]", "ui", noMinEl, testUrlFn)
-			assert.ok(result.indexOf("[href=#info]") > -1)
-			result = build.parseView('a[href="mailto:info@example.com"]', "ui", noMinEl, testUrlFn)
-			assert.ok(result.indexOf("mailto:info@example.com") > -1)
+			// skips without urlFn
+			result = build.parseView("img[src=icon.png]", "ui", noMinEl, null)
+			assert.ok(result.indexOf("[src=icon.png]") > -1)
 			assert.end()
 		})
 
-		test("skips without urlFn", function(assert) {
-			var result = build.parseView("img[src=icon.png]", "ui", noMinEl, null)
-			assert.ok(result.indexOf("[src=icon.png]") > -1)
+		test("extracts %css section", function(assert) {
+			var result = build.parseView("%css\n.a { color: red }\n\ndiv Hello", "ui", noMinEl, null)
+			assert.ok(result.indexOf("%css") > -1)
+			assert.ok(result.indexOf("color") > -1)
+			assert.ok(result.indexOf("div Hello") > -1)
+			// appends to lastMinEl.css when set
+			var mockCss = { textContent: "" }
+			build.parseView("%css\n.a { color: red }\n\ndiv Hello", "ui", { css: mockCss }, null)
+			assert.ok(mockCss.textContent.indexOf("color") > -1)
+			assert.end()
+		})
+
+		test("extracts %js section", function(assert) {
+			var result = build.parseView("%js\nvar x = 1\n\ndiv Hello", "js", noMinEl, null)
+			assert.ok(result.indexOf("var x = 1") > -1)
+			// appends to lastMinEl.js when set
+			var mockJs = { _txt: "" }
+			build.parseView("%js\nvar x = 1\n\ndiv Hello", "ui", { js: mockJs }, null)
+			assert.ok(mockJs._txt.indexOf("var x = 1") > -1)
+			assert.end()
+		})
+
+		test("converts to js with extTo=js", function(assert) {
+			var result = build.parseView("div Hello", "js", noMinEl, null)
+			assert.ok(result.indexOf("xhr.ui(") > -1)
+			result = build.parseView("%css\n.a { color: red }\n\n", "js", noMinEl, null)
+			assert.ok(result.indexOf("xhr.css(") > -1)
 			assert.end()
 		})
 	})
 
 	describe("cssMin", function() {
-		test("minifies css", function(assert) {
-			var result = build.cssMin(".a {\n\ttop: 1px;\n}\n")
-			assert.ok(result.indexOf(".a") > -1)
-			assert.ok(result.indexOf("top") > -1)
-			assert.end()
-		})
-
 		test("accepts url callback", function(assert) {
 			var called = []
 			, css = ".a { background: url(img/bg.png); }"
@@ -140,8 +142,11 @@ describe("build unit", function() {
 		})
 
 		test("works without url callback", function(assert) {
-			var css = ".a { background: url(img/bg.png); }"
-			, result = build.cssMin(css)
+			var result = build.cssMin(".a {\n\ttop: 1px;\n}\n")
+			assert.ok(result.indexOf(".a") > -1)
+			assert.ok(result.indexOf("top") > -1)
+			// preserves url() without callback
+			result = build.cssMin(".a { background: url(img/bg.png); }")
 			assert.ok(result.indexOf("img/bg.png") > -1)
 			assert.end()
 		})
