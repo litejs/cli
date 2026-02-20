@@ -2,8 +2,6 @@
 ./a.css
 ./a.js
 ./build
-./build/a.css
-./build/a.js
 ./build/index.html
 ./dev.html
 ./lib1.css
