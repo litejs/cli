@@ -102,10 +102,21 @@ describe("build unit", function() {
 			assert.ok(result.indexOf("%css") > -1)
 			assert.ok(result.indexOf("color") > -1)
 			assert.ok(result.indexOf("div Hello") > -1)
-			// appends to lastMinEl.css when set
+			// appends to lastMinEl.css.textContent when set
 			var mockCss = { textContent: "" }
 			build.parseView("%css\n.a { color: red }\n\ndiv Hello", "ui", { css: mockCss }, null)
 			assert.ok(mockCss.textContent.indexOf("color") > -1)
+			assert.end()
+		})
+
+		test("appends %css to _txt when available", function(assert) {
+			// When lastMinEl.css has _txt, %css must go to _txt (not textContent)
+			// because inline loop uses _txt for content
+			var mockCss = { _txt: ".existing{}", textContent: "" }
+			build.parseView("%css\n.added { color: red }\n\ndiv Hello", "js", { css: mockCss }, null)
+			assert.ok(mockCss._txt.indexOf(".added") > -1)
+			assert.ok(mockCss._txt.indexOf(".existing") > -1)
+			assert.equal(mockCss.textContent, "")
 			assert.end()
 		})
 

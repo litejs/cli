@@ -1,0 +1,5 @@
+%css
+	.View { color: red }
+
+%el myView
+div.View Hello

@@ -1,0 +1,8 @@
+.
+./app.js
+./build
+./build/app.min.js
+./build/index.html
+./dev.html
+./lib.css
+./view.ui

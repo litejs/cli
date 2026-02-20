@@ -35,14 +35,14 @@ function command(name) {
 	return false
 }
 
-function cp(src, dest) {
+function cp(src, dest, msg) {
 	if (fs.statSync(src).isDirectory()) {
 		mkdirp(dest)
 		fs.readdirSync(src).forEach(function(file) {
+			if (msg !== null) console.error(msg || "cp " + src + " " + dest)
 			cp(path.join(src, file), path.join(dest, file))
 		})
 	} else {
-		console.error("cp", src, dest)
 		fs.copyFileSync(src, dest)
 	}
 }

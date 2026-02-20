@@ -10,6 +10,7 @@ describe("build", function() {
 		["build-cp"],
 		["build-inline"],
 		["build-simple"],
+		["build-ui-css"],
 		//["test/ui/dev.html", "test/ui/index.html", [
 		//	"test/ui/lib1.css", "test/ui/lib2.css"
 		//]],
