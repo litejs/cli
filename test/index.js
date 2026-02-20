@@ -2,6 +2,7 @@
 
 describe("cli", function() {
 	require("./build.js")
+	require("./unit-build.js")
 	require("./tools.js")
 	require("./opts.js")
 	require("./release.js")

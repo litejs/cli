@@ -4,13 +4,18 @@
 //-    lj [init|bench|build|help|test]
 //-
 //-  build options
-//-    --banner, -b    Add comment banner to output
-//-    --input,  -i    Input file
-//-    --output, -o    Output file
-//-    --readme, -r    Replase readme tags in file
+//-    --banner        Add commented banner to output
+//-    --cat           Build src files (default: true)
+//-    --assets        URL template for assets eg "assets/{h}.{ext}"
+//-    --fetch         Fetch remote resources (default: true)
+//-    --min           Minified output file
+//-    --out           Output file
+//-    --readme        Replace readme tags in file
+//-    --ver           Override version string
+//-    --worker        Update worker file
 //-
 //-  Examples
-//-    lj b -r README.md -i ui/dev.html -o ui/index.html
+//-    lj b --out=ui/index.html ui/dev.html
 //-    lj r
 //-
 
@@ -25,9 +30,12 @@ var fs = require("fs")
 	build_b: {
 		banner: "",
 		cat: true,
+		assets: "{h}.{ext}",
 		fetch: true,
+		min: "",
 		out: "",
 		readme: "",
+		ver: "",
 		worker: ""
 	},
 	init_i: {},
