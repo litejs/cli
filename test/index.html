@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<title>ui-test.js test</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1">
+<link rel="icon" href="data:image/x-icon;,">
+<style>
+*, *:before, *:after { box-sizing: inherit }
+html { box-sizing: border-box; background: #eee }
+body { margin: 0 auto; max-width: 600px; padding: 18px; font: 18px/1.5 sans-serif }
+nav > a { margin-right: 16px }
+nav > a.is-sel { font-weight: bold }
+.count { font-size: 24px }
+</style>
+</head><body>
+<pre id=out></pre>
+<script type="ui">
+
+%js
+  El.$d.count = 0
+  El.$d.inc = function() { El.$d.count++; El.render(document.body) }
+
+%view #layout #
+  header
+    h1 Test App
+  nav
+    %el nav-link
+    a ;cls "is-sel",url==($el.href.split("#")[1]||"home")
+    nav-link[href="#"] Home
+    nav-link[href="#about"] About
+    nav-link[href="#counter"] Counter
+  hr
+  %slot
+  footer
+    hr
+    p.info ;txt "Current: "+url
+
+%view home #layout
+main
+  h2 Welcome
+  p This is the home page.
+
+%view about #layout
+main
+  h2 About
+  p This is the about page.
+  ul
+    li Item A
+    li Item B
+    li Item C
+
+%view counter #layout
+main
+  h2 Counter
+  p.count ;txt "Count: "+count
+  button#btn-inc ;on "click",inc
+    | Increment
+
+%start
+
+</script>
+<script src="https://litejs.com/litejs.full.min.js"></script>
+<script src="../test.js"></script>
+<script src="../ui-test.js"></script>
+<script>
+describe.onend = function() {
+	out.textContent = describe.output
+}
+</script>
+<script src="ui-test.js"></script>
+<noscript>This application requires JavaScript</noscript>
+</body></html>

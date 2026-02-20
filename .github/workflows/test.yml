@@ -10,6 +10,11 @@ jobs:
     - run: npm audit --audit-level=low
     - run: npx c8 -r lcovonly -r text npm test
     - run: npx lj lint
+    - name: Browser tests
+      run: |
+        npx lj serve &
+        google-chrome --headless --virtual-time-budget=5000 --enable-logging=stderr http://127.0.0.1:8080/test/index.html 2>&1 | tee /tmp/browser-test.txt
+        grep -q "# pass" /tmp/browser-test.txt && ! grep -q "FAIL" /tmp/browser-test.txt
     - uses: coverallsapp/github-action@v2
       name: Upload to coveralls.io
       with:
