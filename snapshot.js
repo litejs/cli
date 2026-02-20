@@ -19,7 +19,7 @@ describe.assert.cmdSnapshot = function(cmd, file, opts) {
 			return this(0, "Snapshot command failed: " + cmd + "\n---\n" + actual)
 		}
 	}
-	return this.matchSnapshot(file, actual.toString("utf8").replace(relPathRe, relPathFn))
+	return this.matchSnapshot(file, actual.toString("utf8").replace(relPathRe, relPathFn).replace(/at \w+\.<anonymous>/g, "at <anonymous>"))
 }
 
 describe.assert.matchSnapshot = function(file, actual, snapFile) {
@@ -36,7 +36,7 @@ describe.assert.matchSnapshot = function(file, actual, snapFile) {
 	try {
 		expected = fs.readFileSync(path.resolve(snapFile), enc)
 		if (actual && actual.constructor === Uint8Array) expected = new Uint8Array(expected)
-		if (typeof expected === "string") expected = expected.replace(relPathRe, relPathFn)
+		if (typeof expected === "string") expected = expected.replace(relPathRe, relPathFn).replace(/at \w+\.<anonymous>/g, "at <anonymous>")
 	} catch(e) {}
 
 	if (describe.conf.up) {
