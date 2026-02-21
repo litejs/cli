@@ -54,5 +54,16 @@ describe("build", function() {
 			cli.rmrf(temp)
 		})
 	})
+
+	test("js build with ui transform", function(assert, mock) {
+		var temp = "test/data/temp/js-ui/"
+		mock.swap(console, "error", mock.fn())
+		mock.swap(console, "log", mock.fn())
+		cli.mkdirp(temp)
+		build({ _: ["test/data/build-ui-css/app.js", "test/data/build-ui-css/view.ui"], out: temp + "out.js" })
+		assert.matchSnapshot(temp + "out.js", 0, "test/data/snap/js-ui/out.js")
+		cli.rmrf(temp)
+		assert.end()
+	})
 })
 
