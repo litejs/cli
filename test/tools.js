@@ -20,6 +20,7 @@ describe("tools", function() {
 			fs.statSync("test/blabla")
 		})
 
+		cli.mkdirp("")
 		cli.mkdirp("test/blabla/deep")
 
 		fs.statSync("test/blabla")
