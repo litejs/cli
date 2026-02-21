@@ -6,6 +6,8 @@ describe("build", function() {
 
 	require("../snapshot.js")
 
+	cli.rmrf("test/data/temp")
+
 	describe("file {0}", [
 		["build-cp"],
 		["build-inline"],

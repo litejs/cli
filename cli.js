@@ -33,6 +33,7 @@ var fs = require("fs")
 		cat: true,
 		assets: "{h}.{ext}",
 		fetch: true,
+		jsmin: "",
 		min: "",
 		out: "",
 		readme: "",
