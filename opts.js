@@ -103,7 +103,7 @@ exports.opts = function opts(defaults, files, argv) {
 		for (key in to) if (hasOwn.call(to, key)) {
 			tmp = key.split("_")
 			val = hasOwn.call(from, tmp[0]) ? from[tmp[0]] : null
-			if (val !== null) to[key] = isObj(val) ? assignOpts(to[key], val) : val
+			if (val !== null) to[key] = isObj(val) ? assignOpts(to[key], val) : isObj(to[key]) ? to[key] : val
 		}
 		if (from._) to._ = from._
 		return to

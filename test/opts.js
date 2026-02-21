@@ -124,7 +124,7 @@ describe("opts", function() {
 			[],
 			{ build: true },
 			"invalid.json,package.json#litejs,.github/litejs.json",
-			{ build: false, _valid: [],  _unknown: [], _: [] }
+			{ build: true, _valid: [],  _unknown: [], _: [] }
 		],
 		[
 			[],
@@ -160,7 +160,7 @@ describe("opts", function() {
 			[ "build" ],
 			{ build: { run: true }, color: true },
 			".github/litejs.json",
-			{ color: true, build: false, _valid: [],  _unknown: [], _: [ "build" ] }
+			{ color: true, run: true, _valid: [],  _unknown: [], _cmd: "build", _: [] }
 		],
 	], function(argv, defaults, files, expected, assert) {
 		var result = opts(defaults, files, argv)

@@ -1,5 +1,7 @@
 {
-  "build": false,
+  "release": {
+    "build": false
+  },
   "lint": {
     "jshint": ".github/jshint.json",
     "_": [
