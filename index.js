@@ -37,6 +37,7 @@ function command(name) {
 
 function cp(src, dest, msg) {
 	if (fs.statSync(src).isDirectory()) {
+		if (path.resolve(dest).indexOf(path.resolve(src) + path.sep) === 0) return
 		mkdirp(dest)
 		fs.readdirSync(src).forEach(function(file) {
 			if (msg !== null) console.error(msg || "cp " + src + " " + dest)
