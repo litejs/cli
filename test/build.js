@@ -78,8 +78,11 @@ describe("build", function() {
 	test("ui build with --min", function(assert, mock) {
 		mock.swap(console, "error", mock.fn())
 		mock.swap(console, "log", mock.fn())
-		build({ _: files, min: temp + "min.ui" })
-		assert.matchSnapshot(temp + "min.ui", 0, "test/data/snap/ui-build/min.ui")
+		build({ _: files, min: temp + "min-{h}.ui" })
+		var out = cli.ls(temp + "*.ui", { dir: false })
+		assert.equal(out.length, 1)
+		assert.ok(out[0].indexOf("{h}") < 0, "hash should be resolved")
+		assert.matchSnapshot(out[0], 0, "test/data/snap/ui-build/min.ui")
 		cli.rmrf(temp)
 		assert.end()
 	})
