@@ -1,3 +1,4 @@
+/* globals Bun, Deno */
 
 exports.command = command
 exports.cp = cp
@@ -17,9 +18,11 @@ exports.writePackage = writePackage
 
 exports.cols = +process.env.COLUMNS || process.stdout.columns || 80
 exports.rows = +process.env.ROWS || process.stdout.rows || 24
+var engine = exports.engine = typeof Bun !== "undefined" ? "bun" : typeof Deno !== "undefined" ? "deno" : "node"
+, engineVersion = exports.engineVersion = engine === "deno" ? Deno.version.deno : (engine === "bun" ? Bun.version : process).version
 
 
-if (parseInt(process.version.slice(1), 10) < 15) require("./lib/shim.js")
+if (engine === "node" && parseInt(engineVersion.slice(1), 10) < 15) require("./lib/shim.js")
 
 
 var child = require("child_process")

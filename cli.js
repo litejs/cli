@@ -21,6 +21,7 @@
 
 var fs = require("fs")
 , path = require("path")
+, cli = require("./index.js")
 , opts = require("./opts.js").opts({
 	bench: {
 		samples: 10,
@@ -91,6 +92,7 @@ try {
 	userPackage = require(path.resolve("package.json"))
 } catch(e) {}
 
+var ver = package.name + "@" + package.version + " on " + cli.engine + "@" + cli.engineVersion
 
 if (opts.tz) process.env.TZ = opts.tz
 
@@ -99,14 +101,14 @@ if (opts._unknown[0] && opts._cmd !== "test") {
 	usage(true)
 	process.exit(1)
 } else if (libFile && !opts.help) {
-	if (opts.version) console.error("# %s %s@%s with %s@%s", opts._cmd, userPackage.name, userPackage.version, package.name, package.version)
+	if (opts.version) console.error("# %s %s@%s with %s", opts._cmd, userPackage.name, userPackage.version, ver)
 	require(libFile)(opts)
 } else {
 	usage()
 }
 
 function usage(err) {
-	if (!err && opts.version) console.log("%s v%s", package.name, package.version)
+	if (!err && opts.version) console.log("# %s", ver)
 	var helpFile = libFile ? path.resolve(module.filename, "." + libFile) : module.filename
 	console.log(fs.readFileSync(helpFile, "utf8").match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
 }
