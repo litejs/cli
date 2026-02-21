@@ -55,13 +55,31 @@ describe("build", function() {
 		})
 	})
 
+	var temp = "test/data/temp/js-ui/"
+	, files = ["test/data/build-ui-css/app.js", "test/data/build-ui-css/style.css", "test/data/build-ui-css/view.ui"]
 	test("js build with ui transform", function(assert, mock) {
-		var temp = "test/data/temp/js-ui/"
 		mock.swap(console, "error", mock.fn())
 		mock.swap(console, "log", mock.fn())
-		cli.mkdirp(temp)
-		build({ _: ["test/data/build-ui-css/app.js", "test/data/build-ui-css/view.ui"], out: temp + "out.js" })
+		build({ _: files, out: temp + "out.js" })
 		assert.matchSnapshot(temp + "out.js", 0, "test/data/snap/js-ui/out.js")
+		cli.rmrf(temp)
+		assert.end()
+	})
+
+	test("ui build with --out", function(assert, mock) {
+		mock.swap(console, "error", mock.fn())
+		mock.swap(console, "log", mock.fn())
+		build({ _: files, out: temp + "out.ui" })
+		assert.matchSnapshot(temp + "out.ui", 0, "test/data/snap/ui-build/out.ui")
+		cli.rmrf(temp)
+		assert.end()
+	})
+
+	test("ui build with --min", function(assert, mock) {
+		mock.swap(console, "error", mock.fn())
+		mock.swap(console, "log", mock.fn())
+		build({ _: files, min: temp + "min.ui" })
+		assert.matchSnapshot(temp + "min.ui", 0, "test/data/snap/ui-build/min.ui")
 		cli.rmrf(temp)
 		assert.end()
 	})

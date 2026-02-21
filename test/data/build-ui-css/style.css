@@ -1,0 +1,13 @@
+
+.style {
+	color: #ffeedd;
+}
+
+h1 {
+	content: url("data:image/jpeg;base64,iRxVB0");
+
+	offset-path: url(#path);
+
+	src: url('data:font/woff;base64,d09GRg')
+}
+
