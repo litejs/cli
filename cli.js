@@ -96,7 +96,7 @@ if (opts.debug) console.error(opts)
 
 if (opts._unknown[0] && cmd !== "test") {
 	console.error("\nError: Unknown option: " + opts._unknown)
-	usage(true)
+	usage()
 	process.exit(1)
 } else if (libFile && !opts.help) {
 	require(libFile)(opts)
