@@ -3,16 +3,8 @@
 //-  Usage
 //-    lj [init|bench|build|help|test]
 //-
-//-  build options
-//-    --banner        Add commented banner to output
-//-    --cat           Build src files (default: true)
-//-    --assets        URL template for assets eg "assets/{h}.{ext}"
-//-    --fetch         Fetch remote resources (default: true)
-//-    --min           Minified output file
-//-    --out           Output file
-//-    --readme        Replace readme tags in file
-//-    --ver           Override version string
-//-    --worker        Update worker file
+//-  global options
+//-    --debug         Print parsed options
 //-
 //-  Examples
 //-    lj b --out=ui/index.html ui/dev.html
