@@ -83,10 +83,10 @@ var fs = require("fs")
 		_: ["test/*.js"]
 	},
 	color: true,
+	debug: false,
 	help: false,
 	version: true
 }, "package.json#litejs,.github/litejs.json")
-, libFile = opts._cmd && "./lib/" + opts._cmd + ".js"
 , package = require("./package.json")
 , userPackage = {}
 
@@ -95,22 +95,24 @@ try {
 } catch(e) {}
 
 var ver = package.name + "@" + package.version + " on " + cli.engine + "@" + cli.engineVersion
+, cmd = opts._cmd
+, libFile = cmd && "./lib/" + cmd + ".js"
 
 if (opts.tz) process.env.TZ = opts.tz
+if (opts.version) console.error("#%s %s@%s with %s", (cmd ? " " + cmd : ""), userPackage.name, userPackage.version, ver)
+if (opts.debug) console.error(opts)
 
-if (opts._unknown[0] && opts._cmd !== "test") {
+if (opts._unknown[0] && cmd !== "test") {
 	console.error("\nError: Unknown option: " + opts._unknown)
 	usage(true)
 	process.exit(1)
 } else if (libFile && !opts.help) {
-	if (opts.version) console.error("# %s %s@%s with %s", opts._cmd, userPackage.name, userPackage.version, ver)
 	require(libFile)(opts)
 } else {
 	usage()
 }
 
-function usage(err) {
-	if (!err && opts.version) console.log("# %s", ver)
+function usage() {
 	var helpFile = libFile ? path.resolve(module.filename, "." + libFile) : module.filename
 	console.log(fs.readFileSync(helpFile, "utf8").match(/^\/\/-.*/gm).join("\n").replace(/^.../gm, ""))
 }
