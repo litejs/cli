@@ -57,7 +57,9 @@ describe("release", function() {
 			}
 		}))
 
-		mock.swap(cli, "writePackage", mock.fn())
+		mock.swap(cli, "readFile", mock.fn(function(file) {
+			return JSON.stringify(curPkg)
+		}))
 		mock.swap(cli, "writeFile", mock.fn())
 		mock.swap(console, "log", mock.fn())
 		mock.swap(console, "error", mock.fn())
@@ -77,6 +79,7 @@ describe("release", function() {
 			build: false,
 			test: false,
 			rewrite: false,
+			setVersion: ["package.json#version"],
 			tag: true,
 			commit: true,
 			upstream: true
@@ -93,7 +96,9 @@ describe("release", function() {
 		var m = setup(mock, { curVersion: curVer, comVersion: comVer, date: date })
 		release(releaseOpts())
 		assert.equal(m.pkg.version, expected)
-		assert.equal(cli.writePackage.called, 1)
+		assert.ok(cli.writeFile.calls.some(function(c) {
+			return c.args[0] === pkgPath
+		}))
 		assert.end()
 	})
 
@@ -104,11 +109,48 @@ describe("release", function() {
 		assert.end()
 	})
 
+	it("should set version in toml file", function(assert, mock) {
+		var tomlPath = path.resolve("tree-sitter.toml")
+		var tomlContent = '[package]\nname = "tree-sitter-litejs"\nversion = "1.0.0"\n'
+		setup(mock, { curVersion: "26.2.3", comVersion: "26.2.3" })
+		cli.readFile = mock.fn(function(file) {
+			if (file === tomlPath) return tomlContent
+			return '{"version":"26.2.3","name":"test-pkg"}'
+		})
+		release(releaseOpts({ setVersion: ["package.json#version", "tree-sitter.toml#package.version"] }))
+		var tomlWrite = cli.writeFile.calls.filter(function(c) {
+			return c.args[0] === tomlPath
+		})
+		assert.equal(tomlWrite.length, 1)
+		assert.ok(tomlWrite[0].args[1].indexOf('version = "26.2.4"') > -1)
+		assert.ok(tomlWrite[0].args[1].indexOf('[package]') > -1)
+		assert.end()
+	})
+
+	it("should set version in toml file without section", function(assert, mock) {
+		var tomlPath = path.resolve("config.toml")
+		var tomlContent = 'version = "1.0.0"\nname = "test"\n'
+		setup(mock, { curVersion: "26.2.3", comVersion: "26.2.3" })
+		cli.readFile = mock.fn(function(file) {
+			if (file === tomlPath) return tomlContent
+			return '{"version":"26.2.3","name":"test-pkg"}'
+		})
+		release(releaseOpts({ setVersion: ["config.toml#version"] }))
+		var tomlWrite = cli.writeFile.calls.filter(function(c) {
+			return c.args[0] === tomlPath
+		})
+		assert.equal(tomlWrite.length, 1)
+		assert.ok(tomlWrite[0].args[1].indexOf('version = "26.2.4"') > -1)
+		assert.end()
+	})
+
 	it("should not change version when already bumped", function(assert, mock) {
 		var m = setup(mock, { curVersion: "26.2.4", comVersion: "26.2.3" })
 		release(releaseOpts())
 		assert.equal(m.pkg.version, "26.2.4")
-		assert.equal(cli.writePackage.called, 0)
+		assert.notOk(cli.writeFile.calls.some(function(c) {
+			return c.args[0] === pkgPath
+		}))
 		assert.end()
 	})
 
@@ -125,7 +167,7 @@ describe("release", function() {
 			]
 		})
 		release(releaseOpts())
-		var editmsg = cli.writeFile.calls[1].args[1]
+		var editmsg = cli.writeFile.calls[2].args[1]
 		assert.ok(editmsg.indexOf("New Features:\n\n - Add user login (Alice)\n") > -1)
 		assert.ok(editmsg.indexOf("Fixes:\n\n - Fix login bug (Bob)\n") > -1)
 		assert.ok(editmsg.indexOf("Removed Features:\n\n - Remove old API (Charlie)\n") > -1)

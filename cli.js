@@ -53,6 +53,7 @@ var fs = require("fs")
 		install: true,
 		lint: true,
 		rewrite: false,
+		setVersion: ["package.json#version"],
 		tag:true,
 		test: true,
 		update: true,
