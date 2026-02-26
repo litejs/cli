@@ -1,6 +1,6 @@
 {
   "name": "@litejs/cli",
-  "version": "26.2.2",
+  "version": "26.2.3",
   "description": "Command line tools for LiteJS framework",
   "license": "MIT",
   "author": "Lauri Rooden <lauri@rooden.ee>",
