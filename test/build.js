@@ -40,7 +40,7 @@ describe("build", function() {
 				return initialFiles.indexOf(file) < 0
 			})
 			assert.planned = initialFiles.length + createdFiles.length + 2
-			assert.cmdSnapshot("cd " + temp + ";find .|sort", prefix + "ls")
+			assert.matchSnapshot(prefix + "ls", ".\n" + cli.ls(temp + "**/*").map(function(f) { return "./" + f.slice(temp.length) }).sort().join("\n") + "\n")
 			assert.matchSnapshot(temp + outDir + "index.html", 0, prefix + "index.html")
 			initialFiles.forEach(function(file) {
 				file = file.replace("index.html", "dev.html")

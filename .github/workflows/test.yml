@@ -13,8 +13,26 @@ jobs:
     - run: npx lj ui-test test/index.html
     - uses: coverallsapp/github-action@v2
       name: Upload to coveralls.io
+      continue-on-error: true
       with:
         github-token: ${{ github.token }}
+  Test:
+    strategy:
+      matrix:
+        include:
+        - { node: 20, os: windows-2022,   arch: x86 }
+        - { node: 22, os: macos-latest,   arch: arm64 }
+    runs-on: ${{ matrix.os }}
+    name: Node ${{matrix.node}} (${{matrix.os}} ${{matrix.arch}})
+    steps:
+    - run: git config --global core.autocrlf false
+    - uses: actions/checkout@v5
+    - uses: actions/setup-node@v5
+      with:
+        node-version: ${{ matrix.node }}
+        architecture: ${{ matrix.arch }}
+    - run: npm install --no-audit && npm install -g uglify-js
+    - run: npm test
   Analyze:
     uses: litejs/.github/.github/workflows/analyze.yml@main
   Release:

@@ -3,14 +3,15 @@ var cli = require(".")
 , child = require("child_process")
 , fs = require("fs")
 , path = require("path")
-, relPathRe = /[^(]+(?=:\d+:\d+\))|^\/[\w/.]+(?=:\d)/gm
-, relPathFn = path.relative.bind(path, process.cwd())
+, relPathRe = /[^(]+(?=:\d+:\d+\))|^(?:\/|[A-Za-z]:\\)[\w/.\\-]+(?=:\d)/gm
+, cwd = process.cwd()
+, relPathFn = function(p) { return path.relative(cwd, p).replace(/\\/g, "/") }
 , seen = {}
 
 /* globals describe */
 
 function normalize(str) {
-	return str.replace(relPathRe, relPathFn).replace(/at \w+\.<anonymous>/g, "at <anonymous>")
+	return str.replace(/\r\n/g, "\n").replace(relPathRe, relPathFn).replace(/at \w+\.<anonymous>/g, "at <anonymous>")
 }
 
 describe.assert.cmdSnapshot = function(cmd, file, opts) {

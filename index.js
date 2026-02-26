@@ -85,19 +85,23 @@ function isObj(obj) {
 	return !!obj && obj.constructor === Object
 }
 
+function fwd(s) {
+	return s.replace(/\\/g, "/")
+}
+
 function ls() {
 	var key, dirRe, outRe, tmp, tmp2
 	, arr = flat(arguments)
 	, i = arr.length
 	, out = []
 	, paths = {}
-	, reEscRe = /[*.+^=:${}()|\/\\]/g
+	, reEscRe = /[*.+^=:${}()|\/]/g
 	, opts = { absolute: false, cwd: process.cwd(), dir: true, dot: false, file: true, root: "", stat: false }
 	for (; i > 0; ) {
 		key = arr[--i]
 		if (isObj(key)) Object.assign(opts, key)
 		else if (typeof key === "string") {
-			tmp = path.resolve(opts.cwd, tmp2 = key.replace(/[^\/]*\*.*/, ""))
+			tmp = fwd(path.resolve(opts.cwd, tmp2 = key.replace(/[^\/]*\*.*/, "")))
 			tmp = paths[tmp] || (paths[tmp] = [])
 			if (key !== tmp2) tmp.push(key.slice(tmp2.length))
 		}
@@ -118,14 +122,14 @@ function ls() {
 			var stat = fs.statSync(name)
 			if (outRe.test(name)) {
 				if (stat.isDirectory() ? opts.dir : opts.file) out.push(
-					opts.stat ? Object.assign(stat, { name: opts.absolute ? name : opts.root + path.relative(opts.cwd, name) }) :
+					opts.stat ? Object.assign(stat, { name: opts.absolute ? name : opts.root + fwd(path.relative(opts.cwd, name)) }) :
 					opts.absolute ? name :
-					opts.root + path.relative(opts.cwd, name)
+					opts.root + fwd(path.relative(opts.cwd, name))
 				)
 			}
 			if (stat.isDirectory() && dirRe.test(name)) {
 				fs.readdirSync(name).forEach(function(file) {
-					scan(path.resolve(name, file))
+					scan(fwd(path.resolve(name, file)))
 				})
 			}
 		} catch(e) {}
