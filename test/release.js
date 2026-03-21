@@ -48,7 +48,9 @@ describe("release", function() {
 		})
 
 		var exitCode = conf.editorExitCode != null ? conf.editorExitCode : 0
-		mock.swap(child, "spawn", mock.fn(function() {
+		, spawnCalls = []
+		mock.swap(child, "spawn", mock.fn(function(cmd, args) {
+			spawnCalls.push([cmd].concat(args).join(" "))
 			return {
 				on: function(ev, fn) {
 					if (ev === "exit") fn(exitCode)
@@ -66,7 +68,7 @@ describe("release", function() {
 		mock.swap(process, "exit", mock.fn())
 		mock.swap(process.env, "EDITOR", "echo")
 
-		return { pkg: curPkg, execCalls: execCalls }
+		return { pkg: curPkg, execCalls: execCalls, spawnCalls: spawnCalls }
 	}
 
 	function releaseOpts(extra) {
@@ -198,7 +200,7 @@ describe("release", function() {
 	it("should commit and tag on editor success", function(assert, mock) {
 		var m = setup(mock, { curVersion: "26.2.3", comVersion: "26.2.3" })
 		release(releaseOpts())
-		assert.ok(m.execCalls.some(function(cmd) {
+		assert.ok(m.spawnCalls.some(function(cmd) {
 			return cmd.indexOf("git commit -a") > -1
 		}))
 		assert.ok(m.execCalls.some(function(cmd) {
