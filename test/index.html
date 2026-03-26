@@ -52,8 +52,8 @@ main
 main
   h2 Counter
   p.count ;txt "Count: "+count
-  button#btn-inc ;on "click",inc
-    | Increment
+  button#btn-inc Increment
+	@click inc
 
 %start
 

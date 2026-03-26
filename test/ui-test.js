@@ -13,6 +13,9 @@ describe("ui-test.js", function() {
 		.open("")
 		.waitView("home")
 		.hasText("h2", "Welcome")
+		.hasRole("heading", { name: "Welcome" })
+		.hasRole("link", { name: "About" })
+		.hasRole("link", { name: /Counter/ })
 		.end()
 	})
 
@@ -34,6 +37,7 @@ describe("ui-test.js", function() {
 		.hasText(".count", "Count: 1")
 		.click("#btn-inc")
 		.hasText(".count", "Count: 2")
+		.hasRole("button", { name: "Increment" })
 		.end()
 	})
 
@@ -50,6 +54,21 @@ describe("ui-test.js", function() {
 		.open("about")
 		.waitView("about")
 		.hasText("h2", "About")
+		.end()
+	})
+
+	it("should find elements by role with getByRole", function(assert) {
+		assert
+		.open("about")
+		.waitView("about")
+		.waitFor(function() {
+			var items = describe.getByRole("listitem")
+			return items.length === 3
+		})
+		.waitFor(function() {
+			var links = describe.getByRole("link", { name: "Home" })
+			return links.length === 1
+		})
 		.end()
 	})
 
