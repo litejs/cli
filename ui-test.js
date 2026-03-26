@@ -6,6 +6,42 @@
 	var assert = describe.assert
 	, selectorsUsage
 	, viewsUsage = {}
+	, roles = {
+		button: "button,[role=button],input[type=button],input[type=submit],input[type=reset]",
+		link: "a[href],[role=link]",
+		heading: "h1,h2,h3,h4,h5,h6,[role=heading]",
+		textbox: "input:not([type]),input[type=text],input[type=email],input[type=tel],input[type=url],textarea,[role=textbox]",
+		checkbox: "input[type=checkbox],[role=checkbox]",
+		radio: "input[type=radio],[role=radio]",
+		img: "img,[role=img]",
+		list: "ul,ol,[role=list]",
+		listitem: "li,[role=listitem]",
+		navigation: "nav,[role=navigation]",
+		main: "main,[role=main]",
+		form: "form,[role=form]",
+		region: "section[aria-label],section[aria-labelledby],[role=region]",
+		banner: "header,[role=banner]",
+		contentinfo: "footer,[role=contentinfo]",
+		complementary: "aside,[role=complementary]",
+		table: "table,[role=table]",
+		row: "tr,[role=row]",
+		cell: "td,[role=cell]",
+		separator: "hr,[role=separator]",
+		dialog: "dialog,[role=dialog]"
+	}
+
+	function getByRole(role, options) {
+		var name = options && options.name
+		, sel = roles[role] || "[role=" + role + "]"
+		, nodes = LiteJS.ui.$$(sel)
+		if (name) {
+			nodes = nodes.filter(function(el) {
+				var acc = el.getAttribute("aria-label") || el.textContent.trim() || el.getAttribute("alt") || el.getAttribute("title") || el.value || ""
+				return typeof name === "string" ? acc === name : name.test(acc)
+			})
+		}
+		return nodes
+	}
 
 	assert.wait = function() {
 		var k
@@ -68,6 +104,12 @@
 		return this.waitFor(function() {
 			return LiteJS.ui.$(sel)
 		}, options || "Selector " + sel + " should be in dom")
+	}
+	assert.hasRole = function(role, options) {
+		var name = options && options.name
+		return this.waitFor(function() {
+			return getByRole(role, options)[0] || null
+		}, role + (name ? " " + name : "") + " should exist")
 	}
 	assert.hasElements = function(sel, expected, options) {
 		return this.waitFor(function() {
@@ -162,6 +204,7 @@
 		})
 		return this
 	}
+	describe.getByRole = getByRole
 	describe.unusedViews = function() {
 		return Object.keys(LiteJS.ui.views).filter(function(route) {
 			return !viewsUsage[route]
