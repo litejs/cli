@@ -5,6 +5,7 @@ exports.cp = cp
 exports.debounce = debounce
 exports.deepAssign = deepAssign
 exports.dom = require("@litejs/dom")
+exports.XMLHttpRequest = require("@litejs/dom/net.js").XMLHttpRequest
 exports.hold = hold
 exports.isObj = isObj
 exports.ls = ls
