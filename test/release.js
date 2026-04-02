@@ -21,7 +21,7 @@ describe("release", function() {
 		})
 
 		var execCalls = []
-		mock.swap(child, "execSync", function(cmd) {
+		function handleCmd(cmd) {
 			execCalls.push(cmd)
 			if (cmd === "git show HEAD:package.json") {
 				return Buffer.from(JSON.stringify({ version: conf.comVersion || conf.curVersion || "1.0.0" }))
@@ -29,10 +29,10 @@ describe("release", function() {
 			if (cmd.indexOf("git describe --tags") === 0) {
 				return Buffer.from(conf.lastTag || "")
 			}
-			if (cmd.indexOf("git log -z --grep break") === 0) {
+			if (cmd.indexOf("git log -z --grep break") === 0 || cmd.indexOf("git log -z --grep") === 0) {
 				return Buffer.from((conf.breakingCommits || []).join("\0"))
 			}
-			if (cmd.indexOf("git log --pretty") === 0) {
+			if (cmd.indexOf("git log --pretty") === 0 || cmd.indexOf("git log --pretty=format:") === 0) {
 				return Buffer.from((conf.commits || []).join("\n"))
 			}
 			if (cmd === "git rev-parse @{upstream}") {
@@ -45,6 +45,12 @@ describe("release", function() {
 				throw err
 			}
 			return Buffer.from("")
+		}
+		mock.swap(child, "execSync", function(cmd) {
+			return handleCmd(cmd)
+		})
+		mock.swap(child, "execFileSync", function(file, args) {
+			return handleCmd([file].concat(args).join(" "))
 		})
 
 		var exitCode = conf.editorExitCode != null ? conf.editorExitCode : 0
