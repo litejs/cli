@@ -1,0 +1,8 @@
+%css
+	.Theme { color: red }
+
+%js
+	function toggleTheme() {}
+
+%el toggleTheme
+button.Theme Toggle

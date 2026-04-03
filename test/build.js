@@ -13,6 +13,7 @@ describe("build", function() {
 		["build-inline"],
 		["build-simple"],
 		["build-ui-css"],
+		["build-ui-min-js"],
 		//["test/ui/dev.html", "test/ui/index.html", [
 		//	"test/ui/lib1.css", "test/ui/lib2.css"
 		//]],
