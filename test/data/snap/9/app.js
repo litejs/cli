@@ -1,2 +1,2 @@
-function toggleTheme(){}xhr.css(".Theme{color:red}"),xhr.ui("%el toggleThemebutton.Theme Toggle")
+function toggleTheme(){}xhr.css(".Theme{color:red}"),xhr.ui('%el toggleThemebutton.Theme.reset @click function(e){var html=document.documentElement,name="is-dark",set=!El.hasClass(html,name);localStorage.theme=set?"dark":"x";El.css(html,"transition","all .6s",0,999);El.cls(html,name,set);if(e.pageX)El.blur()}')
 

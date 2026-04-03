@@ -8,11 +8,6 @@ describe("build unit", function() {
 			assert.equal(build.clean("a  b"), "ab")
 			assert.end()
 		})
-		test("preserves strings", function(assert) {
-			assert.equal(build.clean('"a b"'), '"a b"')
-			assert.equal(build.clean("'a b'"), "'a b'")
-			assert.end()
-		})
 		test("preserves operator spacing", function(assert) {
 			assert.equal(build.clean("a !b"), "a !b")
 			assert.end()

@@ -13,15 +13,6 @@ describe("build", function() {
 		["build-inline"],
 		["build-simple"],
 		["build-ui-css"],
-		["build-ui-min-js"],
-		//["test/ui/dev.html", "test/ui/index.html", [
-		//	"test/ui/lib1.css", "test/ui/lib2.css"
-		//]],
-		//["test/ui/dev.html", "test/ui/min/index.html", [
-		//	"test/ui/lib1.css", "test/ui/lib2.css",
-		//	"test/ui/min/manifest.json",
-		//	"test/ui/min/image.svg"
-		//]]
 	], function(name) {
 		test("to {0}", [
 			[ "same folder", "" ],

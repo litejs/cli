@@ -1,4 +1,5 @@
 
+require("../test.js")
 
 describe("cli", function() {
 	require("./build.js")
