@@ -16,9 +16,9 @@ var fs = require("fs")
 , cli = require("./index.js")
 , opts = require("./opts.js").opts({
 	bench: {
-		samples: 10,
+		samples: 5,
 		sampleTime: 500,
-		warmup: 2000
+		warmup: 500
 	},
 	build_b: {
 		banner: "",

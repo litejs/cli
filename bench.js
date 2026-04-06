@@ -2,7 +2,7 @@
 module.exports = bench
 
 function bench(tests, opts, next) {
-	var i, test
+	var i, result, test
 	, keys = Object.keys(tests).reverse()
 	, len = keys.length
 	, times = []
@@ -23,8 +23,14 @@ function bench(tests, opts, next) {
 		return name
 	}
 
-	// warmup
+	// warmup and return validation
+	test = tests[keys[0]]()
 	for (i = len; i--; ) {
+		result = tests[keys[i]]()
+		if (result !== test) {
+			console.error("Bench " + 1, [result, test])
+			throw Error("Return value mismatch")
+		}
 		measure(tests[keys[i]], warmupTime)
 		times[i] = Array(samples)
 	}
