@@ -52,7 +52,8 @@ var fs = require("fs")
 		upstream: true
 	},
 	serve: {
-		port: 8080
+		port: 8080,
+		spa: ""
 	},
 	static: {
 		base: "",
