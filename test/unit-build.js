@@ -147,13 +147,9 @@ describe("build unit", function() {
 			assert.end()
 		})
 
-		test("works without url callback", function(assert) {
-			var result = build.cssMin(".a {\n\ttop: 1px;\n}\n")
-			assert.ok(result.indexOf(".a") > -1)
-			assert.ok(result.indexOf("top") > -1)
-			// preserves url() without callback
-			result = build.cssMin(".a { background: url(img/bg.png); }")
-			assert.ok(result.indexOf("img/bg.png") > -1)
+		test("adds -webkit-mask-image prefix", function(assert) {
+			var result = build.cssMin(".a { mask-image: url(m.png); }\n.b {\n\ttop: 1px;\n}\n")
+			assert.equal(result, ".a{-webkit-mask-image:url(m.png);mask-image:url(m.png)}\n.b{top:1px}")
 			assert.end()
 		})
 	})
