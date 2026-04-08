@@ -1,0 +1,5 @@
+%css
+	.lazy { color: green }
+
+%el lazyView
+div.lazy Hello

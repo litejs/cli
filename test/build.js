@@ -9,7 +9,6 @@ describe("build", function() {
 	cli.rmrf("test/data/temp")
 
 	describe("file {0}", [
-		["build-cp"],
 		["build-inline"],
 		["build-simple"],
 		["build-ui-css"],

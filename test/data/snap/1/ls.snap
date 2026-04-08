@@ -1,7 +1,8 @@
 .
 ./a.css
-./a.svg
-./b.svg
-./c.svg
+./a.js
 ./dev.html
 ./index.html
+./lib1.css
+./lib1.js
+./lib2.css

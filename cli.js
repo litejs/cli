@@ -24,6 +24,8 @@ var fs = require("fs")
 		banner: "",
 		cat: true,
 		assets: "{h}.{ext}",
+		cssKeep: ["is-"],
+		cssPrune: true,
 		fetch: true,
 		jsmin: "",
 		min: "",

@@ -1,23 +1,8 @@
-<!DOCTYPE html><html><head><link rel=a href=a.json><link rel=b href=b.json?daa5><link rel=c href=c-daa5.json></head><body><style>
-.a{top:1px}
-</style><style>
-.b{top:2px}
-</style><script>
-var a = 1
-</script><script>
-var b=2
-</script><script type=ui>
-%el a
-	div
-		;title!"b" ;n "N"; m "M"
-		;txt "a", "c"
-		@click [ 1, 2 ], "bo"
-	p {hi}
-		;txt "a"
-</script><script type=ui>
-%el b
- div ;title!"b";n"N";m"M";txt"a","c"
-  @click[1,2],"bo"
- p {hi}
-  ;txt"a"
-</script></body></html>
+<!DOCTYPE html><html><head><style>
+.base{color:red}
+body{color:#ffeedd}
+.lazy{color:green}
+h1{content:url(data:image/jpeg;base64,iRxVB0);offset-path:url(#path);src:url(data:font/woff;base64,d09GRg)}
+.View{color:red}
+.Theme{color:red}
+</style></head><body class=base><script src=app.min.js></script><script src=btn.js type=ui></script><script src=lazy.ui type=ui></script></body></html>

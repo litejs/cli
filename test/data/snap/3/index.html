@@ -1,23 +1,23 @@
-<!DOCTYPE html><html><head><style>
-.base{color:red}
-.grid{display:block}
-.a{top:1px}
-.b{background:red}
+<!DOCTYPE html><html><head><base href=/ ><link rel=stylesheet href=a.css><link rel=a href=a.json><link rel=b href=b.json?daa5><link rel=c href=c-daa5.json></head><body><img src=c.svg><style>
+body{background:url(b.svg)}
 </style><style>
-.c{background:blue}
-</style><style>
-.base{color:red}
-.grid{display:block}
-.a{top:1px}
-.b{background:red}
-.c{background:blue}
-</style></head><body><script>
-var load = []
-
-
-var a = 1;
-
-var b = 2
+p{top:2px}
+</style><script>
+var a = 1
 </script><script>
-var load=[],a=1,b=2
+var b=2
+</script><script type=ui>
+%el a
+	div
+		;title!"b" ;n "N"; m "M"
+		;txt "a", "c"
+		@click [ 1, 2 ], "bo"
+	p {hi}
+		;txt "a"
+</script><script type=ui>
+%el b
+ div ;title!"b";n"N";m"M";txt"a","c"
+  @click[1,2],"bo"
+ p {hi}
+  ;txt"a"
 </script></body></html>

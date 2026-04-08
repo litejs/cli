@@ -1,6 +1,10 @@
 
-.style {
+body {
 	color: #ffeedd;
+}
+
+.lazy {
+	color: green;
 }
 
 h1 {

@@ -1,6 +1,11 @@
 .
-./a.json
-./b.json
-./c-daa5.json
+./app.js
+./app.min.js
+./btn.js
 ./dev.html
 ./index.html
+./lazy.ui
+./lib.css
+./style.css
+./toggle-theme.ui
+./view.ui

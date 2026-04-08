@@ -1,8 +1,10 @@
 .
 ./a.css
-./a.js
+./a.json
+./a.svg
+./b.json
+./b.svg
+./c-daa5.json
+./c.svg
 ./dev.html
 ./index.html
-./lib1.css
-./lib1.js
-./lib2.css

@@ -2,19 +2,22 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<base href="/">
+		<link rel="stylesheet" href="a.css">
 		<!-- Replace hash in min -->
 		<link rel="a" href=a.json>
 		<link rel="b" href=a.json min="b.json?{h}">
 		<link rel="c" href=a.json min="c-{h}.json">
 	</head>
 <body>
+<img src="c.svg">
 <style>
-.a {
-	top: 1px;
+body {
+	background: url("b.svg");
 }
 </style>
 <style min>
-.b {
+p {
 	top: 2px;
 }
 </style>
@@ -45,4 +48,5 @@ var b = 2
 </script>
 </body >
 </html>
+
 
