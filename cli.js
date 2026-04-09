@@ -53,7 +53,7 @@ var fs = require("fs")
 	},
 	serve: {
 		port: 8080,
-		spa: ""
+		spa: "-"
 	},
 	static: {
 		base: "",
