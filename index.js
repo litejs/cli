@@ -6,6 +6,7 @@ exports.debounce = debounce
 exports.deepAssign = deepAssign
 exports.dom = require("@litejs/dom")
 exports.XMLHttpRequest = require("@litejs/dom/net.js").XMLHttpRequest
+exports.globRe = globRe
 exports.hold = hold
 exports.isObj = isObj
 exports.ls = ls
@@ -90,13 +91,19 @@ function fwd(s) {
 	return s.replace(/\\/g, "/")
 }
 
+function globRe(s, dot) {
+	return (dot || s[0] === "." ? "" : "(?!\\.)") + s.replace(/[*.+^=:${}()|\/]/g, "\\$&")
+	.replace(/\?/g, "[^\/]")
+	.replace(/\\\*\\\*(\\\/)?/g, "(.+$1)?")
+	.replace(/\\(?=\*)/g, "[^\/]")
+}
+
 function ls() {
 	var key, dirRe, outRe, tmp, tmp2
 	, arr = flat(arguments)
 	, i = arr.length
 	, out = []
 	, paths = {}
-	, reEscRe = /[*.+^=:${}()|\/]/g
 	, opts = { absolute: false, cwd: process.cwd(), dir: true, dot: false, file: true, root: "", stat: false }
 	for (; i > 0; ) {
 		key = arr[--i]
@@ -139,12 +146,7 @@ function ls() {
 		return s.indexOf("/") > -1 && path.dirname(s)
 	}
 	function esc(s) {
-		return (opts.dot || s.charAt(0) === "." ? "" : "(?!\\.)") +
-		s
-		.replace(reEscRe, "\\$&")
-		.replace(/\?/g, "[^\/]")
-		.replace(/\\\*\\\*(\\\/)?/g, "(.+$1)?")
-		.replace(/\\(?=\*)/g, "[^\/]")
+		return globRe(s, opts.dot)
 	}
 }
 
