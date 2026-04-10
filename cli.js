@@ -65,6 +65,7 @@ var fs = require("fs")
 		min: true,
 		script: true,
 		out: "_site/",
+		sitemap: "",
 	},
 	"ui-test": {
 		port: 8091,
