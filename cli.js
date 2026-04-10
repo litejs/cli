@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 //-
 //-  Usage
-//-    lj [init|bench|build|help|test]
+//-    lj [init|bench|build|help|static|test]
 //-
 //-  global options
 //-    --debug         Print parsed options

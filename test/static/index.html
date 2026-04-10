@@ -42,10 +42,18 @@ main
 		li ;t!"[Full-SVG Single-Page Application <https://litejs.github.io/ui/svg-spa.html>]."
 
 %view blog/{slug} #public
-;scan "blog/*.md2"
+;scan "blog/*.md2", "blogs"
 main
-	h2 Blog
-	p ;d!content
+	h2 ;t title
+	small ;txt date
+	p ;d!body
+	h3 See more
+	ul
+		li
+			;each!"blog",blogs.slice(0,3)
+			a
+				;href blog.slug
+				;t blog.title
 
 %ui {}
 </script></body></html>
