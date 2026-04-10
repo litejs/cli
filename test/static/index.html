@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+	<title>LiteJS</title>
+	<link rel="icon" href="data:image/x-icon;,">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<meta name="description" content="The best framework for building web apps with ease">
+</head><body><script type=ui>
+
+%view #public #
+	header
+		h1>a[href="https://litejs.com"] LiteJS
+		small full-stack web framework in a tiny package
+	nav
+		%el nav-item
+		a.m02
+			;cls "is-sel",(url||$ui.home).indexOf($el.href.split("#")[1]||$ui.home)==0
+		nav-item[href="#"] Home
+		nav-item[href="#examples"] Examples
+	%slot
+	footer
+		hr
+		a[href="https://github.com/litejs/"] Contribute in GitHub
+
+%view home #public
+main
+	h2 This is a single-page application
+	p No transpiling, no bundling, no build step.
+	p Yet it remains:
+	ul
+		li Instant loading — only ~25 kB for the entire framework.
+		li Works in every JavaScript-enabled browser, from IE5.5 to the latest Chrome.
+	Code-example[src="example.ui"]
+	p ;t!"Documentation is growing — see the [wiki <https://github.com/litejs/litejs/wiki>] for more."
+
+%view examples #public
+main
+	h2 Minimal examples
+	p We believe most web apps shouldn't need more than 100kB of code (HTML+js+CSS).
+	ul
+		li ;t!"[Simplest example <https://litejs.github.io/ui/simplest.html>] just some content."
+		li ;t!"[Built in routing <https://litejs.github.io/ui/routed.html>]."
+		li ;t!"[Full-SVG Single-Page Application <https://litejs.github.io/ui/svg-spa.html>]."
+
+%view blog/{slug} #public
+;scan "blog/*.md2"
+main
+	h2 Blog
+	p ;d!content
+
+%ui {}
+</script></body></html>
