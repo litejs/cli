@@ -3,9 +3,12 @@
 ./app.min.js
 ./btn.js
 ./dev.html
+./hero.svg
+./icon.svg
 ./index.html
 ./lazy.ui
 ./lib.css
+./logo.svg
 ./style.css
 ./toggle-theme.ui
 ./view.ui

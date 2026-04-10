@@ -26,7 +26,7 @@ describe("build", function() {
 
 			cli.mkdirp(temp + outDir)
 
-			build({ _: [temp + "dev.html"], out: temp + outDir + "index.html" })
+			build({ _: [temp + "dev.html"], out: temp + outDir + "index.html", assetsKeep: ["*.webmanifest"] })
 			var createdFiles = cli.ls(temp + "**/*", { dir: false }).filter(function(file) {
 				return initialFiles.indexOf(file) < 0
 			})

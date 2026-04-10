@@ -8,4 +8,7 @@
 %css
  .View{color:red}
 %el myView
-div.View Hello
+div.View
+	img[src=hero.svg]
+	img[src=logo.svg]
+	img[src=icon.svg]

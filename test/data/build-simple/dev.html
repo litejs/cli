@@ -4,6 +4,7 @@
 	<head>
 		<base href="/">
 		<link rel="stylesheet" href="a.css">
+		<link rel="manifest" href="app.webmanifest">
 		<!-- Replace hash in min -->
 		<link rel="a" href=a.json>
 		<link rel="b" href=a.json min="b.json?{h}">
@@ -11,6 +12,7 @@
 	</head>
 <body>
 <img src="c.svg">
+<img src="a.svg" keep-name>
 <style>
 body {
 	background: url("b.svg");
