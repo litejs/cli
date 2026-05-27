@@ -1,4 +1,4 @@
 .d {
 	color: red;
-	background: url("b.svg");
+	background: url("b.svg"); /*! data-uri */
 }
