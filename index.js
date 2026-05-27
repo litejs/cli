@@ -122,10 +122,10 @@ function ls() {
 		dirRe = RegExp("^" + esc(key) + (
 			tmp[0] ? "(?:\\/(" + tmp.map(esc).join("|") + ")|)$" : "$"
 		))
-		scan(key)
+		scan(key, true)
 	}
 	return out.sort()
-	function scan(name) {
+	function scan(name, root) {
 		try {
 			var stat = fs.statSync(name)
 			if (outRe.test(name)) {
@@ -135,7 +135,7 @@ function ls() {
 					opts.root + fwd(path.relative(opts.cwd, name))
 				)
 			}
-			if (stat.isDirectory() && dirRe.test(name)) {
+			if (stat.isDirectory() && dirRe.test(name) && (root || !fs.lstatSync(name).isSymbolicLink())) {
 				fs.readdirSync(name).forEach(function(file) {
 					scan(fwd(path.resolve(name, file)))
 				})
