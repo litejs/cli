@@ -13,6 +13,7 @@
   ],
   "homepage": "https://litejs.com",
   "repository": "github:litejs/cli",
+  "type": "commonjs",
   "files": [
     ".gitignore",
     "*.js",
