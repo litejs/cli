@@ -568,7 +568,7 @@
 				mock.swap(_process, { nextTick: fakeNextTick, hrtime: fakeHrtime })
 			}
 			if (newTime) {
-				fakeNow = isStr(newTime) ? _Date.parse(newTime) : newTime
+				fakeNow = isStr(newTime) ? _Date.parse(newTime) : +newTime
 				mock.tick(0)
 			}
 			fakeDate._z = newZone

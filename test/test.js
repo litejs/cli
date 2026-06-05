@@ -553,7 +553,7 @@ describe("test.js", function() {
 
 		clearInterval(int4)
 
-		mock.time(1514900751021)
+		mock.time(new Date(1514900751021))
 		test.equal(new Date().getTime(), 1514900751021)
 		test.equal(cb1.called, 1)
 		test.equal(cb2.called, 1)
