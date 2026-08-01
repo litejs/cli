@@ -425,6 +425,11 @@ describe("test.js", function() {
 		assert.strictEqual(called, false).end()
 	})
 
+	it("should mock epoch time", function(assert, mock) {
+		mock.time(0)
+		assert.strictEqual(Date.now(), 0).end()
+	})
+
 	it("should mock time", function(test, mock) {
 		var nativeDate = Date
 		, seq = 0

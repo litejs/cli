@@ -568,7 +568,7 @@
 				mock.swap(_global, fakeTimers)
 				mock.swap(_process, { nextTick: curry(fakeNextTick, UNDEF), hrtime: fakeHrtime })
 			}
-			if (newTime) {
+			if (newTime !== UNDEF) {
 				fakeNow = isStr(newTime) ? _Date.parse(newTime) : +newTime
 				mock.tick(0)
 			}
