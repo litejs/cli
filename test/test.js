@@ -413,6 +413,18 @@ describe("test.js", function() {
 		fakeTimeout(assert.end, 0)
 	})
 
+	it("should clear mocked immediate", function(assert, mock) {
+		mock.time()
+		var called = false
+		, immediate = setImmediate(function() {
+			called = true
+		})
+
+		clearImmediate(immediate)
+		mock.tick(0)
+		assert.strictEqual(called, false).end()
+	})
+
 	it("should mock time", function(test, mock) {
 		var nativeDate = Date
 		, seq = 0

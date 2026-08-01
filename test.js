@@ -2,7 +2,7 @@
 /* litejs.com/MIT-LICENSE.txt */
 
 !function(exports, _setTimeout, _clearTimeout, _Date, _Error, _Infinity) {
-	var started, testSuite, timerType, inSuite
+	var UNDEF, started, testSuite, timerType, inSuite
 	, tests = []
 	, describe = exports.describe = curry(def, 1)
 	, _global = describe.global = exports.window || global
@@ -117,7 +117,7 @@
 		setInterval: curry(fakeTimeout, true),
 		clearTimeout: fakeClear,
 		clearInterval: fakeClear,
-		setImmediate: fakeNextTick,
+		setImmediate: curry(fakeNextTick, 1),
 		clearImmediate: fakeClear,
 		Date: fakeDate
 	}
@@ -161,13 +161,14 @@
 			unref: This
 		}
 	}
-	function fakeNextTick(fn) {
-		fakeTimeout({
+	function fakeNextTick(returns, fn) {
+		var val = fakeTimeout({
 			id: ++timerId,
 			fn: fn,
-			args: slice(arguments, 1),
+			args: slice(arguments, 2),
 			at: fakeNow - 1
 		})
+		return returns && val
 	}
 	function fakeClear(id) {
 		if (id) for (var i = timers.length; i--; ) {
@@ -347,7 +348,7 @@
 			if (testCase.ended) return fail("ended multiple times")
 			testCase.ended = _Date.now()
 
-			if (testCase.planned != void 0 && testCase.planned !== testCase.total) {
+			if (testCase.planned != UNDEF && testCase.planned !== testCase.total) {
 				fail("planned " + testCase.planned + " actual " + testCase.total)
 			}
 			if (testCase.mock) {
@@ -565,7 +566,7 @@
 			if (!mock._time) {
 				mock._time = fakeNow = _Date.now()
 				mock.swap(_global, fakeTimers)
-				mock.swap(_process, { nextTick: fakeNextTick, hrtime: fakeHrtime })
+				mock.swap(_process, { nextTick: curry(fakeNextTick, UNDEF), hrtime: fakeHrtime })
 			}
 			if (newTime) {
 				fakeNow = isStr(newTime) ? _Date.parse(newTime) : +newTime
