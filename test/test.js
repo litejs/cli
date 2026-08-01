@@ -430,6 +430,14 @@ describe("test.js", function() {
 		assert.strictEqual(Date.now(), 0).end()
 	})
 
+	it("should call mocked Date without new", function(assert, mock) {
+		mock.time("2018-01-02T13:45:51.001Z")
+		var value = Date()
+		assert.type(value, "string")
+		.strictEqual(value, new Date().toString())
+		.end()
+	})
+
 	it("should mock time", function(test, mock) {
 		var nativeDate = Date
 		, seq = 0

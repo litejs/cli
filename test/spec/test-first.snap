@@ -4,9 +4,9 @@
 Error: Assertion:1: equal
 [31mexpected:[0m[32mactual: [0m [32m [[0m"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[32m","[0maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"[32m][0m
     at <anonymous> (test/test-fail.js:7:9)
-    at nextCase (test.js:294:19)
-    at nextSuite (test.js:377:3)
-    at Timeout.nextCase [as _onTimeout] (test.js:265:26)[0m
+    at nextCase (test.js:295:19)
+    at nextSuite (test.js:378:3)
+    at Timeout.nextCase [as _onTimeout] (test.js:266:26)[0m
 ...[0m
 #[31m[1m FAIL  tests 1[0m
 1..13
