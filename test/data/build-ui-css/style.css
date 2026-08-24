@@ -7,6 +7,10 @@ body {
 	color: green;
 }
 
+.w6, .md .md-w6, .lg .lg-w6 {
+	width: 50%;
+}
+
 h1 {
 	content: url("data:image/jpeg;base64,iRxVB0");
 

@@ -2,7 +2,7 @@
 	.View { color: red }
 
 %el myView
-div.View
+div.View.md-w6
 	img[src=hero.svg]
 	img[src=logo.svg][keep-name]
 	img[src=icon.svg]:keep-name
