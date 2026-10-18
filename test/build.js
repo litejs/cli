@@ -59,6 +59,34 @@ describe("build", function() {
 		assert.end()
 	})
 
+	test("js build keeps es5 syntax by default", function(assert, mock) {
+		mock.swap(console, "log", mock.fn())
+		build({ _: ["test/data/build-target/app.js"], out: temp + "es5.js" })
+		assert.equal(cli.readFile(temp + "es5.js").trim(), "var f=1,e={f:f};")
+		cli.rmrf(temp)
+		assert.end()
+	})
+
+	test("js build with --jsTarget", function(assert, mock) {
+		mock.swap(console, "log", mock.fn())
+		build({ _: ["test/data/build-target/app.js"], out: temp + "es2018.js", jsTarget: "es2018" })
+		assert.equal(cli.readFile(temp + "es2018.js").trim(), "var f=1,e={f};")
+		cli.rmrf(temp)
+		assert.end()
+	})
+
+	test("js build hints --jsTarget for newer syntax", function(assert, mock) {
+		mock.swap(console, "log", mock.fn())
+		try {
+			build({ _: ["test/data/build-target/rest.js"], out: temp + "rest.js" })
+			assert.ok(0, "should throw")
+		} catch(e) {
+			assert.ok(e.message.indexOf("Minified JS needs a newer --jsTarget than es5, eg es2018\n") === 0, e.message)
+		}
+		cli.rmrf(temp)
+		assert.end()
+	})
+
 	test("ui build with --out", function(assert, mock) {
 		mock.swap(console, "error", mock.fn())
 		mock.swap(console, "log", mock.fn())

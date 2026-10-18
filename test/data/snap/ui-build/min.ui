@@ -1,5 +1,5 @@
 %js
- var app=1,foo="bar"
+ var app=1,foo="bar";
 %css
  body{color:#ffeedd}
  .lazy{color:green}

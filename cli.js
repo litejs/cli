@@ -29,6 +29,7 @@ var fs = require("fs")
 		cssPrune: true,
 		fetch: true,
 		jsmin: "",
+		jsTarget: "es5",
 		min: "",
 		out: "",
 		readme: "",

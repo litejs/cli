@@ -23,7 +23,8 @@
     "test": "node ./cli.js t test/index.js"
   },
   "dependencies": {
-    "@litejs/dom": "26.4.3"
+    "@litejs/dom": "26.4.3",
+    "esbuild": "0.28.2"
   },
   "bin": {
     "lj": "./cli.js"
