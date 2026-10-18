@@ -12,6 +12,13 @@ describe("build unit", function() {
 			assert.equal(build.clean("a !b"), "a !b")
 			assert.end()
 		})
+		test("does not start a process", function(assert, mock) {
+			var child = require("child_process")
+			mock.swap(child, "execSync", mock.fn())
+			assert.equal(build.clean(";d \"M0,1 L\" + x"), ";d\"M0,1 L\"+x")
+			assert.equal(child.execSync.calls.length, 0)
+			assert.end()
+		})
 	})
 
 	describe("drop", function() {
