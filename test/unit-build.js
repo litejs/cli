@@ -134,6 +134,28 @@ describe("build unit", function() {
 		})
 	})
 
+	describe("viewMin", function() {
+		// templates sit under %el, top-level lines are not joined
+		var min = function(lines) {
+			return build.viewMin("%el x\n " + lines.join("\n "), {}).replace(/^%el x\n /, "").split("\n ")
+		}
+		test("joins binding lines onto the selector line", function(assert) {
+			assert.equal(min([".a", " ;b 1", " ;c 2", " span"]), [".a ;b 1;c 2", " span"])
+			assert.end()
+		})
+		test("keeps a binding continued on the next lines on its own line", function(assert) {
+			assert.equal(min([".a", " ;txt fn(", "  [ 1, 2 ]", " )", " ;b 1"]), [".a", " ;txt fn(", "  [ 1, 2 ]", " )", " ;b 1"])
+			assert.equal(min([".a", " ;b 1", " ;c [", "  1", " ]"]), [".a ;b 1", " ;c [", "  1", " ]"])
+			assert.end()
+		})
+		test("joins a ^ line only onto the selector line", function(assert) {
+			assert.equal(min([".a", " ;b 1", " ^c 2"]), [".a ;b 1", " ^c 2"])
+			assert.equal(min([".a", " ^b 1", " ;c 2"]), [".a ^b 1", " ;c 2"])
+			assert.equal(min([".a", " ^b 1", " ^c 2"]), [".a ^b 1", " ^c 2"])
+			assert.end()
+		})
+	})
+
 	describe("cssMin", function() {
 		test("accepts url callback", function(assert) {
 			var called = []
