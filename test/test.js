@@ -438,6 +438,11 @@ describe("test.js", function() {
 		assert.strictEqual(Date.now(), 0).end()
 	})
 
+	it("should mock process.hrtime.bigint", function(assert, mock) {
+		mock.time(1)
+		assert.strictEqual(process.hrtime.bigint(), BigInt(1e6)).end()
+	})
+
 	it("should call mocked Date without new", function(assert, mock) {
 		mock.time("2018-01-02T13:45:51.001Z")
 		var value = Date()

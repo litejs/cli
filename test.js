@@ -139,6 +139,9 @@
 		var diff = _isArray(time) ? fakeNow - (time[0] * 1e3 + time[1] / 1e6) : fakeNow
 		return [Math.floor(diff / 1000), Math.round((diff % 1e3) * 1e3) * 1e3] // [seconds, nanoseconds]
 	}
+	fakeHrtime.bigint = function() {
+		return _global.BigInt(Math.round(fakeNow * 1e3)) * _global.BigInt(1e3)
+	}
 	function fakeTimeout(repeat, fn, ms) {
 		if (Date === _Date) {
 			return _setTimeout.apply(this, slice(arguments, 1))
