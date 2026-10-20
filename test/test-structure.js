@@ -60,4 +60,11 @@ describe("TestSuite 4")
 	assert.fail()
 	assert.end()
 })
+.it("should skip test by empty data 4.4", [], function(assert) {
+	assert.fail()
+	assert.end()
+})
+.it("should run after tests skipped by data 4.5", function(assert) {
+	assert.end()
+})
 

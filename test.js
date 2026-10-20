@@ -241,7 +241,7 @@
 		var spliceData = [++splicePos, 0, {
 			p: inSuite,
 			indent: inSuite ? inSuite.indent + (t > 1 ? "" : conf.indent) : "",
-			s: t > 1 && !isFn(fn) ? "pending" : data === false ? "by data" : 0,
+			s: t > 1 && !isFn(fn) ? "pending" : data !== fn && !data.length ? "by data" : 0,
 			t: t,
 			n: name,
 			f: fn
@@ -254,7 +254,7 @@
 				i.n = format(i.n, row, conf)
 				if (item.f.length > i.r.length + 2 || i.r.length !== spliceData[2].r.length) throw "Invalid data for: " + i.n
 			}, spliceData[2]))
-			splicePos += data.length - 1
+			splicePos += spliceData.length - 3
 		}
 		tests.splice.apply(tests, spliceData)
 		return describe
