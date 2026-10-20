@@ -123,12 +123,10 @@
 	}
 	assert.has = assert.own
 	assert.hasNot = assert.notOwn
-	function fakeDate(year, month, date, hr, min, sec, ms) {
+	function fakeDate() {
 		return (
 			!(this instanceof fakeDate) ? new _Date(fakeNow).toString() :
-			arguments.length > 1 ?
-			new _Date(num(year), num(month), num(date, 1), num(hr, 0), num(min, 0), num(sec, 0), num(ms, 0)) :
-			new _Date(num(year, fakeNow))
+			new (curry(_Date, arguments.length ? slice(arguments) : fakeNow))()
 		)
 	}
 	fakeDate.prototype = _Date.prototype
@@ -664,9 +662,6 @@
 			obj == null ? "" + obj :
 			toStr.call(obj).slice(8, -1).toLowerCase()
 		)
-	}
-	function num(a, b) {
-		return type(a -= 0) === "number" ? a : b
 	}
 	function isStr(str) {
 		return typeof str === "string"

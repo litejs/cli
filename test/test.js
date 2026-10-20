@@ -476,6 +476,8 @@ describe("test.js", function() {
 		test.equal(new Date(Date.UTC(2018,0)).toJSON(), "2018-01-01T00:00:00.000Z")
 		test.equal(new Date(Date.UTC(2018)).toJSON(), "2018-01-01T00:00:00.000Z")
 		test.equal(new Date(2018,0).getMonth(), 0)
+		test.equal(new Date("2020-05-05T01:02:03Z").toJSON(), "2020-05-05T01:02:03.000Z")
+		test.equal(new Date(new Date(0)).getTime(), 0)
 		test.equal(new Date(2018,11,31).getDate(), 31)
 
 		test.equal(new Date().getTime(), 1514900751001)
