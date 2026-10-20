@@ -77,6 +77,9 @@ describe("test.js", function() {
 			{}, {},
 			{a:1}, {a:1},
 			date0, new Date(0),
+			new Map([[1, {a:1}]]), new Map([[1, {a:1}]]),
+			new Set([1]), new Set([1]),
+			Object(1), Object(1),
 			"", ""
 		]
 		, testSet = [
@@ -124,6 +127,11 @@ describe("test.js", function() {
 			obj3,      testSet.slice(19),
 			circ1,     testSet.slice(21), // circ1 is equal to circ2
 			circ2,     testSet.slice(21),
+			new Map([[1, 2]]), [new Map(), new Map([[1, 3]])],
+			new Set([1]),      [new Set(), new Set([2])],
+			Object(1),         [Object(2)],
+			Object("a"),       [Object("b")],
+			Object(true),      [Object(false)],
 			"a", "b"
 		]
 

@@ -620,7 +620,7 @@
 			aType !== typeof expected ||
 			(aType = type(actual)) != type(expected) ||
 			(actual.constructor && actual.constructor !== expected.constructor) ||
-			(aType == "date" && actual.getTime() !== expected.getTime()) ||
+			(/^(boolean|date|number|string)$/.test(aType) && !_deepEqual(actual.valueOf(), expected.valueOf(), circ)) ||
 			(aType == "regexp" && "" + actual !== "" + expected)
 		) {
 			return false
@@ -630,6 +630,9 @@
 		if (key > -1) return true
 		push(circ, actual)
 
+		if (aType == "map" || aType == "set") {
+			return _deepEqual(Array.from(actual), Array.from(expected), circ)
+		}
 		if (aType == "array" || aType == "arguments") {
 			len = actual.length
 			if (len !== expected.length) return false
