@@ -1,7 +1,8 @@
 
 
 describe("build", function() {
-	var build = require("../lib/build.js")
+	var fs = require("fs")
+	, build = require("../lib/build.js")
 	, cli = require("..")
 
 	require("../snapshot.js")
@@ -105,6 +106,56 @@ describe("build", function() {
 		assert.ok(out[0].indexOf("{h}") < 0, "hash should be resolved")
 		assert.matchSnapshot(out[0], 0, "test/data/snap/ui-build/min.ui")
 		cli.rmrf(temp)
+		assert.end()
+	})
+
+	test("js build with --jsmin command and --banner", function(assert, mock) {
+		mock.swap(console, "log", mock.fn())
+		build({ _: ["test/data/build-target/app.js"], out: temp + "cmd.js", jsmin: "cat", banner: "x 1.0" })
+		assert.equal(cli.readFile(temp + "cmd.js"), "/*! x 1.0 */\n\nvar f = 1, e = {f: f}\n\n")
+		build({ _: ["test/data/build-target/app.js"], out: temp + "es5.js" })
+		assert.equal(cli.readFile(temp + "es5.js").trim(), "var f=1,e={f:f};")
+		cli.rmrf(temp)
+		assert.end()
+	})
+
+	test("build without a supported --out", function(assert, mock) {
+		var log = mock.fn()
+		mock.swap(console, "log", log)
+		build({ _: ["test/data/build-simple/a.css"], out: temp + "out.css" })
+		assert.equal(log.calls[0].args, ["Nothing to build, use --out=build/index.html"])
+		assert.notOk(fs.existsSync(temp))
+		assert.end()
+	})
+
+	test("html build with --no-cat", function(assert, mock) {
+		var err = mock.fn()
+		, dir = "test/data/temp/no-cat/"
+		mock.swap(console, "error", err)
+		mock.swap(console, "log", mock.fn())
+		cli.cp("test/data/build-inline", dir)
+		build({ _: [dir + "dev.html"], out: dir + "index.html" })
+		cli.writeFile(dir + "lib1.js", "var kept = 1")
+		build({ _: [dir + "dev.html"], out: dir + "index.html", cat: false })
+		assert.ok(err.calls.some(c => c.args[0] === "CAT DISABLED"))
+		assert.equal(cli.readFile(dir + "lib1.js"), "var kept = 1")
+		cli.rmrf(dir)
+		assert.end()
+	})
+
+	test("html build with --worker", function(assert, mock) {
+		var err = mock.fn()
+		, dir = "test/data/temp/worker/"
+		mock.swap(console, "error", err)
+		mock.swap(console, "log", mock.fn())
+		cli.cp("test/data/build-simple", dir)
+		cli.writeFile(dir + "sw.js", "\nvar VERSION = \"0\"\n, FILES = [\"a.css?\", \"d.css\"]\n")
+		build({ _: [dir + "dev.html"], out: dir + "index.html", worker: "sw.js" })
+		var sw = cli.readFile(dir + "sw.js")
+		assert.ok(/VERSION = "\d{4}-\d\d-\d\dT[\d:.]+Z"/.test(sw), sw)
+		assert.ok(sw.indexOf(', FILES = [\n\t"a.css?",\n\t"d.css"\n]') > -1, sw)
+		assert.equal(err.calls.pop().args, ["# Update worker: sw.js\n'" + dir + "a.css' not commited?\n'" + dir + "d.css' not commited?"])
+		cli.rmrf(dir)
 		assert.end()
 	})
 })
